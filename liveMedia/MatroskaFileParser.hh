@@ -44,12 +44,10 @@ enum MatroskaParseState
 	DELIVERING_FRAME_BYTES
 };
 
-class MatroskaFileParser: public StreamParser
+class MatroskaFileParser : public StreamParser
 {
 public:
-	MatroskaFileParser(MatroskaFile &ourFile, FramedSource *inputSource,
-		FramedSource::onCloseFunc *onEndFunc, void *onEndClientData,
-		MatroskaDemux *ourDemux = NULL);
+	MatroskaFileParser(MatroskaFile &ourFile, FramedSource *inputSource, FramedSource::onCloseFunc *onEndFunc, void *onEndClientData, MatroskaDemux *ourDemux = NULL);
 	virtual ~MatroskaFileParser();
 
 	void seekToTime(double &seekNPT);

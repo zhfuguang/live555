@@ -41,7 +41,6 @@ WAVAudioFileSource *WAVAudioFileSource::createNew(UsageEnvironment &env, char co
 		}
 
 		newSource->fFileSize = (unsigned)GetFileSize(fileName, fid);
-
 		return newSource;
 	} while (0);
 
@@ -127,9 +126,9 @@ static Boolean skipBytes(FILE *fid, int num)
 }
 
 WAVAudioFileSource::WAVAudioFileSource(UsageEnvironment &env, FILE *fid)
-	: AudioInputDevice(env, 0, 0, 0, 0)/* set the real parameters later */,
-	  fFid(fid), fFidIsSeekable(False), fLastPlayTime(0), fHaveStartedReading(False), fWAVHeaderSize(0), fFileSize(0),
-	  fScaleFactor(1), fLimitNumBytesToStream(False), fNumBytesToStream(0), fAudioFormat(WA_UNKNOWN)
+	: AudioInputDevice(env, 0, 0, 0, 0)/* set the real parameters later */
+	, fFid(fid), fFidIsSeekable(False), fLastPlayTime(0), fHaveStartedReading(False), fWAVHeaderSize(0), fFileSize(0)
+	, fScaleFactor(1), fLimitNumBytesToStream(False), fNumBytesToStream(0), fAudioFormat(WA_UNKNOWN)
 {
 	// Check the WAV file header for validity.
 	// Note: The following web pages contain info about the WAV format:
@@ -302,8 +301,7 @@ void WAVAudioFileSource::doGetNextFrame()
 	if (!fHaveStartedReading)
 	{
 		// Await readable data from the file:
-		envir().taskScheduler().turnOnBackgroundReadHandling(fileno(fFid),
-			(TaskScheduler::BackgroundHandlerProc *)&fileReadableHandler, this);
+		envir().taskScheduler().turnOnBackgroundReadHandling(fileno(fFid), (TaskScheduler::BackgroundHandlerProc *)&fileReadableHandler, this);
 		fHaveStartedReading = True;
 	}
 #endif
@@ -381,7 +379,7 @@ void WAVAudioFileSource::doReadFromFile()
 		// and keep reading until we fill the provided buffer:
 		if (fScaleFactor != 1)
 		{
-			SeekFile64(fFid, (fScaleFactor - 1)*bytesPerSample, SEEK_CUR);
+			SeekFile64(fFid, (fScaleFactor - 1) * bytesPerSample, SEEK_CUR);
 			if (fMaxSize < bytesPerSample)
 				break;
 		}
@@ -406,14 +404,12 @@ void WAVAudioFileSource::doReadFromFile()
 	}
 
 	// Remember the play time of this data:
-	fDurationInMicroseconds = fLastPlayTime
-		= (unsigned)((fPlayTimePerSample * fFrameSize) / bytesPerSample);
+	fDurationInMicroseconds = fLastPlayTime = (unsigned)((fPlayTimePerSample * fFrameSize) / bytesPerSample);
 
 	// Inform the reader that he has data:
 #ifdef READ_FROM_FILES_SYNCHRONOUSLY
 	// To avoid possible infinite recursion, we need to return to the event loop to do this:
-	nextTask() = envir().taskScheduler().scheduleDelayedTask(0,
-			(TaskFunc *)FramedSource::afterGetting, this);
+	nextTask() = envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc *)FramedSource::afterGetting, this);
 #else
 	// Because the file read was done from the event loop, we can call the
 	// 'after getting' function directly, without risk of infinite recursion:

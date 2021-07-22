@@ -97,10 +97,7 @@ int main(int argc, char **argv)
 	unsigned char CNAME[maxCNAMElen + 1];
 	gethostname((char *)CNAME, maxCNAMElen);
 	CNAME[maxCNAMElen] = '\0'; // just in case
-	sessionState.rtcpInstance
-		= RTCPInstance::createNew(*env, &rtcpGroupsock,
-				estimatedSessionBandwidth, CNAME,
-				NULL /* we're a client */, sessionState.source);
+	sessionState.rtcpInstance = RTCPInstance::createNew(*env, &rtcpGroupsock, estimatedSessionBandwidth, CNAME, NULL /* we're a client */, sessionState.source);
 	// Note: This starts RTCP running automatically
 
 	// Finally, start receiving the multicast stream:
@@ -108,7 +105,6 @@ int main(int argc, char **argv)
 	sessionState.sink->startPlaying(*sessionState.source, afterPlaying, NULL);
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 

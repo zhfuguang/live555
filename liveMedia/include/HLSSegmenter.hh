@@ -27,19 +27,16 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MediaSink.hh"
 #endif
 
-class HLSSegmenter: public MediaSink
+class HLSSegmenter : public MediaSink
 {
 public:
-	typedef void (onEndOfSegmentFunc)(void *clientData,
-		char const *segmentFileName, double segmentDuration);
-	static HLSSegmenter *createNew(UsageEnvironment &env,
-		unsigned segmentationDuration, char const *fileNamePrefix,
-		onEndOfSegmentFunc *onEndOfSegmentFunc = NULL,
-		void *onEndOfSegmentClientData = NULL);
+	typedef void (onEndOfSegmentFunc)(void *clientData, char const *segmentFileName, double segmentDuration);
+	static HLSSegmenter *createNew(UsageEnvironment &env, unsigned segmentationDuration,
+		char const *fileNamePrefix, onEndOfSegmentFunc *onEndOfSegmentFunc = NULL, void *onEndOfSegmentClientData = NULL);
 
 private:
-	HLSSegmenter(UsageEnvironment &env, unsigned segmentationDuration, char const *fileNamePrefix,
-		onEndOfSegmentFunc *onEndOfSegmentFunc, void *onEndOfSegmentClientData);
+	HLSSegmenter(UsageEnvironment &env, unsigned segmentationDuration,
+		char const *fileNamePrefix, onEndOfSegmentFunc *onEndOfSegmentFunc, void *onEndOfSegmentClientData);
 	// called only by createNew()
 	virtual ~HLSSegmenter();
 
@@ -48,12 +45,8 @@ private:
 
 	Boolean openNextOutputSegment();
 
-	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
-	virtual void afterGettingFrame(unsigned frameSize,
-		unsigned numTruncatedBytes);
+	static void afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
+	virtual void afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes);
 
 	static void ourOnSourceClosure(void *clientData);
 	void ourOnSourceClosure();

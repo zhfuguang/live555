@@ -46,27 +46,19 @@ private:
 	unsigned char fData[2 + 0xFF]; // first 2 bytes are tag and length
 };
 
-typedef void RTCPAppHandlerFunc(void *clientData,
-	u_int8_t subtype, u_int32_t nameBytes/*big-endian order*/,
-	u_int8_t *appDependentData, unsigned appDependentDataSize);
+typedef void RTCPAppHandlerFunc(void *clientData, u_int8_t subtype, u_int32_t nameBytes/*big-endian order*/, u_int8_t *appDependentData, unsigned appDependentDataSize);
 
 class RTCPMemberDatabase; // forward
 
 typedef void ByeWithReasonHandlerFunc(void *clientData, char const *reason);
 
-class RTCPInstance: public Medium
+class RTCPInstance : public Medium
 {
 public:
-	static RTCPInstance *createNew(UsageEnvironment &env, Groupsock *RTCPgs,
-		unsigned totSessionBW, /* in kbps */
-		unsigned char const *cname,
-		RTPSink *sink,
-		RTPSource *source,
-		Boolean isSSMTransmitter = False,
-		SRTPCryptographicContext *crypto = NULL);
+	static RTCPInstance *createNew(UsageEnvironment &env, Groupsock *RTCPgs, unsigned totSessionBW, /* in kbps */
+		unsigned char const *cname, RTPSink *sink, RTPSource *source, Boolean isSSMTransmitter = False, SRTPCryptographicContext *crypto = NULL);
 
-	static Boolean lookupByName(UsageEnvironment &env, char const *instanceName,
-		RTCPInstance *&resultInstance);
+	static Boolean lookupByName(UsageEnvironment &env, char const *instanceName, RTCPInstance *&resultInstance);
 
 	unsigned numMembers() const;
 	unsigned totSessionBW() const
@@ -74,8 +66,7 @@ public:
 		return fTotSessionBW;
 	}
 
-	void setByeHandler(TaskFunc *handlerTask, void *clientData,
-		Boolean handleActiveParticipantsOnly = True);
+	void setByeHandler(TaskFunc *handlerTask, void *clientData, Boolean handleActiveParticipantsOnly = True);
 	// Assigns a handler routine to be called if a "BYE" arrives.
 	// The handler is called once only; for subsequent "BYE"s,
 	// "setByeHandler()" would need to be called again.
@@ -87,8 +78,7 @@ public:
 	// If "handleActiveParticipantsOnly" is False, then the handler is called
 	// for any incoming RTCP "BYE".
 	// (To remove an existing "BYE" handler, call "setByeHandler()" again, with a "handlerTask" of NULL.)
-	void setByeWithReasonHandler(ByeWithReasonHandlerFunc *handlerTask, void *clientData,
-		Boolean handleActiveParticipantsOnly = True);
+	void setByeWithReasonHandler(ByeWithReasonHandlerFunc *handlerTask, void *clientData, Boolean handleActiveParticipantsOnly = True);
 	// Like "setByeHandler()", except that a string 'reason for the bye' (received as part of
 	// the RTCP "BYE" packet) is passed to the handler function (along with "clientData").
 	// (The 'reason' parameter to the handler function will be a dynamically-allocated string,
@@ -99,8 +89,7 @@ public:
 	// (respectively) arrives.  Unlike "setByeHandler()", the handler will
 	// be called once for each incoming "SR" or "RR".  (To turn off handling,
 	// call the function again with "handlerTask" (and "clientData") as NULL.)
-	void setSpecificRRHandler(struct sockaddr_storage const &fromAddress, Port fromPort,
-		TaskFunc *handlerTask, void *clientData);
+	void setSpecificRRHandler(struct sockaddr_storage const &fromAddress, Port fromPort, TaskFunc *handlerTask, void *clientData);
 	// Like "setRRHandler()", but applies only to "RR" packets that come from
 	// a specific source address and port.  (Note that if both a specific
 	// and a general "RR" handler function is set, then both will be called.)
@@ -108,8 +97,7 @@ public:
 	void setAppHandler(RTCPAppHandlerFunc *handlerTask, void *clientData);
 	// Assigns a handler routine to be called whenever an "APP" packet arrives.  (To turn off
 	// handling, call the function again with "handlerTask" (and "clientData") as NULL.)
-	void sendAppPacket(u_int8_t subtype, char const *name,
-		u_int8_t *appDependentData, unsigned appDependentDataSize);
+	void sendAppPacket(u_int8_t subtype, char const *name, u_int8_t *appDependentData, unsigned appDependentDataSize);
 	// Sends a custom RTCP "APP" packet to the peer(s).  The parameters correspond to their
 	// respective fields as described in the RTP/RTCP definition (RFC 3550).
 	// Note that only the low-order 5 bits of "subtype" are used, and only the first 4 bytes
@@ -129,11 +117,9 @@ public:
 	}
 	// hacks to allow sending RTP over TCP (RFC 2236, section 10.12)
 
-	void setAuxilliaryReadHandler(AuxHandlerFunc *handlerFunc,
-		void *handlerClientData)
+	void setAuxilliaryReadHandler(AuxHandlerFunc *handlerFunc, void *handlerClientData)
 	{
-		fRTCPInterface.setAuxilliaryReadHandler(handlerFunc,
-			handlerClientData);
+		fRTCPInterface.setAuxilliaryReadHandler(handlerFunc, handlerClientData);
 	}
 
 	void injectReport(u_int8_t const *packet, unsigned packetSize, struct sockaddr_storage const &fromAddress);
@@ -141,15 +127,11 @@ public:
 
 protected:
 	RTCPInstance(UsageEnvironment &env, Groupsock *RTPgs, unsigned totSessionBW,
-		unsigned char const *cname,
-		RTPSink *sink, RTPSource *source,
-		Boolean isSSMTransmitter,
-		SRTPCryptographicContext *crypto);
+		unsigned char const *cname, RTPSink *sink, RTPSource *source, Boolean isSSMTransmitter, SRTPCryptographicContext *crypto);
 	// called only by createNew()
 	virtual ~RTCPInstance();
 
-	virtual void noteArrivingRR(struct sockaddr_storage const &fromAddressAndPort,
-		int tcpSocketNum, unsigned char tcpStreamChannelId);
+	virtual void noteArrivingRR(struct sockaddr_storage const &fromAddressAndPort, int tcpSocketNum, unsigned char tcpStreamChannelId);
 
 	void incomingReportHandler1();
 
@@ -161,8 +143,7 @@ private:
 	Boolean addReport(Boolean alwaysAdd = False);
 	void addSR();
 	void addRR();
-	void enqueueCommonReportPrefix(unsigned char packetType, u_int32_t SSRC,
-		unsigned numExtraWords = 0);
+	void enqueueCommonReportPrefix(unsigned char packetType, u_int32_t SSRC, unsigned numExtraWords = 0);
 	void enqueueCommonReportSuffix();
 	void enqueueReportBlock(RTPReceptionStats *receptionStats);
 	void addSDES();
@@ -174,8 +155,7 @@ private:
 	void onExpire1();
 
 	static void incomingReportHandler(RTCPInstance *instance, int /*mask*/);
-	void processIncomingReport(unsigned packetSize, struct sockaddr_storage const &fromAddressAndPort,
-		int tcpSocketNum, unsigned char tcpStreamChannelId);
+	void processIncomingReport(unsigned packetSize, struct sockaddr_storage const &fromAddressAndPort, int tcpSocketNum, unsigned char tcpStreamChannelId);
 	void onReceive(int typeOfPacket, int totPacketSize, u_int32_t ssrc);
 
 private:

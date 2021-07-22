@@ -25,16 +25,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedSource.hh"
 #endif
 
-class MediaSink: public Medium
+class MediaSink : public Medium
 {
 public:
-	static Boolean lookupByName(UsageEnvironment &env, char const *sinkName,
-		MediaSink *&resultSink);
+	static Boolean lookupByName(UsageEnvironment &env, char const *sinkName, MediaSink *&resultSink);
 
 	typedef void (afterPlayingFunc)(void *clientData);
-	Boolean startPlaying(MediaSource &source,
-		afterPlayingFunc *afterFunc,
-		void *afterClientData);
+	Boolean startPlaying(MediaSource &source, afterPlayingFunc *afterFunc, void *afterClientData);
 	virtual void stopPlaying();
 
 	// Test for specific types of sink:
@@ -75,8 +72,7 @@ private:
 class OutPacketBuffer
 {
 public:
-	OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize,
-		unsigned maxBufferSize = 0);
+	OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize, unsigned maxBufferSize = 0);
 	// if "maxBufferSize" is >0, use it - instead of "maxSize" to compute the buffer size
 	~OutPacketBuffer();
 
@@ -139,10 +135,7 @@ public:
 		return numBytes > fMax;
 	}
 
-	void setOverflowData(unsigned overflowDataOffset,
-		unsigned overflowDataSize,
-		struct timeval const &presentationTime,
-		unsigned durationInMicroseconds);
+	void setOverflowData(unsigned overflowDataOffset, unsigned overflowDataSize, struct timeval const &presentationTime, unsigned durationInMicroseconds);
 	unsigned overflowDataSize() const
 	{
 		return fOverflowDataSize;

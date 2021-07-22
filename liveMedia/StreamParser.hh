@@ -31,14 +31,9 @@ public:
 	virtual void flushInput();
 
 protected: // we're a virtual base class
-	typedef void (clientContinueFunc)(void *clientData,
-		unsigned char *ptr, unsigned size,
-		struct timeval presentationTime);
-	StreamParser(FramedSource *inputSource,
-		FramedSource::onCloseFunc *onInputCloseFunc,
-		void *onInputCloseClientData,
-		clientContinueFunc *clientContinueFunc,
-		void *clientContinueClientData);
+	typedef void (clientContinueFunc)(void *clientData, unsigned char *ptr, unsigned size, struct timeval presentationTime);
+	StreamParser(FramedSource *inputSource, FramedSource::onCloseFunc *onInputCloseFunc,
+		void *onInputCloseClientData, clientContinueFunc *clientContinueFunc, void *clientContinueClientData);
 	virtual ~StreamParser();
 
 	void saveParserState();
@@ -63,7 +58,6 @@ protected: // we're a virtual base class
 	u_int16_t get2Bytes()
 	{
 		ensureValidBytes(2);
-
 		unsigned char const *ptr = nextToParse();
 		u_int16_t result = (ptr[0] << 8) | ptr[1];
 
@@ -75,11 +69,9 @@ protected: // we're a virtual base class
 	u_int16_t test2Bytes()
 	{
 		ensureValidBytes(2);
-
 		unsigned char const *ptr = nextToParse();
 		return (ptr[0] << 8) | ptr[1];
 	}
-
 
 	u_int8_t get1Byte()   // byte-aligned
 	{
@@ -151,15 +143,12 @@ private:
 		// common case: inlined:
 		if (fCurParserIndex + numBytesNeeded <= fTotNumValidBytes)
 			return;
-
 		ensureValidBytes1(numBytesNeeded);
 	}
 	void ensureValidBytes1(unsigned numBytesNeeded);
 
 	static void afterGettingBytes(void *clientData, unsigned numBytesRead,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+		unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 	void afterGettingBytes1(unsigned numBytesRead, struct timeval presentationTime);
 
 	static void onInputClosure(void *clientData);
@@ -190,7 +179,6 @@ private:
 
 	// Whether we have seen EOF on the input source:
 	Boolean fHaveSeenEOF;
-
 	struct timeval fLastSeenPresentationTime; // hack used for EOF handling
 };
 

@@ -30,11 +30,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// MPEGVideoStreamParser definition //////////
 
-class MPEGVideoStreamParser: public StreamParser
+class MPEGVideoStreamParser : public StreamParser
 {
 public:
-	MPEGVideoStreamParser(MPEGVideoStreamFramer *usingSource,
-		FramedSource *inputSource);
+	MPEGVideoStreamParser(MPEGVideoStreamFramer *usingSource, FramedSource *inputSource);
 	virtual ~MPEGVideoStreamParser();
 
 public:

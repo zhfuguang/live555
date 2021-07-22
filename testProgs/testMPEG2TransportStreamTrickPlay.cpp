@@ -55,8 +55,7 @@ int main(int argc, char const **argv)
 	int len = strlen(inputFileName);
 	if (len < 4 || strcmp(&inputFileName[len - 3], ".ts") != 0)
 	{
-		*env << "ERROR: input file name \"" << inputFileName
-			<< "\" does not end with \".ts\"\n";
+		*env << "ERROR: input file name \"" << inputFileName << "\" does not end with \".ts\"\n";
 		usage();
 	}
 
@@ -70,8 +69,7 @@ int main(int argc, char const **argv)
 		usage();
 
 	// Open the input file (as a 'byte stream file source'):
-	FramedSource *input
-		= ByteStreamFileSource::createNew(*env, inputFileName, TRANSPORT_PACKET_SIZE);
+	FramedSource *input = ByteStreamFileSource::createNew(*env, inputFileName, TRANSPORT_PACKET_SIZE);
 	if (input == NULL)
 	{
 		*env << "Failed to open input file \"" << inputFileName << "\" (does it exist?)\n";
@@ -82,8 +80,7 @@ int main(int argc, char const **argv)
 	// The index file name is the same as the input file name, except with suffix ".tsx":
 	char *indexFileName = new char[len + 2]; // allow for trailing x\0
 	sprintf(indexFileName, "%sx", inputFileName);
-	MPEG2TransportStreamIndexFile *indexFile
-		= MPEG2TransportStreamIndexFile::createNew(*env, indexFileName);
+	MPEG2TransportStreamIndexFile *indexFile = MPEG2TransportStreamIndexFile::createNew(*env, indexFileName);
 	if (indexFile == NULL)
 	{
 		*env << "Failed to open index file \"" << indexFileName << "\" (does it exist?)\n";
@@ -91,8 +88,7 @@ int main(int argc, char const **argv)
 	}
 
 	// Create a filter that generates trick mode data from the input and index files:
-	MPEG2TransportStreamTrickModeFilter *trickModeFilter
-		= MPEG2TransportStreamTrickModeFilter::createNew(*env, input, indexFile, scale);
+	MPEG2TransportStreamTrickModeFilter *trickModeFilter = MPEG2TransportStreamTrickModeFilter::createNew(*env, input, indexFile, scale);
 
 	if (startTime > 0.0f)
 	{
@@ -102,15 +98,13 @@ int main(int argc, char const **argv)
 		if (!trickModeFilter->seekTo(tsRecordNumber, indexRecordNumber))   // TARFU!
 		{
 			*env << "Failed to seek trick mode filter to ts #" << (unsigned)tsRecordNumber
-				<< ", ix #" << (unsigned)indexRecordNumber
-				<< "(for time " << startTime << ")\n";
+				<< ", ix #" << (unsigned)indexRecordNumber << "(for time " << startTime << ")\n";
 			exit(1);
 		}
 	}
 
 	// Generate a new Transport Stream from the Trick Mode filter:
-	MPEG2TransportStreamFromESSource *newTransportStream
-		= MPEG2TransportStreamFromESSource::createNew(*env);
+	MPEG2TransportStreamFromESSource *newTransportStream = MPEG2TransportStreamFromESSource::createNew(*env);
 	newTransportStream->addNewVideoSource(trickModeFilter, indexFile->mpegVersion());
 
 	// Open the output file (for writing), as a 'file sink':
@@ -123,14 +117,10 @@ int main(int argc, char const **argv)
 	}
 
 	// Start playing, to generate the output file:
-	*env << "Writing output file \"" << outputFileName
-		<< "\" (start time " << startTime
-		<< ", scale " << scale
-		<< ")...";
+	*env << "Writing output file \"" << outputFileName << "\" (start time " << startTime << ", scale " << scale << ")...";
 	output->startPlaying(*newTransportStream, afterPlaying, NULL);
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 

@@ -26,23 +26,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FileServerMediaSubsession.hh"
 #endif
 
-class AMRAudioFileServerMediaSubsession: public FileServerMediaSubsession
+class AMRAudioFileServerMediaSubsession : public FileServerMediaSubsession
 {
 public:
 	static AMRAudioFileServerMediaSubsession *createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource);
 
 private:
-	AMRAudioFileServerMediaSubsession(UsageEnvironment &env,
-		char const *fileName, Boolean reuseFirstSource);
+	AMRAudioFileServerMediaSubsession(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource);
 	// called only by createNew();
 	virtual ~AMRAudioFileServerMediaSubsession();
 
 private: // redefined virtual functions
-	virtual FramedSource *createNewStreamSource(unsigned clientSessionId,
-		unsigned &estBitrate);
-	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock,
-		unsigned char rtpPayloadTypeIfDynamic,
-		FramedSource *inputSource);
+	virtual FramedSource *createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate);
+	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource *inputSource);
 };
 
 #endif

@@ -24,18 +24,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "ByteStreamFileSource.hh"
 #include "MPEG4VideoStreamFramer.hh"
 
-MPEG4VideoFileServerMediaSubsession *MPEG4VideoFileServerMediaSubsession::createNew(UsageEnvironment &env,
-	char const *fileName,
-	Boolean reuseFirstSource)
+MPEG4VideoFileServerMediaSubsession *MPEG4VideoFileServerMediaSubsession::createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource)
 {
 	return new MPEG4VideoFileServerMediaSubsession(env, fileName, reuseFirstSource);
 }
 
-MPEG4VideoFileServerMediaSubsession
-::MPEG4VideoFileServerMediaSubsession(UsageEnvironment &env,
-	char const *fileName, Boolean reuseFirstSource)
-	: FileServerMediaSubsession(env, fileName, reuseFirstSource),
-	  fAuxSDPLine(NULL), fDoneFlag(0), fDummyRTPSink(NULL)
+MPEG4VideoFileServerMediaSubsession::MPEG4VideoFileServerMediaSubsession(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource)
+	: FileServerMediaSubsession(env, fileName, reuseFirstSource), fAuxSDPLine(NULL), fDoneFlag(0), fDummyRTPSink(NULL)
 {
 }
 
@@ -46,8 +41,7 @@ MPEG4VideoFileServerMediaSubsession::~MPEG4VideoFileServerMediaSubsession()
 
 static void afterPlayingDummy(void *clientData)
 {
-	MPEG4VideoFileServerMediaSubsession *subsess
-		= (MPEG4VideoFileServerMediaSubsession *)clientData;
+	MPEG4VideoFileServerMediaSubsession *subsess = (MPEG4VideoFileServerMediaSubsession *)clientData;
 	subsess->afterPlayingDummy1();
 }
 
@@ -61,8 +55,7 @@ void MPEG4VideoFileServerMediaSubsession::afterPlayingDummy1()
 
 static void checkForAuxSDPLine(void *clientData)
 {
-	MPEG4VideoFileServerMediaSubsession *subsess
-		= (MPEG4VideoFileServerMediaSubsession *)clientData;
+	MPEG4VideoFileServerMediaSubsession *subsess = (MPEG4VideoFileServerMediaSubsession *)clientData;
 	subsess->checkForAuxSDPLine1();
 }
 
@@ -88,8 +81,7 @@ void MPEG4VideoFileServerMediaSubsession::checkForAuxSDPLine1()
 	{
 		// try again after a brief delay:
 		int uSecsToDelay = 100000; // 100 ms
-		nextTask() = envir().taskScheduler().scheduleDelayedTask(uSecsToDelay,
-				(TaskFunc *)checkForAuxSDPLine, this);
+		nextTask() = envir().taskScheduler().scheduleDelayedTask(uSecsToDelay, (TaskFunc *)checkForAuxSDPLine, this);
 	}
 }
 
@@ -113,18 +105,15 @@ char const *MPEG4VideoFileServerMediaSubsession::getAuxSDPLine(RTPSink *rtpSink,
 	}
 
 	envir().taskScheduler().doEventLoop(&fDoneFlag);
-
 	return fAuxSDPLine;
 }
 
-FramedSource *MPEG4VideoFileServerMediaSubsession
-::createNewStreamSource(unsigned /*clientSessionId*/, unsigned &estBitrate)
+FramedSource *MPEG4VideoFileServerMediaSubsession::createNewStreamSource(unsigned /*clientSessionId*/, unsigned &estBitrate)
 {
 	estBitrate = 500; // kbps, estimate
 
 	// Create the video source:
-	ByteStreamFileSource *fileSource
-		= ByteStreamFileSource::createNew(envir(), fFileName);
+	ByteStreamFileSource *fileSource = ByteStreamFileSource::createNew(envir(), fFileName);
 	if (fileSource == NULL)
 		return NULL;
 	fFileSize = fileSource->fileSize();
@@ -133,11 +122,7 @@ FramedSource *MPEG4VideoFileServerMediaSubsession
 	return MPEG4VideoStreamFramer::createNew(envir(), fileSource);
 }
 
-RTPSink *MPEG4VideoFileServerMediaSubsession
-::createNewRTPSink(Groupsock *rtpGroupsock,
-	unsigned char rtpPayloadTypeIfDynamic,
-	FramedSource * /*inputSource*/)
+RTPSink *MPEG4VideoFileServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource * /*inputSource*/)
 {
-	return MPEG4ESVideoRTPSink::createNew(envir(), rtpGroupsock,
-			rtpPayloadTypeIfDynamic);
+	return MPEG4ESVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
 }

@@ -23,16 +23,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "OggDemuxedTrack.hh"
 #include "FramedFilter.hh"
 
-OggFileServerMediaSubsession *OggFileServerMediaSubsession
-::createNew(OggFileServerDemux &demux, OggTrack *track)
+OggFileServerMediaSubsession *OggFileServerMediaSubsession::createNew(OggFileServerDemux &demux, OggTrack *track)
 {
 	return new OggFileServerMediaSubsession(demux, track);
 }
 
-OggFileServerMediaSubsession
-::OggFileServerMediaSubsession(OggFileServerDemux &demux, OggTrack *track)
-	: FileServerMediaSubsession(demux.envir(), demux.fileName(), False),
-	  fOurDemux(demux), fTrack(track), fNumFiltersInFrontOfTrack(0)
+OggFileServerMediaSubsession::OggFileServerMediaSubsession(OggFileServerDemux &demux, OggTrack *track)
+	: FileServerMediaSubsession(demux.envir(), demux.fileName(), False), fOurDemux(demux), fTrack(track), fNumFiltersInFrontOfTrack(0)
 {
 }
 
@@ -40,21 +37,16 @@ OggFileServerMediaSubsession::~OggFileServerMediaSubsession()
 {
 }
 
-FramedSource *OggFileServerMediaSubsession
-::createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate)
+FramedSource *OggFileServerMediaSubsession::createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate)
 {
 	FramedSource *baseSource = fOurDemux.newDemuxedTrack(clientSessionId, fTrack->trackNumber);
 	if (baseSource == NULL)
 		return NULL;
 
-	return fOurDemux.ourOggFile()
-		->createSourceForStreaming(baseSource, fTrack->trackNumber,
-			estBitrate, fNumFiltersInFrontOfTrack);
+	return fOurDemux.ourOggFile()->createSourceForStreaming(baseSource, fTrack->trackNumber, estBitrate, fNumFiltersInFrontOfTrack);
 }
 
-RTPSink *OggFileServerMediaSubsession
-::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource * /*inputSource*/)
+RTPSink *OggFileServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource * /*inputSource*/)
 {
-	return fOurDemux.ourOggFile()
-		->createRTPSinkForTrackNumber(fTrack->trackNumber, rtpGroupsock, rtpPayloadTypeIfDynamic);
+	return fOurDemux.ourOggFile()->createRTPSinkForTrackNumber(fTrack->trackNumber, rtpGroupsock, rtpPayloadTypeIfDynamic);
 }

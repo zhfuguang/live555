@@ -27,12 +27,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define SPECIAL_HEADER_BUFFER_SIZE 1000
 
-class H263plusVideoRTPSource: public MultiFramedRTPSource
+class H263plusVideoRTPSource : public MultiFramedRTPSource
 {
 public:
-	static H263plusVideoRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency = 90000);
+	static H263plusVideoRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency = 90000);
 
 	// A data structure that stores copies of the special header bytes
 	// from the most recent frame's RTP packets:
@@ -45,15 +43,12 @@ protected:
 	virtual ~H263plusVideoRTPSource();
 
 private:
-	H263plusVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency);
+	H263plusVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency);
 	// called only by createNew()
 
 private:
 	// redefined virtual functions:
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	virtual char const *MIMEtype() const;
 };
 

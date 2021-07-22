@@ -26,23 +26,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FileServerMediaSubsession.hh"
 #endif
 
-class AC3AudioFileServerMediaSubsession: public FileServerMediaSubsession
+class AC3AudioFileServerMediaSubsession : public FileServerMediaSubsession
 {
 public:
 	static AC3AudioFileServerMediaSubsession *createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource);
 
 private:
-	AC3AudioFileServerMediaSubsession(UsageEnvironment &env,
-		char const *fileName, Boolean reuseFirstSource);
+	AC3AudioFileServerMediaSubsession(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource);
 	// called only by createNew();
 	virtual ~AC3AudioFileServerMediaSubsession();
 
 private: // redefined virtual functions
-	virtual FramedSource *createNewStreamSource(unsigned clientSessionId,
-		unsigned &estBitrate);
-	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock,
-		unsigned char rtpPayloadTypeIfDynamic,
-		FramedSource *inputSource);
+	virtual FramedSource *createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate);
+	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource *inputSource);
 };
 
 #endif

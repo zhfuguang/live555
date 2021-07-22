@@ -25,29 +25,24 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class RawVideoRTPSource: public MultiFramedRTPSource
+class RawVideoRTPSource : public MultiFramedRTPSource
 {
 public:
-	static RawVideoRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency);
+	static RawVideoRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency);
 
 	u_int16_t currentLineNumber() const; // of the most recently-read/processed scan line
 	u_int8_t currentLineFieldId() const; // of the most recently-read/processed scan line (0 or 1)
 	u_int16_t currentOffsetWithinLine() const; // of the most recently-read/processed scan line
 
 protected:
-	RawVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency = 90000);
+	RawVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency = 90000);
 	// called only by createNew()
 
 	virtual ~RawVideoRTPSource();
 
 protected:
 	// redefined virtual functions:
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	virtual char const *MIMEtype() const;
 
 private:

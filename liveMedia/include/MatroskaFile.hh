@@ -34,12 +34,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class MatroskaTrack; // forward
 class MatroskaDemux; // forward
 
-class MatroskaFile: public Medium
+class MatroskaFile : public Medium
 {
 public:
 	typedef void (onCreationFunc)(MatroskaFile *newFile, void *clientData);
-	static void createNew(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData,
-		char const *preferredLanguage = "eng");
+	static void createNew(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData, char const *preferredLanguage = "eng");
 	// Note: Unlike most "createNew()" functions, this one doesn't return a new object immediately.  Instead, because this class
 	// requires file reading (to parse the Matroska 'Track' headers) before a new object can be initialized, the creation of a new
 	// object is signalled by calling - from the event loop - an 'onCreationFunc' that is passed as a parameter to "createNew()".
@@ -78,16 +77,14 @@ public:
 		return fChosenSubtitleTrackNumber;
 	}
 
-	FramedSource *createSourceForStreaming(FramedSource *baseSource, unsigned trackNumber,
-		unsigned &estBitrate, unsigned &numFiltersInFrontOfTrack);
+	FramedSource *createSourceForStreaming(FramedSource *baseSource, unsigned trackNumber, unsigned &estBitrate, unsigned &numFiltersInFrontOfTrack);
 	// Takes a data source (which must be a demultiplexed track from this file) and returns
 	// a (possibly modified) data source that can be used for streaming.
 
 	char const *trackMIMEType(unsigned trackNumber) const;
 	// in the form "<medium-name>/<CODEC-NAME>", or NULL if no such track exists
 
-	RTPSink *createRTPSinkForTrackNumber(unsigned trackNumber, Groupsock *rtpGroupsock,
-		unsigned char rtpPayloadTypeIfDynamic);
+	RTPSink *createRTPSinkForTrackNumber(unsigned trackNumber, Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic);
 	// Creates a "RTPSink" object that would be appropriate for streaming the specified track,
 	// or NULL if no appropriate "RTPSink" exists
 
@@ -96,8 +93,7 @@ public:
 	// the specified track, or NULL if no appropriate "FileSink" exists.
 
 private:
-	MatroskaFile(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData,
-		char const *preferredLanguage);
+	MatroskaFile(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData, char const *preferredLanguage);
 	// called only by createNew()
 	virtual ~MatroskaFile();
 
@@ -111,20 +107,13 @@ private:
 
 	void removeDemux(MatroskaDemux *demux);
 
-	void getH264ConfigData(MatroskaTrack const *track,
-		u_int8_t *&sps, unsigned &spsSize,
-		u_int8_t *&pps, unsigned &ppsSize);
+	void getH264ConfigData(MatroskaTrack const *track, u_int8_t *&sps, unsigned &spsSize, u_int8_t *&pps, unsigned &ppsSize);
 	// "sps","pps" are dynamically allocated by this function, and must be delete[]d afterwards
-	void getH265ConfigData(MatroskaTrack const *track,
-		u_int8_t *&vps, unsigned &vpsSize,
-		u_int8_t *&sps, unsigned &spsSize,
-		u_int8_t *&pps, unsigned &ppsSize);
+	void getH265ConfigData(MatroskaTrack const *track, u_int8_t *&vps, unsigned &vpsSize, u_int8_t *&sps, unsigned &spsSize, u_int8_t *&pps, unsigned &ppsSize);
 	// "vps","sps","pps" are dynamically allocated by this function, and must be delete[]d afterwards
 
-	void getVorbisOrTheoraConfigData(MatroskaTrack const *track,
-		u_int8_t *&identificationHeader, unsigned &identificationHeaderSize,
-		u_int8_t *&commentHeader, unsigned &commentHeaderSize,
-		u_int8_t *&setupHeader, unsigned &setupHeaderSize);
+	void getVorbisOrTheoraConfigData(MatroskaTrack const *track, u_int8_t *&identificationHeader,
+		unsigned &identificationHeaderSize, u_int8_t *&commentHeader, unsigned &commentHeaderSize, u_int8_t *&setupHeader, unsigned &setupHeaderSize);
 	// "identificationHeader", "commentHeader", "setupHeader" are dynamically allocated by this function, and must be delete[]d afterwards
 
 private:
@@ -188,7 +177,7 @@ public:
 	}
 };
 
-class MatroskaDemux: public Medium
+class MatroskaDemux : public Medium
 {
 public:
 	FramedSource *newDemuxedTrack();

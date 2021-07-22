@@ -20,20 +20,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "DVVideoRTPSource.hh"
 
-DVVideoRTPSource *DVVideoRTPSource::createNew(UsageEnvironment &env,
-	Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
+DVVideoRTPSource *DVVideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
 {
 	return new DVVideoRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency);
 }
 
-DVVideoRTPSource::DVVideoRTPSource(UsageEnvironment &env,
-	Groupsock *rtpGS,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
-	: MultiFramedRTPSource(env, rtpGS,
-		  rtpPayloadFormat, rtpTimestampFrequency)
+DVVideoRTPSource::DVVideoRTPSource(UsageEnvironment &env, Groupsock *rtpGS, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
+	: MultiFramedRTPSource(env, rtpGS, rtpPayloadFormat, rtpTimestampFrequency)
 {
 }
 
@@ -44,9 +37,7 @@ DVVideoRTPSource::~DVVideoRTPSource()
 #define DV_DIF_BLOCK_SIZE 80
 #define DV_SECTION_HEADER 0x1F
 
-Boolean DVVideoRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean DVVideoRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	unsigned const packetSize = packet->dataSize();
 	if (packetSize < DV_DIF_BLOCK_SIZE)

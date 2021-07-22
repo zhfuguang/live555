@@ -29,13 +29,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // (ii) a deinterleaving filter that reads from this.
 // Define these two new classes here:
 
-class RawAMRRTPSource: public MultiFramedRTPSource
+class RawAMRRTPSource : public MultiFramedRTPSource
 {
 public:
-	static RawAMRRTPSource *createNew(UsageEnvironment &env,
-		Groupsock *RTPgs, unsigned char rtpPayloadFormat,
-		Boolean isWideband, Boolean isOctetAligned,
-		Boolean isInterleaved, Boolean CRCsArePresent);
+	static RawAMRRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs,
+		unsigned char rtpPayloadFormat, Boolean isWideband, Boolean isOctetAligned, Boolean isInterleaved, Boolean CRCsArePresent);
 
 	Boolean isWideband() const
 	{
@@ -67,10 +65,8 @@ public:
 	}
 
 private:
-	RawAMRRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		Boolean isWideband, Boolean isOctetAligned,
-		Boolean isInterleaved, Boolean CRCsArePresent);
+	RawAMRRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat,
+		Boolean isWideband, Boolean isOctetAligned, Boolean isInterleaved, Boolean CRCsArePresent);
 	// called only by createNew()
 
 	virtual ~RawAMRRTPSource();
@@ -79,8 +75,7 @@ private:
 	// redefined virtual functions:
 	virtual Boolean hasBeenSynchronizedUsingRTCP();
 
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	virtual char const *MIMEtype() const;
 
 private:
@@ -92,25 +87,19 @@ private:
 	Boolean fIsSynchronized;
 };
 
-class AMRDeinterleaver: public AMRAudioSource
+class AMRDeinterleaver : public AMRAudioSource
 {
 public:
-	static AMRDeinterleaver *createNew(UsageEnvironment &env,
-		Boolean isWideband, unsigned numChannels, unsigned maxInterleaveGroupSize,
-		RawAMRRTPSource *inputSource);
+	static AMRDeinterleaver *createNew(UsageEnvironment &env, Boolean isWideband,
+		unsigned numChannels, unsigned maxInterleaveGroupSize, RawAMRRTPSource *inputSource);
 
 private:
-	AMRDeinterleaver(UsageEnvironment &env,
-		Boolean isWideband, unsigned numChannels,
-		unsigned maxInterleaveGroupSize, RawAMRRTPSource *inputSource);
+	AMRDeinterleaver(UsageEnvironment &env, Boolean isWideband, unsigned numChannels, unsigned maxInterleaveGroupSize, RawAMRRTPSource *inputSource);
 	// called only by "createNew()"
 
 	virtual ~AMRDeinterleaver();
 
-	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+	static void afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 	void afterGettingFrame1(unsigned frameSize, struct timeval presentationTime);
 
 private:
@@ -130,16 +119,8 @@ private:
 #define MAX_NUM_CHANNELS 20 // far larger than ever expected...
 #define MAX_INTERLEAVING_GROUP_SIZE 1000 // far larger than ever expected...
 
-AMRAudioSource *AMRAudioRTPSource::createNew(UsageEnvironment &env,
-	Groupsock *RTPgs,
-	RTPSource *&resultRTPSource,
-	unsigned char rtpPayloadFormat,
-	Boolean isWideband,
-	unsigned numChannels,
-	Boolean isOctetAligned,
-	unsigned interleaving,
-	Boolean robustSortingOrder,
-	Boolean CRCsArePresent)
+AMRAudioSource *AMRAudioRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs, RTPSource *&resultRTPSource,
+	unsigned char rtpPayloadFormat, Boolean isWideband, unsigned numChannels, Boolean isOctetAligned, unsigned interleaving, Boolean robustSortingOrder, Boolean CRCsArePresent)
 {
 	// Perform sanity checks on the input parameters:
 	if (robustSortingOrder)
@@ -184,16 +165,11 @@ AMRAudioSource *AMRAudioRTPSource::createNew(UsageEnvironment &env,
 	}
 
 	RawAMRRTPSource *rawRTPSource;
-	resultRTPSource = rawRTPSource
-		= RawAMRRTPSource::createNew(env, RTPgs, rtpPayloadFormat,
-				isWideband, isOctetAligned,
-				isInterleaved, CRCsArePresent);
+	resultRTPSource = rawRTPSource = RawAMRRTPSource::createNew(env, RTPgs, rtpPayloadFormat, isWideband, isOctetAligned, isInterleaved, CRCsArePresent);
 	if (resultRTPSource == NULL)
 		return NULL;
 
-	AMRDeinterleaver *deinterleaver
-		= AMRDeinterleaver::createNew(env, isWideband, numChannels,
-				maxInterleaveGroupSize, rawRTPSource);
+	AMRDeinterleaver *deinterleaver = AMRDeinterleaver::createNew(env, isWideband, numChannels, maxInterleaveGroupSize, rawRTPSource);
 	if (deinterleaver == NULL)
 	{
 		Medium::close(resultRTPSource);
@@ -208,20 +184,19 @@ AMRAudioSource *AMRAudioRTPSource::createNew(UsageEnvironment &env,
 
 // A subclass of BufferedPacket, used to separate out AMR frames.
 
-class AMRBufferedPacket: public BufferedPacket
+class AMRBufferedPacket : public BufferedPacket
 {
 public:
 	AMRBufferedPacket(RawAMRRTPSource &ourSource);
 	virtual ~AMRBufferedPacket();
 
 private: // redefined virtual functions
-	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr,
-		unsigned dataSize);
+	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize);
 private:
 	RawAMRRTPSource &fOurSource;
 };
 
-class AMRBufferedPacketFactory: public BufferedPacketFactory
+class AMRBufferedPacketFactory : public BufferedPacketFactory
 {
 private: // redefined virtual functions
 	virtual BufferedPacket *createNewPacket(MultiFramedRTPSource *ourSource);
@@ -231,26 +206,16 @@ private: // redefined virtual functions
 ///////// RawAMRRTPSource implementation ////////
 
 RawAMRRTPSource *RawAMRRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	Boolean isWideband, Boolean isOctetAligned,
-	Boolean isInterleaved, Boolean CRCsArePresent)
+	unsigned char rtpPayloadFormat, Boolean isWideband, Boolean isOctetAligned, Boolean isInterleaved, Boolean CRCsArePresent)
 {
-	return new RawAMRRTPSource(env, RTPgs, rtpPayloadFormat,
-			isWideband, isOctetAligned,
-			isInterleaved, CRCsArePresent);
+	return new RawAMRRTPSource(env, RTPgs, rtpPayloadFormat, isWideband, isOctetAligned, isInterleaved, CRCsArePresent);
 }
 
-RawAMRRTPSource
-::RawAMRRTPSource(UsageEnvironment &env,
-	Groupsock *RTPgs, unsigned char rtpPayloadFormat,
-	Boolean isWideband, Boolean isOctetAligned,
-	Boolean isInterleaved, Boolean CRCsArePresent)
-	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat,
-		  isWideband ? 16000 : 8000,
-		  new AMRBufferedPacketFactory),
-	  fIsWideband(isWideband), fIsOctetAligned(isOctetAligned),
-	  fIsInterleaved(isInterleaved), fCRCsArePresent(CRCsArePresent),
-	  fILL(0), fILP(0), fTOCSize(0), fTOC(NULL), fFrameIndex(0), fIsSynchronized(False)
+RawAMRRTPSource::RawAMRRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
+	unsigned char rtpPayloadFormat, Boolean isWideband, Boolean isOctetAligned, Boolean isInterleaved, Boolean CRCsArePresent)
+	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, isWideband ? 16000 : 8000, new AMRBufferedPacketFactory)
+	, fIsWideband(isWideband), fIsOctetAligned(isOctetAligned), fIsInterleaved(isInterleaved), fCRCsArePresent(CRCsArePresent)
+	, fILL(0), fILP(0), fTOCSize(0), fTOC(NULL), fFrameIndex(0), fIsSynchronized(False)
 {
 }
 
@@ -262,12 +227,9 @@ RawAMRRTPSource::~RawAMRRTPSource()
 #define FT_SPEECH_LOST 14
 #define FT_NO_DATA 15
 
-static void unpackBandwidthEfficientData(BufferedPacket *packet,
-	Boolean isWideband); // forward
+static void unpackBandwidthEfficientData(BufferedPacket *packet, Boolean isWideband); // forward
 
-Boolean RawAMRRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean RawAMRRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	// If the data is 'bandwidth-efficient', first unpack it so that it's
 	// 'octet-aligned':
@@ -395,8 +357,7 @@ static unsigned short const frameBytesFromFTWideband[16] =
 	FT_INVALID, FT_INVALID, 0, 0
 };
 
-unsigned AMRBufferedPacket::
-nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
+unsigned AMRBufferedPacket::nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
 {
 	if (dataSize == 0)
 		return 0; // sanity check
@@ -410,8 +371,7 @@ nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
 	unsigned char const tocByte = fOurSource.TOC()[tocIndex];
 	unsigned char const FT = (tocByte & 0x78) >> 3;
 	// ASSERT: FT < 16
-	unsigned short frameSize
-		= fOurSource.isWideband() ? frameBytesFromFTWideband[FT] : frameBytesFromFT[FT];
+	unsigned short frameSize = fOurSource.isWideband() ? frameBytesFromFTWideband[FT] : frameBytesFromFT[FT];
 	if (frameSize == FT_INVALID)
 	{
 		// Strange TOC entry!
@@ -428,8 +388,7 @@ nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
 	return frameSize;
 }
 
-BufferedPacket *AMRBufferedPacketFactory
-::createNewPacket(MultiFramedRTPSource *ourSource)
+BufferedPacket *AMRBufferedPacketFactory::createNewPacket(MultiFramedRTPSource *ourSource)
 {
 	return new AMRBufferedPacket((RawAMRRTPSource &)(*ourSource));
 }
@@ -445,13 +404,9 @@ public:
 	AMRDeinterleavingBuffer(unsigned numChannels, unsigned maxInterleaveGroupSize);
 	virtual ~AMRDeinterleavingBuffer();
 
-	void deliverIncomingFrame(unsigned frameSize, RawAMRRTPSource *source,
-		struct timeval presentationTime);
-	Boolean retrieveFrame(unsigned char *to, unsigned maxSize,
-		unsigned &resultFrameSize, unsigned &resultNumTruncatedBytes,
-		u_int8_t &resultFrameHeader,
-		struct timeval &resultPresentationTime,
-		Boolean &resultIsSynchronized);
+	void deliverIncomingFrame(unsigned frameSize, RawAMRRTPSource *source, struct timeval presentationTime);
+	Boolean retrieveFrame(unsigned char *to, unsigned maxSize, unsigned &resultFrameSize,
+		unsigned &resultNumTruncatedBytes, u_int8_t &resultFrameHeader, struct timeval &resultPresentationTime, Boolean &resultIsSynchronized);
 
 	unsigned char *inputBuffer()
 	{
@@ -495,23 +450,16 @@ private:
 
 ////////// AMRDeinterleaver implementation /////////
 
-AMRDeinterleaver *AMRDeinterleaver
-::createNew(UsageEnvironment &env,
-	Boolean isWideband, unsigned numChannels, unsigned maxInterleaveGroupSize,
-	RawAMRRTPSource *inputSource)
+AMRDeinterleaver *AMRDeinterleaver::createNew(UsageEnvironment &env,
+	Boolean isWideband, unsigned numChannels, unsigned maxInterleaveGroupSize, RawAMRRTPSource *inputSource)
 {
 	return new AMRDeinterleaver(env, isWideband, numChannels, maxInterleaveGroupSize, inputSource);
 }
 
-AMRDeinterleaver::AMRDeinterleaver(UsageEnvironment &env,
-	Boolean isWideband, unsigned numChannels,
-	unsigned maxInterleaveGroupSize,
-	RawAMRRTPSource *inputSource)
-	: AMRAudioSource(env, isWideband, numChannels),
-	  fInputSource(inputSource), fNeedAFrame(False)
+AMRDeinterleaver::AMRDeinterleaver(UsageEnvironment &env, Boolean isWideband, unsigned numChannels, unsigned maxInterleaveGroupSize, RawAMRRTPSource *inputSource)
+	: AMRAudioSource(env, isWideband, numChannels), fInputSource(inputSource), fNeedAFrame(False)
 {
-	fDeinterleavingBuffer
-		= new AMRDeinterleavingBuffer(numChannels, maxInterleaveGroupSize);
+	fDeinterleavingBuffer = new AMRDeinterleavingBuffer(numChannels, maxInterleaveGroupSize);
 }
 
 AMRDeinterleaver::~AMRDeinterleaver()
@@ -525,15 +473,10 @@ static unsigned const uSecsPerFrame = 20000; // 20 ms
 void AMRDeinterleaver::doGetNextFrame()
 {
 	// First, try getting a frame from the deinterleaving buffer:
-	if (fDeinterleavingBuffer->retrieveFrame(fTo, fMaxSize,
-			fFrameSize, fNumTruncatedBytes,
-			fLastFrameHeader, fPresentationTime,
-			fInputSource->isSynchronized()))
+	if (fDeinterleavingBuffer->retrieveFrame(fTo, fMaxSize, fFrameSize, fNumTruncatedBytes, fLastFrameHeader, fPresentationTime, fInputSource->isSynchronized()))
 	{
-
 		// Success!
 		fNeedAFrame = False;
-
 		fDurationInMicroseconds = uSecsPerFrame;
 
 		// Call our own 'after getting' function.  Because we're not a 'leaf'
@@ -548,9 +491,7 @@ void AMRDeinterleaver::doGetNextFrame()
 	if (!fInputSource->isCurrentlyAwaitingData())
 	{
 		fInputSource->getNextFrame(fDeinterleavingBuffer->inputBuffer(),
-			fDeinterleavingBuffer->inputBufferSize(),
-			afterGettingFrame, this,
-			FramedSource::handleClosure, this);
+			fDeinterleavingBuffer->inputBufferSize(), afterGettingFrame, this, FramedSource::handleClosure, this);
 	}
 }
 
@@ -560,18 +501,14 @@ void AMRDeinterleaver::doStopGettingFrames()
 	fInputSource->stopGettingFrames();
 }
 
-void AMRDeinterleaver
-::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned /*numTruncatedBytes*/,
-	struct timeval presentationTime,
-	unsigned /*durationInMicroseconds*/)
+void AMRDeinterleaver::afterGettingFrame(void *clientData, unsigned frameSize,
+	unsigned /*numTruncatedBytes*/, struct timeval presentationTime, unsigned /*durationInMicroseconds*/)
 {
 	AMRDeinterleaver *deinterleaver = (AMRDeinterleaver *)clientData;
 	deinterleaver->afterGettingFrame1(frameSize, presentationTime);
 }
 
-void AMRDeinterleaver
-::afterGettingFrame1(unsigned frameSize, struct timeval presentationTime)
+void AMRDeinterleaver::afterGettingFrame1(unsigned frameSize, struct timeval presentationTime)
 {
 	RawAMRRTPSource *source = (RawAMRRTPSource *)fInputSource;
 
@@ -586,12 +523,10 @@ void AMRDeinterleaver
 
 ////////// AMRDeinterleavingBuffer implementation /////////
 
-AMRDeinterleavingBuffer
-::AMRDeinterleavingBuffer(unsigned numChannels, unsigned maxInterleaveGroupSize)
-	: fNumChannels(numChannels), fMaxInterleaveGroupSize(maxInterleaveGroupSize),
-	  fIncomingBankId(0), fIncomingBinMax(0),
-	  fOutgoingBinMax(0), fNextOutgoingBin(0),
-	  fHaveSeenPackets(False), fNumSuccessiveSyncedFrames(0), fILL(0)
+AMRDeinterleavingBuffer::AMRDeinterleavingBuffer(unsigned numChannels, unsigned maxInterleaveGroupSize)
+	: fNumChannels(numChannels), fMaxInterleaveGroupSize(maxInterleaveGroupSize)
+	, fIncomingBankId(0), fIncomingBinMax(0), fOutgoingBinMax(0), fNextOutgoingBin(0)
+	, fHaveSeenPackets(False), fNumSuccessiveSyncedFrames(0), fILL(0)
 {
 	// Use two banks of descriptors - one for incoming, one for outgoing
 	fFrames[0] = new FrameDescriptor[fMaxInterleaveGroupSize];
@@ -606,9 +541,7 @@ AMRDeinterleavingBuffer::~AMRDeinterleavingBuffer()
 	delete[] fFrames[1];
 }
 
-void AMRDeinterleavingBuffer
-::deliverIncomingFrame(unsigned frameSize, RawAMRRTPSource *source,
-	struct timeval presentationTime)
+void AMRDeinterleavingBuffer::deliverIncomingFrame(unsigned frameSize, RawAMRRTPSource *source, struct timeval presentationTime)
 {
 	fILL = source->ILL();
 	unsigned char const ILP = source->ILP();
@@ -647,8 +580,7 @@ void AMRDeinterleavingBuffer
 	presentationTime.tv_usec = presentationTime.tv_usec % 1000000;
 
 	// Next, check whether this packet is part of a new interleave group
-	if (!fHaveSeenPackets
-		|| seqNumLT(fLastPacketSeqNumForGroup, packetSeqNum + frameBlockIndex))
+	if (!fHaveSeenPackets || seqNumLT(fLastPacketSeqNumForGroup, packetSeqNum + frameBlockIndex))
 	{
 		// We've moved to a new interleave group
 #ifdef DEBUG
@@ -666,11 +598,11 @@ void AMRDeinterleavingBuffer
 	}
 
 	// Now move the incoming frame into the appropriate bin:
-	unsigned const binNumber
-		= ((ILP + frameBlockIndex * (fILL + 1)) * fNumChannels + frameWithinFrameBlock)
-			% fMaxInterleaveGroupSize; // the % is for sanity
+	unsigned const binNumber = ((ILP + frameBlockIndex * (fILL + 1)) * fNumChannels + frameWithinFrameBlock) % fMaxInterleaveGroupSize; // the % is for sanity
 #ifdef DEBUG
-	fprintf(stderr, "AMRDeinterleavingBuffer::deliverIncomingFrame(): frameIndex %d (%d,%d) put in bank %d, bin %d (%d): size %d, header 0x%02x, presentationTime %lu.%06ld\n", frameIndex, frameBlockIndex, frameWithinFrameBlock, fIncomingBankId, binNumber, fMaxInterleaveGroupSize, frameSize, frameHeader, presentationTime.tv_sec, presentationTime.tv_usec);
+	fprintf(stderr, "AMRDeinterleavingBuffer::deliverIncomingFrame(): frameIndex %d (%d,%d) put in bank %d, bin %d (%d): size %d, header 0x%02x, presentationTime %lu.%06ld\n",
+		frameIndex, frameBlockIndex, frameWithinFrameBlock, fIncomingBankId, binNumber, fMaxInterleaveGroupSize, frameSize, frameHeader,
+		presentationTime.tv_sec, presentationTime.tv_usec);
 #endif
 	FrameDescriptor &inBin = fFrames[fIncomingBankId][binNumber];
 	unsigned char *curBuffer = inBin.frameData;
@@ -690,12 +622,8 @@ void AMRDeinterleavingBuffer
 	}
 }
 
-Boolean AMRDeinterleavingBuffer
-::retrieveFrame(unsigned char *to, unsigned maxSize,
-	unsigned &resultFrameSize, unsigned &resultNumTruncatedBytes,
-	u_int8_t &resultFrameHeader,
-	struct timeval &resultPresentationTime,
-	Boolean &resultIsSynchronized)
+Boolean AMRDeinterleavingBuffer::retrieveFrame(unsigned char *to, unsigned maxSize, unsigned &resultFrameSize,
+	unsigned &resultNumTruncatedBytes, u_int8_t &resultFrameHeader, struct timeval &resultPresentationTime, Boolean &resultIsSynchronized)
 {
 
 	if (fNextOutgoingBin >= fOutgoingBinMax)
@@ -756,7 +684,8 @@ Boolean AMRDeinterleavingBuffer
 	}
 	memmove(to, fromPtr, resultFrameSize);
 #ifdef DEBUG
-	fprintf(stderr, "AMRDeinterleavingBuffer::retrieveFrame(): from bank %d, bin %d: size %d, header 0x%02x, presentationTime %lu.%06ld\n", fIncomingBankId ^ 1, fNextOutgoingBin, resultFrameSize, resultFrameHeader, resultPresentationTime.tv_sec, resultPresentationTime.tv_usec);
+	fprintf(stderr, "AMRDeinterleavingBuffer::retrieveFrame(): from bank %d, bin %d: size %d, header 0x%02x, presentationTime %lu.%06ld\n",
+		fIncomingBankId ^ 1, fNextOutgoingBin, resultFrameSize, resultFrameHeader, resultPresentationTime.tv_sec, resultPresentationTime.tv_usec);
 #endif
 
 	++fNextOutgoingBin;
@@ -794,8 +723,7 @@ static unsigned short const frameBitsFromFTWideband[16] =
 	0, 0, 0, 0
 };
 
-static void unpackBandwidthEfficientData(BufferedPacket *packet,
-	Boolean isWideband)
+static void unpackBandwidthEfficientData(BufferedPacket *packet, Boolean isWideband)
 {
 #ifdef DEBUG
 	fprintf(stderr, "Unpacking 'bandwidth-efficient' payload (%d bytes):\n", packet->dataSize());
@@ -831,8 +759,7 @@ static void unpackBandwidthEfficientData(BufferedPacket *packet,
 	{
 		unsigned char tocByte = toBuffer[i];
 		unsigned char const FT = (tocByte & 0x78) >> 3;
-		unsigned short frameSizeBits
-			= isWideband ? frameBitsFromFTWideband[FT] : frameBitsFromFT[FT];
+		unsigned short frameSizeBits = isWideband ? frameBitsFromFTWideband[FT] : frameBitsFromFT[FT];
 		unsigned short frameSizeBytes = (frameSizeBits + 7) / 8;
 
 		if (frameSizeBits > fromBV.numBitsRemaining())

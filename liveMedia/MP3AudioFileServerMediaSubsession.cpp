@@ -26,32 +26,24 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MP3FileSource.hh"
 #include "MP3ADU.hh"
 
-MP3AudioFileServerMediaSubsession *MP3AudioFileServerMediaSubsession
-::createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource,
-	Boolean generateADUs, Interleaving *interleaving)
+MP3AudioFileServerMediaSubsession *MP3AudioFileServerMediaSubsession::createNew(
+	UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource, Boolean generateADUs, Interleaving *interleaving)
 {
-	return new MP3AudioFileServerMediaSubsession(env, fileName, reuseFirstSource,
-			generateADUs, interleaving);
+	return new MP3AudioFileServerMediaSubsession(env, fileName, reuseFirstSource, generateADUs, interleaving);
 }
 
-MP3AudioFileServerMediaSubsession
-::MP3AudioFileServerMediaSubsession(UsageEnvironment &env,
-	char const *fileName, Boolean reuseFirstSource,
-	Boolean generateADUs,
-	Interleaving *interleaving)
-	: FileServerMediaSubsession(env, fileName, reuseFirstSource),
-	  fGenerateADUs(generateADUs), fInterleaving(interleaving), fFileDuration(0.0)
+MP3AudioFileServerMediaSubsession::MP3AudioFileServerMediaSubsession(UsageEnvironment &env,
+	char const *fileName, Boolean reuseFirstSource, Boolean generateADUs, Interleaving *interleaving)
+	: FileServerMediaSubsession(env, fileName, reuseFirstSource), fGenerateADUs(generateADUs), fInterleaving(interleaving), fFileDuration(0.0)
 {
 }
 
-MP3AudioFileServerMediaSubsession
-::~MP3AudioFileServerMediaSubsession()
+MP3AudioFileServerMediaSubsession::~MP3AudioFileServerMediaSubsession()
 {
 	delete fInterleaving;
 }
 
-FramedSource *MP3AudioFileServerMediaSubsession
-::createNewStreamSourceCommon(FramedSource *baseMP3Source, unsigned mp3NumBytes, unsigned &estBitrate)
+FramedSource *MP3AudioFileServerMediaSubsession::createNewStreamSourceCommon(FramedSource *baseMP3Source, unsigned mp3NumBytes, unsigned &estBitrate)
 {
 	FramedSource *streamSource;
 	do
@@ -80,8 +72,7 @@ FramedSource *MP3AudioFileServerMediaSubsession
 			if (fInterleaving != NULL)
 			{
 				// Add another filter that interleaves the ADUs before packetizing:
-				streamSource = MP3ADUinterleaver::createNew(envir(), *fInterleaving,
-						streamSource);
+				streamSource = MP3ADUinterleaver::createNew(envir(), *fInterleaving, streamSource);
 				if (streamSource == NULL)
 					break;
 			}
@@ -105,8 +96,7 @@ FramedSource *MP3AudioFileServerMediaSubsession
 	return streamSource;
 }
 
-void MP3AudioFileServerMediaSubsession::getBaseStreams(FramedSource *frontStream,
-	FramedSource *&sourceMP3Stream, ADUFromMP3Source *&aduStream/*if any*/)
+void MP3AudioFileServerMediaSubsession::getBaseStreams(FramedSource *frontStream, FramedSource *&sourceMP3Stream, ADUFromMP3Source *&aduStream/*if any*/)
 {
 	if (fGenerateADUs)
 	{
@@ -142,8 +132,7 @@ void MP3AudioFileServerMediaSubsession::getBaseStreams(FramedSource *frontStream
 }
 
 
-void MP3AudioFileServerMediaSubsession
-::seekStreamSource(FramedSource *inputSource, double &seekNPT, double streamDuration, u_int64_t & /*numBytes*/)
+void MP3AudioFileServerMediaSubsession::seekStreamSource(FramedSource *inputSource, double &seekNPT, double streamDuration, u_int64_t & /*numBytes*/)
 {
 	FramedSource *sourceMP3Stream;
 	ADUFromMP3Source *aduStream;
@@ -154,10 +143,8 @@ void MP3AudioFileServerMediaSubsession
 	((MP3FileSource *)sourceMP3Stream)->seekWithinFile(seekNPT, streamDuration);
 }
 
-void MP3AudioFileServerMediaSubsession
-::setStreamSourceScale(FramedSource *inputSource, float scale)
+void MP3AudioFileServerMediaSubsession::setStreamSourceScale(FramedSource *inputSource, float scale)
 {
-
 	FramedSource *sourceMP3Stream;
 	ADUFromMP3Source *aduStream;
 	getBaseStreams(inputSource, sourceMP3Stream, aduStream);
@@ -170,8 +157,7 @@ void MP3AudioFileServerMediaSubsession
 	((MP3FileSource *)sourceMP3Stream)->setPresentationTimeScale(iScale);
 }
 
-FramedSource *MP3AudioFileServerMediaSubsession
-::createNewStreamSource(unsigned /*clientSessionId*/, unsigned &estBitrate)
+FramedSource *MP3AudioFileServerMediaSubsession::createNewStreamSource(unsigned /*clientSessionId*/, unsigned &estBitrate)
 {
 	MP3FileSource *mp3Source = MP3FileSource::createNew(envir(), fFileName);
 	if (mp3Source == NULL)
@@ -181,15 +167,11 @@ FramedSource *MP3AudioFileServerMediaSubsession
 	return createNewStreamSourceCommon(mp3Source, mp3Source->fileSize(), estBitrate);
 }
 
-RTPSink *MP3AudioFileServerMediaSubsession
-::createNewRTPSink(Groupsock *rtpGroupsock,
-	unsigned char rtpPayloadTypeIfDynamic,
-	FramedSource * /*inputSource*/)
+RTPSink *MP3AudioFileServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource * /*inputSource*/)
 {
 	if (fGenerateADUs)
 	{
-		return MP3ADURTPSink::createNew(envir(), rtpGroupsock,
-				rtpPayloadTypeIfDynamic);
+		return MP3ADURTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
 	}
 	else
 	{

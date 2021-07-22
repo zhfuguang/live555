@@ -31,8 +31,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 ////////// HMAC_SHA1 implementation //////////
 
 static void sha1(u_int8_t *resultDigest/*must be SHA1_DIGEST_LEN bytes in size*/,
-	u_int8_t const *data1, unsigned data1Length,
-	u_int8_t const *data2 = NULL, unsigned data2Length = 0)
+	u_int8_t const *data1, unsigned data1Length, u_int8_t const *data2 = NULL, unsigned data2Length = 0)
 {
 	EVP_MD_CTX *ctx = EVP_MD_CTX_create();
 	EVP_DigestInit(ctx, EVP_sha1());
@@ -45,8 +44,8 @@ static void sha1(u_int8_t *resultDigest/*must be SHA1_DIGEST_LEN bytes in size*/
 	EVP_MD_CTX_destroy(ctx);
 }
 
-void HMAC_SHA1(u_int8_t const *key, unsigned keyLength, u_int8_t const *text, unsigned textLength,
-	u_int8_t *resultDigest/*must be SHA1_DIGEST_LEN bytes in size*/)
+void HMAC_SHA1(u_int8_t const *key, unsigned keyLength,
+	u_int8_t const *text, unsigned textLength, u_int8_t *resultDigest/*must be SHA1_DIGEST_LEN bytes in size*/)
 {
 	if (key == NULL || keyLength == 0 || text == NULL || textLength == 0 || resultDigest == NULL)
 	{

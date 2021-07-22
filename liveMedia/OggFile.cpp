@@ -48,8 +48,7 @@ private:
 
 ////////// OggFile implementation //////////
 
-void OggFile::createNew(UsageEnvironment &env, char const *fileName,
-	onCreationFunc *onCreation, void *onCreationClientData)
+void OggFile::createNew(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData)
 {
 	new OggFile(env, fileName, onCreation, onCreationClientData);
 }
@@ -72,9 +71,7 @@ unsigned OggFile::numTracks() const
 	return fTrackTable->numTracks();
 }
 
-FramedSource *OggFile
-::createSourceForStreaming(FramedSource *baseSource, u_int32_t trackNumber,
-	unsigned &estBitrate, unsigned &numFiltersInFrontOfTrack)
+FramedSource *OggFile::createSourceForStreaming(FramedSource *baseSource, u_int32_t trackNumber, unsigned &estBitrate, unsigned &numFiltersInFrontOfTrack)
 {
 	if (baseSource == NULL)
 		return NULL;
@@ -94,9 +91,7 @@ FramedSource *OggFile
 	return result;
 }
 
-RTPSink *OggFile
-::createRTPSinkForTrackNumber(u_int32_t trackNumber, Groupsock *rtpGroupsock,
-	unsigned char rtpPayloadTypeIfDynamic)
+RTPSink *OggFile::createRTPSinkForTrackNumber(u_int32_t trackNumber, Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic)
 {
 	OggTrack *track = lookup(trackNumber);
 	if (track == NULL || track->mimeType == NULL)
@@ -109,36 +104,31 @@ RTPSink *OggFile
 		// For Vorbis audio, we use the special "identification", "comment", and "setup" headers
 		// that we read when we initially read the headers at the start of the file:
 		result = VorbisAudioRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-				track->samplingFrequency, track->numChannels,
-				track->vtoHdrs.header[0], track->vtoHdrs.headerSize[0],
-				track->vtoHdrs.header[1], track->vtoHdrs.headerSize[1],
-				track->vtoHdrs.header[2], track->vtoHdrs.headerSize[2]);
+			track->samplingFrequency, track->numChannels,
+			track->vtoHdrs.header[0], track->vtoHdrs.headerSize[0],
+			track->vtoHdrs.header[1], track->vtoHdrs.headerSize[1],
+			track->vtoHdrs.header[2], track->vtoHdrs.headerSize[2]);
 	}
 	else if (strcmp(track->mimeType, "audio/OPUS") == 0)
 	{
-		result = SimpleRTPSink
-			::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-				48000, "audio", "OPUS", 2, False/*only 1 Opus 'packet' in each RTP packet*/);
+		result = SimpleRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, 48000, "audio", "OPUS", 2, False/*only 1 Opus 'packet' in each RTP packet*/);
 	}
 	else if (strcmp(track->mimeType, "video/THEORA") == 0)
 	{
 		// For Theora video, we use the special "identification", "comment", and "setup" headers
 		// that we read when we initially read the headers at the start of the file:
 		result = TheoraVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-				track->vtoHdrs.header[0], track->vtoHdrs.headerSize[0],
-				track->vtoHdrs.header[1], track->vtoHdrs.headerSize[1],
-				track->vtoHdrs.header[2], track->vtoHdrs.headerSize[2]);
+			track->vtoHdrs.header[0], track->vtoHdrs.headerSize[0],
+			track->vtoHdrs.header[1], track->vtoHdrs.headerSize[1],
+			track->vtoHdrs.header[2], track->vtoHdrs.headerSize[2]);
 	}
 
 	return result;
 }
 
 
-OggFile::OggFile(UsageEnvironment &env, char const *fileName,
-	onCreationFunc *onCreation, void *onCreationClientData)
-	: Medium(env),
-	  fFileName(strDup(fileName)),
-	  fOnCreation(onCreation), fOnCreationClientData(onCreationClientData)
+OggFile::OggFile(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData)
+	: Medium(env), fFileName(strDup(fileName)), fOnCreation(onCreation), fOnCreationClientData(onCreationClientData)
 {
 	fTrackTable = new OggTrackTable;
 	fDemuxesTable = HashTable::create(ONE_WORD_HASH_KEYS);
@@ -153,8 +143,7 @@ OggFile::OggFile(UsageEnvironment &env, char const *fileName,
 	else
 	{
 		// Initialize ourselves by parsing the file's headers:
-		fParserForInitialization
-			= new OggFileParser(*this, inputSource, handleEndOfBosPageParsing, this);
+		fParserForInitialization = new OggFileParser(*this, inputSource, handleEndOfBosPageParsing, this);
 	}
 }
 
@@ -221,8 +210,7 @@ OggTrackTable::~OggTrackTable()
 
 void OggTrackTable::add(OggTrack *newTrack)
 {
-	OggTrack *existingTrack
-		= (OggTrack *)fTable->Add((char const *)newTrack->trackNumber, newTrack);
+	OggTrack *existingTrack = (OggTrack *)fTable->Add((char const *)newTrack->trackNumber, newTrack);
 	delete existingTrack; // if any
 }
 
@@ -256,8 +244,7 @@ OggTrack *OggTrackTableIterator::next()
 ////////// OggTrack implementation //////////
 
 OggTrack::OggTrack()
-	: trackNumber(0), mimeType(NULL),
-	  samplingFrequency(48000), numChannels(2), estBitrate(100)   // default settings
+	: trackNumber(0), mimeType(NULL), samplingFrequency(48000), numChannels(2), estBitrate(100)   // default settings
 {
 	vtoHdrs.header[0] = vtoHdrs.header[1] = vtoHdrs.header[2] = NULL;
 	vtoHdrs.headerSize[0] = vtoHdrs.headerSize[1] = vtoHdrs.headerSize[2] = 0;
@@ -313,9 +300,9 @@ OggDemuxedTrack *OggDemux::lookupDemuxedTrack(u_int32_t trackNumber)
 }
 
 OggDemux::OggDemux(OggFile &ourFile)
-	: Medium(ourFile.envir()),
-	  fOurFile(ourFile), fDemuxedTracksTable(HashTable::create(ONE_WORD_HASH_KEYS)),
-	  fIter(new OggTrackTableIterator(*fOurFile.fTrackTable))
+	: Medium(ourFile.envir())
+	, fOurFile(ourFile), fDemuxedTracksTable(HashTable::create(ONE_WORD_HASH_KEYS))
+	, fIter(new OggTrackTableIterator(*fOurFile.fTrackTable))
 {
 	FramedSource *fileSource = ByteStreamFileSource::createNew(envir(), ourFile.fileName());
 	fOurParser = new OggFileParser(ourFile, fileSource, handleEndOfFile, this, this);
@@ -364,7 +351,7 @@ void OggDemux::handleEndOfFile()
 	unsigned numTracks = fDemuxedTracksTable->numEntries();
 	if (numTracks == 0)
 		return;
-	OggDemuxedTrack **tracks = new OggDemuxedTrack*[numTracks];
+	OggDemuxedTrack **tracks = new OggDemuxedTrack * [numTracks];
 
 	HashTable::Iterator *iter = HashTable::Iterator::create(*fDemuxedTracksTable);
 	unsigned i;

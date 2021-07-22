@@ -22,10 +22,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG2TransportFileServerMediaSubsession.hh"
 #include "SimpleRTPSink.hh"
 
-MPEG2TransportFileServerMediaSubsession *MPEG2TransportFileServerMediaSubsession::createNew(UsageEnvironment &env,
-	char const *fileName,
-	char const *indexFileName,
-	Boolean reuseFirstSource)
+MPEG2TransportFileServerMediaSubsession *MPEG2TransportFileServerMediaSubsession::createNew(
+	UsageEnvironment &env, char const *fileName, char const *indexFileName, Boolean reuseFirstSource)
 {
 	MPEG2TransportStreamIndexFile *indexFile;
 	if (indexFileName != NULL && reuseFirstSource)
@@ -38,17 +36,12 @@ MPEG2TransportFileServerMediaSubsession *MPEG2TransportFileServerMediaSubsession
 	{
 		indexFile = MPEG2TransportStreamIndexFile::createNew(env, indexFileName);
 	}
-	return new MPEG2TransportFileServerMediaSubsession(env, fileName, indexFile,
-			reuseFirstSource);
+	return new MPEG2TransportFileServerMediaSubsession(env, fileName, indexFile, reuseFirstSource);
 }
 
-MPEG2TransportFileServerMediaSubsession
-::MPEG2TransportFileServerMediaSubsession(UsageEnvironment &env,
-	char const *fileName,
-	MPEG2TransportStreamIndexFile *indexFile,
-	Boolean reuseFirstSource)
-	: FileServerMediaSubsession(env, fileName, reuseFirstSource),
-	  fIndexFile(indexFile), fDuration(0.0), fClientSessionHashTable(NULL)
+MPEG2TransportFileServerMediaSubsession::MPEG2TransportFileServerMediaSubsession(
+	UsageEnvironment &env, char const *fileName, MPEG2TransportStreamIndexFile *indexFile, Boolean reuseFirstSource)
+	: FileServerMediaSubsession(env, fileName, reuseFirstSource), fIndexFile(indexFile), fDuration(0.0), fClientSessionHashTable(NULL)
 {
 	if (fIndexFile != NULL)   // we support 'trick play'
 	{
@@ -57,8 +50,7 @@ MPEG2TransportFileServerMediaSubsession
 	}
 }
 
-MPEG2TransportFileServerMediaSubsession
-::~MPEG2TransportFileServerMediaSubsession()
+MPEG2TransportFileServerMediaSubsession::~MPEG2TransportFileServerMediaSubsession()
 {
 	if (fIndexFile != NULL)   // we support 'trick play'
 	{
@@ -67,8 +59,7 @@ MPEG2TransportFileServerMediaSubsession
 		// Clean out the client session hash table:
 		while (1)
 		{
-			ClientTrickPlayState *client
-				= (ClientTrickPlayState *)(fClientSessionHashTable->RemoveNext());
+			ClientTrickPlayState *client = (ClientTrickPlayState *)(fClientSessionHashTable->RemoveNext());
 			if (client == NULL)
 				break;
 			delete client;
@@ -81,12 +72,9 @@ MPEG2TransportFileServerMediaSubsession
 #define TRANSPORT_PACKETS_PER_NETWORK_PACKET 7
 // The product of these two numbers must be enough to fit within a network packet
 
-void MPEG2TransportFileServerMediaSubsession
-::startStream(unsigned clientSessionId, void *streamToken, TaskFunc *rtcpRRHandler,
-	void *rtcpRRHandlerClientData, unsigned short &rtpSeqNum,
-	unsigned &rtpTimestamp,
-	ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler,
-	void *serverRequestAlternativeByteHandlerClientData)
+void MPEG2TransportFileServerMediaSubsession::startStream(unsigned clientSessionId, void *streamToken,
+	TaskFunc *rtcpRRHandler, void *rtcpRRHandlerClientData, unsigned short &rtpSeqNum, unsigned &rtpTimestamp,
+	ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler, void *serverRequestAlternativeByteHandlerClientData)
 {
 	if (fIndexFile != NULL)   // we support 'trick play'
 	{
@@ -103,14 +91,11 @@ void MPEG2TransportFileServerMediaSubsession
 	}
 
 	// Call the original, default version of this routine:
-	OnDemandServerMediaSubsession::startStream(clientSessionId, streamToken,
-		rtcpRRHandler, rtcpRRHandlerClientData,
-		rtpSeqNum, rtpTimestamp,
-		serverRequestAlternativeByteHandler, serverRequestAlternativeByteHandlerClientData);
+	OnDemandServerMediaSubsession::startStream(clientSessionId, streamToken, rtcpRRHandler,
+		rtcpRRHandlerClientData, rtpSeqNum, rtpTimestamp, serverRequestAlternativeByteHandler, serverRequestAlternativeByteHandlerClientData);
 }
 
-void MPEG2TransportFileServerMediaSubsession
-::pauseStream(unsigned clientSessionId, void *streamToken)
+void MPEG2TransportFileServerMediaSubsession::pauseStream(unsigned clientSessionId, void *streamToken)
 {
 	if (fIndexFile != NULL)   // we support 'trick play'
 	{
@@ -125,8 +110,7 @@ void MPEG2TransportFileServerMediaSubsession
 	OnDemandServerMediaSubsession::pauseStream(clientSessionId, streamToken);
 }
 
-void MPEG2TransportFileServerMediaSubsession
-::seekStream(unsigned clientSessionId, void *streamToken, double &seekNPT, double streamDuration, u_int64_t &numBytes)
+void MPEG2TransportFileServerMediaSubsession::seekStream(unsigned clientSessionId, void *streamToken, double &seekNPT, double streamDuration, u_int64_t &numBytes)
 {
 	// Begin by calling the original, default version of this routine:
 	OnDemandServerMediaSubsession::seekStream(clientSessionId, streamToken, seekNPT, streamDuration, numBytes);
@@ -143,8 +127,7 @@ void MPEG2TransportFileServerMediaSubsession
 	}
 }
 
-void MPEG2TransportFileServerMediaSubsession
-::setStreamScale(unsigned clientSessionId, void *streamToken, float scale)
+void MPEG2TransportFileServerMediaSubsession::setStreamScale(unsigned clientSessionId, void *streamToken, float scale)
 {
 	if (fIndexFile != NULL)   // we support 'trick play'
 	{
@@ -159,8 +142,7 @@ void MPEG2TransportFileServerMediaSubsession
 	OnDemandServerMediaSubsession::setStreamScale(clientSessionId, streamToken, scale);
 }
 
-void MPEG2TransportFileServerMediaSubsession
-::deleteStream(unsigned clientSessionId, void *&streamToken)
+void MPEG2TransportFileServerMediaSubsession::deleteStream(unsigned clientSessionId, void *&streamToken)
 {
 	if (fIndexFile != NULL)   // we support 'trick play'
 	{
@@ -180,14 +162,11 @@ ClientTrickPlayState *MPEG2TransportFileServerMediaSubsession::newClientTrickPla
 	return new ClientTrickPlayState(fIndexFile);
 }
 
-FramedSource *MPEG2TransportFileServerMediaSubsession
-::createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate)
+FramedSource *MPEG2TransportFileServerMediaSubsession::createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate)
 {
 	// Create the video source:
-	unsigned const inputDataChunkSize
-		= TRANSPORT_PACKETS_PER_NETWORK_PACKET * TRANSPORT_PACKET_SIZE;
-	ByteStreamFileSource *fileSource
-		= ByteStreamFileSource::createNew(envir(), fFileName, inputDataChunkSize);
+	unsigned const inputDataChunkSize = TRANSPORT_PACKETS_PER_NETWORK_PACKET * TRANSPORT_PACKET_SIZE;
+	ByteStreamFileSource *fileSource = ByteStreamFileSource::createNew(envir(), fFileName, inputDataChunkSize);
 	if (fileSource == NULL)
 		return NULL;
 	fFileSize = fileSource->fileSize();
@@ -204,8 +183,7 @@ FramedSource *MPEG2TransportFileServerMediaSubsession
 
 
 	// Create a framer for the Transport Stream:
-	MPEG2TransportStreamFramer *framer
-		= MPEG2TransportStreamFramer::createNew(envir(), fileSource);
+	MPEG2TransportStreamFramer *framer = MPEG2TransportStreamFramer::createNew(envir(), fileSource);
 
 	if (fIndexFile != NULL)   // we support 'trick play'
 	{
@@ -222,14 +200,9 @@ FramedSource *MPEG2TransportFileServerMediaSubsession
 	return framer;
 }
 
-RTPSink *MPEG2TransportFileServerMediaSubsession
-::createNewRTPSink(Groupsock *rtpGroupsock,
-	unsigned char /*rtpPayloadTypeIfDynamic*/,
-	FramedSource * /*inputSource*/)
+RTPSink *MPEG2TransportFileServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char /*rtpPayloadTypeIfDynamic*/, FramedSource * /*inputSource*/)
 {
-	return SimpleRTPSink::createNew(envir(), rtpGroupsock,
-			33, 90000, "video", "MP2T",
-			1, True, False /*no 'M' bit*/);
+	return SimpleRTPSink::createNew(envir(), rtpGroupsock, 33, 90000, "video", "MP2T", 1, True, False /*no 'M' bit*/);
 }
 
 void MPEG2TransportFileServerMediaSubsession::testScaleFactor(float &scale)
@@ -253,8 +226,7 @@ float MPEG2TransportFileServerMediaSubsession::duration() const
 	return fDuration;
 }
 
-ClientTrickPlayState *MPEG2TransportFileServerMediaSubsession
-::lookupClient(unsigned clientSessionId)
+ClientTrickPlayState *MPEG2TransportFileServerMediaSubsession::lookupClient(unsigned clientSessionId)
 {
 	return (ClientTrickPlayState *)(fClientSessionHashTable->Lookup((char const *)clientSessionId));
 }
@@ -263,12 +235,8 @@ ClientTrickPlayState *MPEG2TransportFileServerMediaSubsession
 ////////// ClientTrickPlayState implementation //////////
 
 ClientTrickPlayState::ClientTrickPlayState(MPEG2TransportStreamIndexFile *indexFile)
-	: fIndexFile(indexFile),
-	  fOriginalTransportStreamSource(NULL),
-	  fTrickModeFilter(NULL), fTrickPlaySource(NULL),
-	  fFramer(NULL),
-	  fScale(1.0f), fNextScale(1.0f), fNPT(0.0f),
-	  fTSRecordNum(0), fIxRecordNum(0)
+	: fIndexFile(indexFile), fOriginalTransportStreamSource(NULL), fTrickModeFilter(NULL), fTrickPlaySource(NULL), fFramer(NULL)
+	, fScale(1.0f), fNextScale(1.0f), fNPT(0.0f), fTSRecordNum(0), fIxRecordNum(0)
 {
 }
 
@@ -351,8 +319,7 @@ void ClientTrickPlayState::updateStateOnScaleChange()
 	{
 		// Create a new trick play filter from the original Transport Stream source:
 		UsageEnvironment &env = fIndexFile->envir(); // alias
-		fTrickModeFilter = MPEG2TransportStreamTrickModeFilter
-			::createNew(env, fOriginalTransportStreamSource, fIndexFile, int(fNextScale));
+		fTrickModeFilter = MPEG2TransportStreamTrickModeFilter::createNew(env, fOriginalTransportStreamSource, fIndexFile, int(fNextScale));
 		fTrickModeFilter->seekTo(fTSRecordNum, fIxRecordNum);
 
 		// And generate a Transport Stream from this:
@@ -388,8 +355,7 @@ void ClientTrickPlayState::updateStateOnPlayChange(Boolean reverseToPreviousVSH)
 		unsigned long transportRecordNum;
 		float pcr;
 		u_int8_t offset, size, recordType; // all dummy
-		if (fIndexFile->readIndexRecordValues(fIxRecordNum, transportRecordNum,
-				offset, size, pcr, recordType))
+		if (fIndexFile->readIndexRecordValues(fIxRecordNum, transportRecordNum, offset, size, pcr, recordType))
 		{
 			fTSRecordNum = transportRecordNum;
 			fNPT = pcr;

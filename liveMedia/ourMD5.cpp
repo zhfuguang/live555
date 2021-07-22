@@ -54,7 +54,6 @@ private:
 char *our_MD5Data(unsigned char const *data, unsigned dataSize, char *outputDigest)
 {
 	MD5Context ctx;
-
 	ctx.addData(data, dataSize);
 
 	if (outputDigest == NULL)
@@ -64,11 +63,9 @@ char *our_MD5Data(unsigned char const *data, unsigned dataSize, char *outputDige
 	return outputDigest;
 }
 
-unsigned char *our_MD5DataRaw(unsigned char const *data, unsigned dataSize,
-	unsigned char *outputDigest)
+unsigned char *our_MD5DataRaw(unsigned char const *data, unsigned dataSize, unsigned char *outputDigest)
 {
 	MD5Context ctx;
-
 	ctx.addData(data, dataSize);
 
 	if (outputDigest == NULL)
@@ -181,8 +178,7 @@ void MD5Context::finalize(unsigned char *outputDigestInBytes)
 	// Before 'finalizing', make sure that we transform any remaining bytes in our working buffer:
 	u_int64_t const byteCount = fBitCount >> 3;
 	unsigned bufferBytesInUse = (unsigned)(byteCount & 0x3F);
-	unsigned numPaddingBytes
-		= (bufferBytesInUse < 56) ? (56 - bufferBytesInUse) : (64 + 56 - bufferBytesInUse);
+	unsigned numPaddingBytes = (bufferBytesInUse < 56) ? (56 - bufferBytesInUse) : (64 + 56 - bufferBytesInUse);
 	addData(PADDING, numPaddingBytes);
 
 	addData(bitCountInBytes, 8);

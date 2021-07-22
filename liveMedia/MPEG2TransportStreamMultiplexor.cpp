@@ -26,27 +26,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #define PAT_PERIOD_IF_UNTIMED 100 // # of packets between Program Association Tables (if not timed)
 #define PMT_PERIOD_IF_UNTIMED 500 // # of packets between Program Map Tables (if not timed)
 
-void MPEG2TransportStreamMultiplexor
-::setTimedSegmentation(unsigned segmentationDuration,
-	onEndOfSegmentFunc *onEndOfSegmentFunc,
-	void *onEndOfSegmentClientData)
+void MPEG2TransportStreamMultiplexor::setTimedSegmentation(unsigned segmentationDuration, onEndOfSegmentFunc *onEndOfSegmentFunc, void *onEndOfSegmentClientData)
 {
 	fSegmentationDuration = segmentationDuration;
 	fOnEndOfSegmentFunc = onEndOfSegmentFunc;
 	fOnEndOfSegmentClientData = onEndOfSegmentClientData;
 }
 
-MPEG2TransportStreamMultiplexor
-::MPEG2TransportStreamMultiplexor(UsageEnvironment &env)
-	: FramedSource(env),
-	  fHaveVideoStreams(True/*by default*/),
-	  fOutgoingPacketCounter(0), fProgramMapVersion(0xFF),
-	  fPreviousInputProgramMapVersion(0xFF), fCurrentInputProgramMapVersion(0),
-	  fPCR_PID(0), fCurrentPID(0),
-	  fInputBuffer(NULL), fInputBufferSize(0), fInputBufferBytesUsed(0),
-	  fIsFirstAdaptationField(True), fSegmentationDuration(0), fSegmentationIndication(1),
-	  fCurrentSegmentDuration(0.0), fPreviousPTS(0.0),
-	  fOnEndOfSegmentFunc(NULL), fOnEndOfSegmentClientData(NULL)
+MPEG2TransportStreamMultiplexor::MPEG2TransportStreamMultiplexor(UsageEnvironment &env)
+	: FramedSource(env), fHaveVideoStreams(True/*by default*/), fOutgoingPacketCounter(0)
+	, fProgramMapVersion(0xFF), fPreviousInputProgramMapVersion(0xFF), fCurrentInputProgramMapVersion(0)
+	, fPCR_PID(0), fCurrentPID(0), fInputBuffer(NULL), fInputBufferSize(0), fInputBufferBytesUsed(0)
+	, fIsFirstAdaptationField(True), fSegmentationDuration(0), fSegmentationIndication(1)
+	, fCurrentSegmentDuration(0.0), fPreviousPTS(0.0), fOnEndOfSegmentFunc(NULL), fOnEndOfSegmentClientData(NULL)
 {
 	for (unsigned i = 0; i < PID_TABLE_SIZE; ++i)
 	{
@@ -103,8 +95,7 @@ void MPEG2TransportStreamMultiplexor::doGetNextFrame()
 		}
 
 		// Normal case: Deliver (or continue delivering) the recently-read data:
-		deliverDataToClient(fCurrentPID, fInputBuffer, fInputBufferSize,
-			fInputBufferBytesUsed);
+		deliverDataToClient(fCurrentPID, fInputBuffer, fInputBufferSize, fInputBufferBytesUsed);
 	} while (0);
 
 	// NEED TO SET fPresentationTime, durationInMicroseconds #####
@@ -121,9 +112,7 @@ void MPEG2TransportStreamMultiplexor::doGetNextFrame()
 	}
 }
 
-void MPEG2TransportStreamMultiplexor
-::handleNewBuffer(unsigned char *buffer, unsigned bufferSize,
-	int mpegVersion, MPEG1or2Demux::SCR scr, int16_t PID)
+void MPEG2TransportStreamMultiplexor::handleNewBuffer(unsigned char *buffer, unsigned bufferSize, int mpegVersion, MPEG1or2Demux::SCR scr, int16_t PID)
 {
 	if (bufferSize < 4)
 		return;
@@ -159,8 +148,7 @@ void MPEG2TransportStreamMultiplexor
 			// the stream is audio or video, and whether it's MPEG-1 or MPEG-2:
 			if ((stream_id & 0xF0) == 0xE0) // video
 			{
-				streamType = mpegVersion == 1 ? 1 : mpegVersion == 2 ? 2 : mpegVersion == 4 ? 0x10 :
-					mpegVersion == 5/*H.264*/ ? 0x1B : 0x24/*assume H.265*/;
+				streamType = mpegVersion == 1 ? 1 : mpegVersion == 2 ? 2 : mpegVersion == 4 ? 0x10 : mpegVersion == 5/*H.264*/ ? 0x1B : 0x24/*assume H.265*/;
 			}
 			else if ((stream_id & 0xE0) == 0xC0)   // audio
 			{
@@ -195,9 +183,7 @@ void MPEG2TransportStreamMultiplexor
 	doGetNextFrame();
 }
 
-void MPEG2TransportStreamMultiplexor
-::deliverDataToClient(u_int16_t pid, unsigned char *buffer, unsigned bufferSize,
-	unsigned &startPositionInBuffer)
+void MPEG2TransportStreamMultiplexor::deliverDataToClient(u_int16_t pid, unsigned char *buffer, unsigned bufferSize, unsigned &startPositionInBuffer)
 {
 	// Construct a new Transport packet, and deliver it to the client:
 	if (fMaxSize < TRANSPORT_PACKET_SIZE)
@@ -208,8 +194,7 @@ void MPEG2TransportStreamMultiplexor
 	else
 	{
 		fFrameSize = TRANSPORT_PACKET_SIZE;
-		Boolean willAddPCR = pid == fPCR_PID && startPositionInBuffer == 0
-			&& !(fPCR.highBit == 0 && fPCR.remainingBits == 0 && fPCR.extension == 0);
+		Boolean willAddPCR = pid == fPCR_PID && startPositionInBuffer == 0 && !(fPCR.highBit == 0 && fPCR.remainingBits == 0 && fPCR.extension == 0);
 		unsigned const numBytesAvailable = bufferSize - startPositionInBuffer;
 		unsigned numHeaderBytes = 4; // by default
 		unsigned numPCRBytes = 0; // by default
@@ -228,8 +213,7 @@ void MPEG2TransportStreamMultiplexor
 			else
 			{
 				numDataBytes = numBytesAvailable;
-				numPaddingBytes
-					= TRANSPORT_PACKET_SIZE - numHeaderBytes - numPCRBytes - numDataBytes;
+				numPaddingBytes = TRANSPORT_PACKET_SIZE - numHeaderBytes - numPCRBytes - numDataBytes;
 			}
 		}
 		else if (numBytesAvailable >= TRANSPORT_PACKET_SIZE - numHeaderBytes)
@@ -268,8 +252,7 @@ void MPEG2TransportStreamMultiplexor
 		if (adaptation_field_control == 0x30)
 		{
 			// Add an adaptation field:
-			u_int8_t adaptation_field_length
-				= (numHeaderBytes == 5) ? 0 : 1 + numPCRBytes + numPaddingBytes;
+			u_int8_t adaptation_field_length = (numHeaderBytes == 5) ? 0 : 1 + numPCRBytes + numPaddingBytes;
 			*header++ = adaptation_field_length;
 			if (numHeaderBytes > 5)
 			{
@@ -300,8 +283,7 @@ void MPEG2TransportStreamMultiplexor
 						pts += fPCR.remainingBits / 90000.0;
 						pts += fPCR.extension / 27000000.0;
 
-						double lastSubSegmentDuration
-							= (fPreviousPTS == 0.0) || (pts < fPreviousPTS) ? 0.0 : pts - fPreviousPTS;
+						double lastSubSegmentDuration = (fPreviousPTS == 0.0) || (pts < fPreviousPTS) ? 0.0 : pts - fPreviousPTS;
 						fCurrentSegmentDuration += lastSubSegmentDuration;
 
 						// Check whether we need to segment the stream now:
@@ -461,8 +443,7 @@ void MPEG2TransportStreamMultiplexor::setProgramStreamMap(unsigned frameSize)
 	u_int16_t program_stream_info_length = (fInputBuffer[8] << 8) | fInputBuffer[9];
 	unsigned offset = 10 + program_stream_info_length; // skip over 'descriptors'
 
-	u_int16_t elementary_stream_map_length
-		= (fInputBuffer[offset] << 8) | fInputBuffer[offset + 1];
+	u_int16_t elementary_stream_map_length = (fInputBuffer[offset] << 8) | fInputBuffer[offset + 1];
 	offset += 2;
 	frameSize -= 4; // sizeof CRC_32
 	if (frameSize > offset + elementary_stream_map_length)
@@ -477,8 +458,7 @@ void MPEG2TransportStreamMultiplexor::setProgramStreamMap(unsigned frameSize)
 
 		fPIDState[elementary_stream_id].streamType = stream_type;
 
-		u_int16_t elementary_stream_info_length
-			= (fInputBuffer[offset + 2] << 8) | fInputBuffer[offset + 3];
+		u_int16_t elementary_stream_info_length = (fInputBuffer[offset + 2] << 8) | fInputBuffer[offset + 3];
 		offset += 4 + elementary_stream_info_length;
 	}
 }
@@ -554,7 +534,6 @@ static u_int32_t const CRC32[256] =
 u_int32_t calculateCRC(u_int8_t const *data, unsigned dataLength, u_int32_t initialValue)
 {
 	u_int32_t crc = initialValue;
-
 	while (dataLength-- > 0)
 	{
 		crc = (crc << 8) ^ CRC32[(crc >> 24) ^ (u_int32_t)(*data++)];

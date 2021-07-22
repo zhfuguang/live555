@@ -33,7 +33,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 BasicHashTable::BasicHashTable(int keyType)
 	: fBuckets(fStaticBuckets), fNumBuckets(SMALL_HASH_TABLE_SIZE), fNumEntries(0)
-	, fRebuildSize(SMALL_HASH_TABLE_SIZE *REBUILD_MULTIPLIER), fDownShift(28), fMask(0x3), fKeyType(keyType)
+	, fRebuildSize(SMALL_HASH_TABLE_SIZE * REBUILD_MULTIPLIER), fDownShift(28), fMask(0x3), fKeyType(keyType)
 {
 	for (unsigned i = 0; i < SMALL_HASH_TABLE_SIZE; ++i)
 	{

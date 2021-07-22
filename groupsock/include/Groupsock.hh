@@ -36,14 +36,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // An "OutputSocket" is (by default) used only to send packets.
 // No packets are received on it (unless a subclass arranges this)
 
-class OutputSocket: public Socket
+class OutputSocket : public Socket
 {
 public:
 	OutputSocket(UsageEnvironment &env, int family);
 	virtual ~OutputSocket();
 
-	virtual Boolean write(struct sockaddr_storage const &addressAndPort, u_int8_t ttl,
-		unsigned char *buffer, unsigned bufferSize);
+	virtual Boolean write(struct sockaddr_storage const &addressAndPort, u_int8_t ttl, unsigned char *buffer, unsigned bufferSize);
 
 protected:
 	OutputSocket(UsageEnvironment &env, Port port, int family);
@@ -54,9 +53,7 @@ protected:
 	}
 
 private: // redefined virtual function
-	virtual Boolean handleRead(unsigned char *buffer, unsigned bufferMaxSize,
-		unsigned &bytesRead,
-		struct sockaddr_storage &fromAddressAndPort);
+	virtual Boolean handleRead(unsigned char *buffer, unsigned bufferMaxSize, unsigned &bytesRead, struct sockaddr_storage &fromAddressAndPort);
 
 private:
 	Port fSourcePort;
@@ -66,8 +63,7 @@ private:
 class destRecord
 {
 public:
-	destRecord(struct sockaddr_storage const &addr, Port const &port, u_int8_t ttl, unsigned sessionId,
-		destRecord *next);
+	destRecord(struct sockaddr_storage const &addr, Port const &port, u_int8_t ttl, unsigned sessionId, destRecord *next);
 	virtual ~destRecord();
 
 public:
@@ -80,15 +76,12 @@ public:
 // As the name suggests, it was originally designed to send/receive
 // multicast, but it can send/receive unicast as well.
 
-class Groupsock: public OutputSocket
+class Groupsock : public OutputSocket
 {
 public:
-	Groupsock(UsageEnvironment &env, struct sockaddr_storage const &groupAddr,
-		Port port, u_int8_t ttl);
+	Groupsock(UsageEnvironment &env, struct sockaddr_storage const &groupAddr, Port port, u_int8_t ttl);
 	// used for a 'source-independent multicast' group
-	Groupsock(UsageEnvironment &env, struct sockaddr_storage const &groupAddr,
-		struct sockaddr_storage const &sourceFilterAddr,
-		Port port);
+	Groupsock(UsageEnvironment &env, struct sockaddr_storage const &groupAddr, struct sockaddr_storage const &sourceFilterAddr, Port port);
 	// used for a 'source-specific multicast' group
 
 	virtual ~Groupsock();
@@ -96,9 +89,7 @@ public:
 	virtual destRecord *createNewDestRecord(struct sockaddr_storage const &addr, Port const &port, u_int8_t ttl, unsigned sessionId, destRecord *next);
 	// Can be redefined by subclasses that also subclass "destRecord"
 
-	void changeDestinationParameters(struct sockaddr_storage const &newDestAddr,
-		Port newDestPort, int newDestTTL,
-		unsigned sessionId = 0);
+	void changeDestinationParameters(struct sockaddr_storage const &newDestAddr, Port newDestPort, int newDestTTL, unsigned sessionId = 0);
 	// By default, the destination address, port and ttl for
 	// outgoing packets are those that were specified in
 	// the constructor.  This works OK for multicast sockets,
@@ -111,8 +102,7 @@ public:
 
 	// As a special case, we also allow multiple destinations (addresses & ports)
 	// (This can be used to implement multi-unicast.)
-	virtual void addDestination(struct sockaddr_storage const &addr, Port const &port,
-		unsigned sessionId);
+	virtual void addDestination(struct sockaddr_storage const &addr, Port const &port, unsigned sessionId);
 	virtual void removeDestination(unsigned sessionId);
 	void removeAllDestinations();
 	Boolean hasMultipleDestinations() const
@@ -152,9 +142,7 @@ public:
 		struct sockaddr_storage const &fromAddressAndPort);
 
 public: // redefined virtual functions
-	virtual Boolean handleRead(unsigned char *buffer, unsigned bufferMaxSize,
-		unsigned &bytesRead,
-		struct sockaddr_storage &fromAddressAndPort);
+	virtual Boolean handleRead(unsigned char *buffer, unsigned bufferMaxSize, unsigned &bytesRead, struct sockaddr_storage &fromAddressAndPort);
 
 protected:
 	destRecord *lookupDestRecordFromDestination(struct sockaddr_storage const &targetAddrAndPort) const;
@@ -175,18 +163,13 @@ UsageEnvironment &operator<<(UsageEnvironment &s, const Groupsock &g);
 class GroupsockLookupTable
 {
 public:
-	Groupsock *Fetch(UsageEnvironment &env, struct sockaddr_storage const &groupAddress,
-		Port port, u_int8_t ttl, Boolean &isNew);
+	Groupsock *Fetch(UsageEnvironment &env, struct sockaddr_storage const &groupAddress, Port port, u_int8_t ttl, Boolean &isNew);
 	// Creates a new Groupsock if none already exists
-	Groupsock *Fetch(UsageEnvironment &env, struct sockaddr_storage const &groupAddress,
-		struct sockaddr_storage const &sourceFilterAddr,
-		Port port, Boolean &isNew);
+	Groupsock *Fetch(UsageEnvironment &env, struct sockaddr_storage const &groupAddress, struct sockaddr_storage const &sourceFilterAddr, Port port, Boolean &isNew);
 	// Creates a new Groupsock if none already exists
 	Groupsock *Lookup(struct sockaddr_storage const &groupAddress, Port port);
 	// Returns NULL if none already exists
-	Groupsock *Lookup(struct sockaddr_storage const &groupAddress,
-		struct sockaddr_storage const &sourceFilterAddr,
-		Port port);
+	Groupsock *Lookup(struct sockaddr_storage const &groupAddress, struct sockaddr_storage const &sourceFilterAddr, Port port);
 	// Returns NULL if none already exists
 	Groupsock *Lookup(UsageEnvironment &env, int sock);
 	// Returns NULL if none already exists
@@ -197,7 +180,6 @@ public:
 	{
 	public:
 		Iterator(GroupsockLookupTable &groupsocks);
-
 		Groupsock *next(); // NULL iff none
 
 	private:
@@ -205,10 +187,7 @@ public:
 	};
 
 private:
-	Groupsock *AddNew(UsageEnvironment &env,
-		struct sockaddr_storage const &groupAddress,
-		struct sockaddr_storage const &sourceFilterAddress,
-		Port port, u_int8_t ttl);
+	Groupsock *AddNew(UsageEnvironment &env, struct sockaddr_storage const &groupAddress, struct sockaddr_storage const &sourceFilterAddress, Port port, u_int8_t ttl);
 
 private:
 	friend class Iterator;

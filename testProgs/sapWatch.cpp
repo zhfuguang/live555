@@ -49,8 +49,7 @@ int main(int argc, char **argv)
 	// event handler like we do in most of the other test programs.)
 	unsigned packetSize;
 	struct sockaddr_storage fromAddress;
-	while (inputGroupsock.handleRead(packet, maxPacketSize,
-			packetSize, fromAddress))
+	while (inputGroupsock.handleRead(packet, maxPacketSize, packetSize, fromAddress))
 	{
 		printf("\n[packet from %s (%d bytes)]\n", AddressString(fromAddress).val(), packetSize);
 

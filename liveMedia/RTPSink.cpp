@@ -23,8 +23,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// RTPSink //////////
 
-Boolean RTPSink::lookupByName(UsageEnvironment &env, char const *sinkName,
-	RTPSink *&resultSink)
+Boolean RTPSink::lookupByName(UsageEnvironment &env, char const *sinkName, RTPSink *&resultSink)
 {
 	resultSink = NULL; // unless we succeed
 
@@ -47,19 +46,13 @@ Boolean RTPSink::isRTPSink() const
 	return True;
 }
 
-RTPSink::RTPSink(UsageEnvironment &env,
-	Groupsock *rtpGS, unsigned char rtpPayloadType,
-	unsigned rtpTimestampFrequency,
-	char const *rtpPayloadFormatName,
-	unsigned numChannels)
-	: MediaSink(env), fRTPInterface(this, rtpGS),
-	  fRTPPayloadType(rtpPayloadType),
-	  fPacketCount(0), fOctetCount(0), fTotalOctetCount(0),
-	  fTimestampFrequency(rtpTimestampFrequency), fNextTimestampHasBeenPreset(False), fEnableRTCPReports(True),
-	  fNumChannels(numChannels), fEstimatedBitrate(0)
+RTPSink::RTPSink(UsageEnvironment &env, Groupsock *rtpGS,
+	unsigned char rtpPayloadType, unsigned rtpTimestampFrequency, char const *rtpPayloadFormatName, unsigned numChannels)
+	: MediaSink(env), fRTPInterface(this, rtpGS), fRTPPayloadType(rtpPayloadType)
+	, fPacketCount(0), fOctetCount(0), fTotalOctetCount(0), fTimestampFrequency(rtpTimestampFrequency)
+	, fNextTimestampHasBeenPreset(False), fEnableRTCPReports(True), fNumChannels(numChannels), fEstimatedBitrate(0)
 {
-	fRTPPayloadFormatName
-		= strDup(rtpPayloadFormatName == NULL ? "???" : rtpPayloadFormatName);
+	fRTPPayloadFormatName = strDup(rtpPayloadFormatName == NULL ? "???" : rtpPayloadFormatName);
 	gettimeofday(&fCreationTime, NULL);
 	fTotalOctetCountStartTime = fCreationTime;
 	resetPresentationTimes();
@@ -165,9 +158,7 @@ char *RTPSink::rtpmapLine() const
 			+ 3 /* max char len */ + strlen(rtpPayloadFormatName())
 			+ 20 /* max int len */ + strlen(encodingParamsPart);
 		char *rtpmapLine = new char[rtpmapFmtSize];
-		sprintf(rtpmapLine, rtpmapFmt,
-			rtpPayloadType(), rtpPayloadFormatName(),
-			rtpTimestampFrequency(), encodingParamsPart);
+		sprintf(rtpmapLine, rtpmapFmt, rtpPayloadType(), rtpPayloadFormatName(), rtpTimestampFrequency(), encodingParamsPart);
 		delete[] encodingParamsPart;
 
 		return rtpmapLine;
@@ -188,8 +179,7 @@ char const *RTPSink::auxSDPLine()
 ////////// RTPTransmissionStatsDB //////////
 
 RTPTransmissionStatsDB::RTPTransmissionStatsDB(RTPSink &rtpSink)
-	: fOurRTPSink(rtpSink),
-	  fTable(HashTable::create(ONE_WORD_HASH_KEYS))
+	: fOurRTPSink(rtpSink), fTable(HashTable::create(ONE_WORD_HASH_KEYS))
 {
 	fNumReceivers = 0;
 }
@@ -207,10 +197,8 @@ RTPTransmissionStatsDB::~RTPTransmissionStatsDB()
 	delete fTable;
 }
 
-void RTPTransmissionStatsDB
-::noteIncomingRR(u_int32_t SSRC, struct sockaddr_storage const &lastFromAddress,
-	unsigned lossStats, unsigned lastPacketNumReceived,
-	unsigned jitter, unsigned lastSRTime, unsigned diffSR_RRTime)
+void RTPTransmissionStatsDB::noteIncomingRR(u_int32_t SSRC, struct sockaddr_storage const &lastFromAddress,
+	unsigned lossStats, unsigned lastPacketNumReceived, unsigned jitter, unsigned lastSRTime, unsigned diffSR_RRTime)
 {
 	RTPTransmissionStats *stats = lookup(SSRC);
 	if (stats == NULL)
@@ -226,9 +214,7 @@ void RTPTransmissionStatsDB
 #endif
 	}
 
-	stats->noteIncomingRR(lastFromAddress,
-		lossStats, lastPacketNumReceived, jitter,
-		lastSRTime, diffSR_RRTime);
+	stats->noteIncomingRR(lastFromAddress, lossStats, lastPacketNumReceived, jitter, lastSRTime, diffSR_RRTime);
 }
 
 void RTPTransmissionStatsDB::removeRecord(u_int32_t SSRC)
@@ -243,8 +229,7 @@ void RTPTransmissionStatsDB::removeRecord(u_int32_t SSRC)
 	}
 }
 
-RTPTransmissionStatsDB::Iterator
-::Iterator(RTPTransmissionStatsDB &receptionStatsDB)
+RTPTransmissionStatsDB::Iterator::Iterator(RTPTransmissionStatsDB &receptionStatsDB)
 	: fIter(HashTable::Iterator::create(*(receptionStatsDB.fTable)))
 {
 }
@@ -257,7 +242,6 @@ RTPTransmissionStatsDB::Iterator::~Iterator()
 RTPTransmissionStats *RTPTransmissionStatsDB::Iterator::next()
 {
 	char const *key; // dummy
-
 	return (RTPTransmissionStats *)(fIter->next(key));
 }
 
@@ -278,11 +262,10 @@ void RTPTransmissionStatsDB::add(u_int32_t SSRC, RTPTransmissionStats *stats)
 ////////// RTPTransmissionStats //////////
 
 RTPTransmissionStats::RTPTransmissionStats(RTPSink &rtpSink, u_int32_t SSRC)
-	: fOurRTPSink(rtpSink), fSSRC(SSRC), fLastPacketNumReceived(0),
-	  fPacketLossRatio(0), fTotNumPacketsLost(0), fJitter(0),
-	  fLastSRTime(0), fDiffSR_RRTime(0), fAtLeastTwoRRsHaveBeenReceived(False), fFirstPacket(True),
-	  fTotalOctetCount_hi(0), fTotalOctetCount_lo(0),
-	  fTotalPacketCount_hi(0), fTotalPacketCount_lo(0)
+	: fOurRTPSink(rtpSink), fSSRC(SSRC), fLastPacketNumReceived(0)
+	, fPacketLossRatio(0), fTotNumPacketsLost(0), fJitter(0)
+	, fLastSRTime(0), fDiffSR_RRTime(0), fAtLeastTwoRRsHaveBeenReceived(False), fFirstPacket(True)
+	, fTotalOctetCount_hi(0), fTotalOctetCount_lo(0), fTotalPacketCount_hi(0), fTotalPacketCount_lo(0)
 {
 	gettimeofday(&fTimeCreated, NULL);
 
@@ -292,11 +275,8 @@ RTPTransmissionStats::RTPTransmissionStats(RTPSink &rtpSink, u_int32_t SSRC)
 
 RTPTransmissionStats::~RTPTransmissionStats() {}
 
-void RTPTransmissionStats
-::noteIncomingRR(struct sockaddr_storage const &lastFromAddress,
-	unsigned lossStats, unsigned lastPacketNumReceived,
-	unsigned jitter, unsigned lastSRTime,
-	unsigned diffSR_RRTime)
+void RTPTransmissionStats::noteIncomingRR(struct sockaddr_storage const &lastFromAddress,
+	unsigned lossStats, unsigned lastPacketNumReceived, unsigned jitter, unsigned lastSRTime, unsigned diffSR_RRTime)
 {
 	if (fFirstPacket)
 	{
@@ -362,11 +342,9 @@ unsigned RTPTransmissionStats::roundTripDelay() const
 
 	// First, convert the time that we received the last RTCP RR packet to NTP format,
 	// in units of 1/65536 (2^-16) seconds:
-	unsigned lastReceivedTimeNTP_high
-		= fTimeReceived.tv_sec + 0x83AA7E80; // 1970 epoch -> 1900 epoch
+	unsigned lastReceivedTimeNTP_high = fTimeReceived.tv_sec + 0x83AA7E80; // 1970 epoch -> 1900 epoch
 	double fractionalPart = (fTimeReceived.tv_usec * 0x0400) / 15625.0; // 2^16/10^6
-	unsigned lastReceivedTimeNTP
-		= (unsigned)((lastReceivedTimeNTP_high << 16) + fractionalPart + 0.5);
+	unsigned lastReceivedTimeNTP = (unsigned)((lastReceivedTimeNTP_high << 16) + fractionalPart + 0.5);
 
 	int rawResult = lastReceivedTimeNTP - fLastSRTime - fDiffSR_RRTime;
 	if (rawResult < 0)

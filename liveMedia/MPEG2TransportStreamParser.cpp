@@ -24,13 +24,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 StreamType StreamTypes[0x100];
 
-MPEG2TransportStreamParser
-::MPEG2TransportStreamParser(FramedSource *inputSource,
-	FramedSource::onCloseFunc *onEndFunc, void *onEndClientData)
-	: StreamParser(inputSource, onEndFunc, onEndClientData, continueParsing, this),
-	  fInputSource(inputSource), fAmCurrentlyParsing(False),
-	  fOnEndFunc(onEndFunc), fOnEndClientData(onEndClientData),
-	  fLastSeenPCR(0.0)
+MPEG2TransportStreamParser::MPEG2TransportStreamParser(FramedSource *inputSource, FramedSource::onCloseFunc *onEndFunc, void *onEndClientData)
+	: StreamParser(inputSource, onEndFunc, onEndClientData, continueParsing, this), fInputSource(inputSource), fAmCurrentlyParsing(False)
+	, fOnEndFunc(onEndFunc), fOnEndClientData(onEndClientData), fLastSeenPCR(0.0)
 {
 	if (StreamTypes[0x01].dataType == StreamType::UNKNOWN)   // initialize array with known values
 	{
@@ -51,7 +47,7 @@ MPEG2TransportStreamParser
 	}
 
 	// Create our 'PID state' array:
-	fPIDState = new PIDState*[NUM_PIDS];
+	fPIDState = new PIDState * [NUM_PIDS];
 	for (unsigned i = 0; i < NUM_PIDS; ++i)
 		fPIDState[i] = NULL;
 
@@ -74,8 +70,7 @@ UsageEnvironment &MPEG2TransportStreamParser::envir()
 	return fInputSource->envir();
 }
 
-void MPEG2TransportStreamParser
-::continueParsing(void *clientData, unsigned char *ptr, unsigned size, struct timeval presentationTime)
+void MPEG2TransportStreamParser::continueParsing(void *clientData, unsigned char *ptr, unsigned size, struct timeval presentationTime)
 {
 	((MPEG2TransportStreamParser *)clientData)->continueParsing();
 }
@@ -142,8 +137,7 @@ Boolean MPEG2TransportStreamParser::parse()
 			// Ignore "transport_priority"
 			u_int16_t PID = flagsPlusPID & 0x1FFF;
 #ifdef DEBUG_CONTENTS
-			fprintf(stderr, "\nTransport Packet: payload_unit_start_indicator: %d; PID: 0x%04x\n",
-				pusi, PID);
+			fprintf(stderr, "\nTransport Packet: payload_unit_start_indicator: %d; PID: 0x%04x\n", pusi, PID);
 #endif
 
 			u_int8_t controlPlusContinuity_counter = get1Byte();
@@ -151,7 +145,8 @@ Boolean MPEG2TransportStreamParser::parse()
 			if ((controlPlusContinuity_counter & 0xC0) != 0)
 			{
 #ifdef DEBUG_ERRORS
-				fprintf(stderr, "MPEG2TransportStreamParser::parse() Rejected packet with \"transport_scrambling_control\" set to non-zero value %d!\n", (controlPlusContinuity_counter & 0xC0) >> 6);
+				fprintf(stderr, "MPEG2TransportStreamParser::parse() Rejected packet with \"transport_scrambling_control\" set to non-zero value %d!\n",
+					(controlPlusContinuity_counter & 0xC0) >> 6);
 #endif
 				continue;
 			}
@@ -165,7 +160,8 @@ Boolean MPEG2TransportStreamParser::parse()
 #ifdef DEBUG_ERRORS
 			if (adaptation_field_control == 2 && totalAdaptationFieldSize != 1 + 183)
 			{
-				fprintf(stderr, "MPEG2TransportStreamParser::parse() Warning: Got an inconsistent \"totalAdaptationFieldSize\" %d for adaptation_field_control == 2\n", totalAdaptationFieldSize);
+				fprintf(stderr, "MPEG2TransportStreamParser::parse() Warning: Got an inconsistent \"totalAdaptationFieldSize\" %d for adaptation_field_control == 2\n",
+					totalAdaptationFieldSize);
 			}
 #endif
 
@@ -309,14 +305,14 @@ u_int8_t MPEG2TransportStreamParser::parseAdaptationField()
 #ifdef DEBUG_ERRORS
 	if (totalAdaptationFieldSize != 1 + adaptation_field_length)
 	{
-		fprintf(stderr, "MPEG2TransportStreamParser::parseAdaptationField() Warning: Got an inconsistent \"totalAdaptationFieldSize\" %d; expected %d\n", totalAdaptationFieldSize, 1 + adaptation_field_length);
+		fprintf(stderr, "MPEG2TransportStreamParser::parseAdaptationField() Warning: Got an inconsistent \"totalAdaptationFieldSize\" %d; expected %d\n",
+			totalAdaptationFieldSize, 1 + adaptation_field_length);
 	}
 #endif
 	return totalAdaptationFieldSize;
 }
 
-Boolean MPEG2TransportStreamParser
-::processDataBytes(u_int16_t PID, Boolean pusi, unsigned numDataBytes)
+Boolean MPEG2TransportStreamParser::processDataBytes(u_int16_t PID, Boolean pusi, unsigned numDataBytes)
 {
 	PIDState *pidState = fPIDState[PID];
 
@@ -372,9 +368,7 @@ PIDState::~PIDState()
 
 
 //######### StreamType implementation ########
-
-StreamType
-::StreamType(char const *description, enum dataType dataType, char const *filenameSuffix)
+StreamType::StreamType(char const *description, enum dataType dataType, char const *filenameSuffix)
 	: description(description), dataType(dataType), filenameSuffix(filenameSuffix)
 {
 }

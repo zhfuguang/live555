@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AudioRTPSink.hh"
 #endif
 
-class GSMAudioRTPSink: public AudioRTPSink
+class GSMAudioRTPSink : public AudioRTPSink
 {
 public:
 	static GSMAudioRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs);
@@ -38,8 +38,7 @@ protected:
 
 private: // redefined virtual functions:
 	virtual
-	Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart,
-		unsigned numBytesInFrame) const;
+		Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart, unsigned numBytesInFrame) const;
 };
 
 #endif

@@ -30,24 +30,22 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MatroskaFileServerDemux.hh"
 #endif
 
-class MP3AudioMatroskaFileServerMediaSubsession: public MP3AudioFileServerMediaSubsession
+class MP3AudioMatroskaFileServerMediaSubsession : public MP3AudioFileServerMediaSubsession
 {
 public:
-	static MP3AudioMatroskaFileServerMediaSubsession *createNew(MatroskaFileServerDemux &demux, MatroskaTrack *track,
-		Boolean generateADUs = False, Interleaving *interleaving = NULL);
+	static MP3AudioMatroskaFileServerMediaSubsession *createNew(
+		MatroskaFileServerDemux &demux, MatroskaTrack *track, Boolean generateADUs = False, Interleaving *interleaving = NULL);
 	// Note: "interleaving" is used only if "generateADUs" is True,
 	// (and a value of NULL means 'no interleaving')
 
 private:
-	MP3AudioMatroskaFileServerMediaSubsession(MatroskaFileServerDemux &demux, MatroskaTrack *track,
-		Boolean generateADUs, Interleaving *interleaving);
+	MP3AudioMatroskaFileServerMediaSubsession(MatroskaFileServerDemux &demux, MatroskaTrack *track, Boolean generateADUs, Interleaving *interleaving);
 	// called only by createNew();
 	virtual ~MP3AudioMatroskaFileServerMediaSubsession();
 
 private: // redefined virtual functions
 	virtual void seekStreamSource(FramedSource *inputSource, double &seekNPT, double streamDuration, u_int64_t &numBytes);
-	virtual FramedSource *createNewStreamSource(unsigned clientSessionId,
-		unsigned &estBitrate);
+	virtual FramedSource *createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate);
 
 private:
 	MatroskaFileServerDemux &fOurDemux;

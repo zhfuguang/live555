@@ -33,11 +33,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class RTPReceptionStatsDB; // forward
 
-class RTPSource: public FramedSource
+class RTPSource : public FramedSource
 {
 public:
-	static Boolean lookupByName(UsageEnvironment &env, char const *sourceName,
-		RTPSource *&resultSource);
+	static Boolean lookupByName(UsageEnvironment &env, char const *sourceName, RTPSource *&resultSource);
 
 	Boolean curPacketMarkerBit() const
 	{
@@ -110,11 +109,9 @@ public:
 		fRTPInterface.setStreamSocket(sockNum, streamChannelId);
 	}
 
-	void setAuxilliaryReadHandler(AuxHandlerFunc *handlerFunc,
-		void *handlerClientData)
+	void setAuxilliaryReadHandler(AuxHandlerFunc *handlerFunc, void *handlerClientData)
 	{
-		fRTPInterface.setAuxilliaryReadHandler(handlerFunc,
-			handlerClientData);
+		fRTPInterface.setAuxilliaryReadHandler(handlerFunc, handlerClientData);
 	}
 
 	// Note that RTP receivers will usually not need to call either of the following two functions, because
@@ -132,8 +129,7 @@ private:
 	}
 
 protected:
-	RTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat, u_int32_t rtpTimestampFrequency);
+	RTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, u_int32_t rtpTimestampFrequency);
 	// abstract base class
 	virtual ~RTPSource();
 
@@ -194,18 +190,11 @@ public:
 	};
 
 	// The following is called whenever a RTP packet is received:
-	void noteIncomingPacket(u_int32_t SSRC, u_int16_t seqNum,
-		u_int32_t rtpTimestamp,
-		unsigned timestampFrequency,
-		Boolean useForJitterCalculation,
-		struct timeval &resultPresentationTime,
-		Boolean &resultHasBeenSyncedUsingRTCP,
-		unsigned packetSize /* payload only */);
+	void noteIncomingPacket(u_int32_t SSRC, u_int16_t seqNum, u_int32_t rtpTimestamp, unsigned timestampFrequency,
+		Boolean useForJitterCalculation, struct timeval &resultPresentationTime, Boolean &resultHasBeenSyncedUsingRTCP, unsigned packetSize /* payload only */);
 
 	// The following is called whenever a RTCP SR packet is received:
-	void noteIncomingSR(u_int32_t SSRC,
-		u_int32_t ntpTimestampMSW, u_int32_t ntpTimestampLSW,
-		u_int32_t rtpTimestamp);
+	void noteIncomingSR(u_int32_t SSRC, u_int32_t ntpTimestampMSW, u_int32_t ntpTimestampLSW, u_int32_t rtpTimestamp);
 
 	// The following is called when a RTCP BYE packet is received:
 	void removeRecord(u_int32_t SSRC);
@@ -300,14 +289,9 @@ protected:
 	virtual ~RTPReceptionStats();
 
 private:
-	void noteIncomingPacket(u_int16_t seqNum, u_int32_t rtpTimestamp,
-		unsigned timestampFrequency,
-		Boolean useForJitterCalculation,
-		struct timeval &resultPresentationTime,
-		Boolean &resultHasBeenSyncedUsingRTCP,
-		unsigned packetSize /* payload only */);
-	void noteIncomingSR(u_int32_t ntpTimestampMSW, u_int32_t ntpTimestampLSW,
-		u_int32_t rtpTimestamp);
+	void noteIncomingPacket(u_int16_t seqNum, u_int32_t rtpTimestamp, unsigned timestampFrequency,
+		Boolean useForJitterCalculation, struct timeval &resultPresentationTime, Boolean &resultHasBeenSyncedUsingRTCP, unsigned packetSize /* payload only */);
+	void noteIncomingSR(u_int32_t ntpTimestampMSW, u_int32_t ntpTimestampLSW, u_int32_t rtpTimestamp);
 	void init(u_int32_t SSRC);
 	void initSeqNum(u_int16_t initialSeqNum);
 	void reset();

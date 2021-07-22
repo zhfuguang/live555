@@ -30,7 +30,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEGVideoStreamFramer.hh"
 #endif
 
-class MPEG4VideoStreamFramer: public MPEGVideoStreamFramer
+class MPEG4VideoStreamFramer : public MPEGVideoStreamFramer
 {
 public:
 	static MPEG4VideoStreamFramer *createNew(UsageEnvironment &env, FramedSource *inputSource);
@@ -47,15 +47,12 @@ public:
 	// If this function is not called, then this data is only assigned later, when it appears in the input stream.
 
 protected:
-	MPEG4VideoStreamFramer(UsageEnvironment &env,
-		FramedSource *inputSource,
-		Boolean createParser = True);
+	MPEG4VideoStreamFramer(UsageEnvironment &env, FramedSource *inputSource, Boolean createParser = True);
 	// called only by createNew(), or by subclass constructors
 	virtual ~MPEG4VideoStreamFramer();
 
 	void startNewConfig();
-	void appendToNewConfig(unsigned char *newConfigBytes,
-		unsigned numNewBytes);
+	void appendToNewConfig(unsigned char *newConfigBytes, unsigned numNewBytes);
 	void completeNewConfig();
 
 private:

@@ -25,26 +25,21 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class AC3AudioRTPSource: public MultiFramedRTPSource
+class AC3AudioRTPSource : public MultiFramedRTPSource
 {
 public:
-	static AC3AudioRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency);
+	static AC3AudioRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency);
 
 protected:
 	virtual ~AC3AudioRTPSource();
 
 private:
-	AC3AudioRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency);
+	AC3AudioRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency);
 	// called only by createNew()
 
 private:
 	// redefined virtual functions:
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	virtual char const *MIMEtype() const;
 };
 

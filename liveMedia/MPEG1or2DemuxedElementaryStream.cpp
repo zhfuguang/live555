@@ -22,11 +22,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// MPEG1or2DemuxedElementaryStream //////////
 
-MPEG1or2DemuxedElementaryStream::
-MPEG1or2DemuxedElementaryStream(UsageEnvironment &env, u_int8_t streamIdTag,
-	MPEG1or2Demux &sourceDemux)
-	: FramedSource(env),
-	  fOurStreamIdTag(streamIdTag), fOurSourceDemux(sourceDemux), fMPEGversion(0)
+MPEG1or2DemuxedElementaryStream::MPEG1or2DemuxedElementaryStream(UsageEnvironment &env, u_int8_t streamIdTag, MPEG1or2Demux &sourceDemux)
+	: FramedSource(env), fOurStreamIdTag(streamIdTag), fOurSourceDemux(sourceDemux), fMPEGversion(0)
 {
 	// Set our MIME type string for known media types:
 	if ((streamIdTag & 0xE0) == 0xC0)
@@ -50,9 +47,7 @@ MPEG1or2DemuxedElementaryStream::~MPEG1or2DemuxedElementaryStream()
 
 void MPEG1or2DemuxedElementaryStream::doGetNextFrame()
 {
-	fOurSourceDemux.getNextFrame(fOurStreamIdTag, fTo, fMaxSize,
-		afterGettingFrame, this,
-		handleClosure, this);
+	fOurSourceDemux.getNextFrame(fOurStreamIdTag, fTo, fMaxSize, afterGettingFrame, this, handleClosure, this);
 }
 
 void MPEG1or2DemuxedElementaryStream::doStopGettingFrames()
@@ -72,22 +67,14 @@ unsigned MPEG1or2DemuxedElementaryStream::maxFrameSize() const
 	// (6 + 65535) bytes (header + data)
 }
 
-void MPEG1or2DemuxedElementaryStream
-::afterGettingFrame(void *clientData,
-	unsigned frameSize, unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void MPEG1or2DemuxedElementaryStream::afterGettingFrame(void *clientData, unsigned frameSize,
+	unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
-	MPEG1or2DemuxedElementaryStream *stream
-		= (MPEG1or2DemuxedElementaryStream *)clientData;
-	stream->afterGettingFrame1(frameSize, numTruncatedBytes,
-		presentationTime, durationInMicroseconds);
+	MPEG1or2DemuxedElementaryStream *stream = (MPEG1or2DemuxedElementaryStream *)clientData;
+	stream->afterGettingFrame1(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
 }
 
-void MPEG1or2DemuxedElementaryStream
-::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void MPEG1or2DemuxedElementaryStream::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	fFrameSize = frameSize;
 	fNumTruncatedBytes = numTruncatedBytes;

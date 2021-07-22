@@ -25,26 +25,21 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class MPEG4ESVideoRTPSource: public MultiFramedRTPSource
+class MPEG4ESVideoRTPSource : public MultiFramedRTPSource
 {
 public:
-	static MPEG4ESVideoRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency);
+	static MPEG4ESVideoRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency);
 
 protected:
 	virtual ~MPEG4ESVideoRTPSource();
 
 private:
-	MPEG4ESVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency);
+	MPEG4ESVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency);
 	// called only by createNew()
 
 private:
 	// redefined virtual functions:
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	virtual char const *MIMEtype() const;
 };
 

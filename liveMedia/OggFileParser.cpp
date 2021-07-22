@@ -23,8 +23,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <GroupsockHelper.hh> // for "gettimeofday()
 
 PacketSizeTable::PacketSizeTable(unsigned number_page_segments)
-	: numCompletedPackets(0), totSizes(0), nextPacketNumToDeliver(0),
-	  lastPacketIsIncomplete(False)
+	: numCompletedPackets(0), totSizes(0), nextPacketNumToDeliver(0), lastPacketIsIncomplete(False)
 {
 	size = new unsigned[number_page_segments];
 	for (unsigned i = 0; i < number_page_segments; ++i)
@@ -36,14 +35,10 @@ PacketSizeTable::~PacketSizeTable()
 	delete[] size;
 }
 
-OggFileParser::OggFileParser(OggFile &ourFile, FramedSource *inputSource,
-	FramedSource::onCloseFunc *onEndFunc, void *onEndClientData,
-	OggDemux *ourDemux)
-	: StreamParser(inputSource, onEndFunc, onEndClientData, continueParsing, this),
-	  fOurFile(ourFile), fInputSource(inputSource),
-	  fOnEndFunc(onEndFunc), fOnEndClientData(onEndClientData),
-	  fOurDemux(ourDemux), fNumUnfulfilledTracks(0),
-	  fPacketSizeTable(NULL), fCurrentTrackNumber(0), fSavedPacket(NULL)
+OggFileParser::OggFileParser(OggFile &ourFile, FramedSource *inputSource, FramedSource::onCloseFunc *onEndFunc, void *onEndClientData, OggDemux *ourDemux)
+	: StreamParser(inputSource, onEndFunc, onEndClientData, continueParsing, this)
+	, fOurFile(ourFile), fInputSource(inputSource), fOnEndFunc(onEndFunc), fOnEndClientData(onEndClientData)
+	, fOurDemux(ourDemux), fNumUnfulfilledTracks(0), fPacketSizeTable(NULL), fCurrentTrackNumber(0), fSavedPacket(NULL)
 {
 	if (ourDemux == NULL)
 	{
@@ -199,8 +194,7 @@ u_int8_t OggFileParser::parseInitialPage()
 	if (track != NULL)   // sanity check
 	{
 #ifdef DEBUG
-		fprintf(stderr, "This track's MIME type: %s\n",
-			track->mimeType == NULL ? "(unknown)" : track->mimeType);
+		fprintf(stderr, "This track's MIME type: %s\n", track->mimeType == NULL ? "(unknown)" : track->mimeType);
 #endif
 		if (track->mimeType != NULL &&
 			(strcmp(track->mimeType, "audio/VORBIS") == 0 ||
@@ -229,14 +223,12 @@ u_int8_t OggFileParser::parseInitialPage()
 				if (isVorbis)
 				{
 					u_int8_t const firstByte = fSavedPacket[0];
-
 					headerIsKnown = firstByte == 1 || firstByte == 3 || firstByte == 5;
 					index = (firstByte - 1) / 2; // 1, 3, or 5 => 0, 1, or 2
 				}
 				else if (isTheora)
 				{
 					u_int8_t const firstByte = fSavedPacket[0];
-
 					headerIsKnown = firstByte == 0x80 || firstByte == 0x81 || firstByte == 0x82;
 					index = firstByte & ~0x80; // 0x80, 0x81, or 0x82 => 0, 1, or 2
 				}
@@ -257,8 +249,7 @@ u_int8_t OggFileParser::parseInitialPage()
 				{
 #ifdef DEBUG
 					char const *headerName[3] = { "identification", "comment", "setup" };
-					fprintf(stderr, "Saved %d-byte %s \"%s\" header\n", packetSize, track->mimeType,
-						headerName[index]);
+					fprintf(stderr, "Saved %d-byte %s \"%s\" header\n", packetSize, track->mimeType, headerName[index]);
 #endif
 					// This is a header, but first check it for validity:
 					if (!validateHeader(track, fSavedPacket, packetSize))
@@ -417,8 +408,7 @@ static Boolean parseVorbisSetup_codebook(LEBitVector &bv)
 	unsigned codebook_entries = bv.getBits(24);
 	unsigned ordered = bv.getBits(1);
 #ifdef DEBUG_SETUP_HEADER
-	fprintf(stderr, "\t\t\tcodebook_dimensions: %d; codebook_entries: %d, ordered: %d\n",
-		codebook_dimensions, codebook_entries, ordered);
+	fprintf(stderr, "\t\t\tcodebook_dimensions: %d; codebook_entries: %d, ordered: %d\n", codebook_dimensions, codebook_entries, ordered);
 #endif
 	if (!ordered)
 	{
@@ -464,8 +454,7 @@ static Boolean parseVorbisSetup_codebook(LEBitVector &bv)
 		{
 			unsigned number = bv.getBits(ilog(codebook_entries - current_entry));
 #ifdef DEBUG_SETUP_HEADER
-			fprintf(stderr, "\t\t\t\tcodeword length[%d..%d]:\t%d\n",
-				current_entry, current_entry + number - 1, current_length);
+			fprintf(stderr, "\t\t\t\tcodeword length[%d..%d]:\t%d\n", current_entry, current_entry + number - 1, current_length);
 #endif
 			current_entry += number;
 			if (current_entry > codebook_entries)
@@ -722,7 +711,8 @@ static Boolean parseVorbisSetup_mappings(LEBitVector &bv, unsigned audio_channel
 				fprintf(stderr, "\t\t\t\tvorbis_mapping_mux[%d]: %d\n", j, vorbis_mapping_mux);
 				if (vorbis_mapping_mux >= vorbis_mapping_submaps)
 				{
-					fprintf(stderr, "Vorbis Mappings, read bad \"vorbis_mapping_mux\" %d (>= \"vorbis_mapping_submaps\" %d)\n", vorbis_mapping_mux, vorbis_mapping_submaps);
+					fprintf(stderr, "Vorbis Mappings, read bad \"vorbis_mapping_mux\" %d (>= \"vorbis_mapping_submaps\" %d)\n",
+						vorbis_mapping_mux, vorbis_mapping_submaps);
 					return False;
 				}
 			}
@@ -908,8 +898,7 @@ Boolean OggFileParser::validateHeader(OggTrack *track, u_int8_t const *p, unsign
 #ifdef DEBUG
 			fprintf(stderr, "\t%u Hz, %u-channel, %u kbps (est), block sizes: %u,%u (%u,%u us)\n",
 				track->samplingFrequency, track->numChannels, track->estBitrate,
-				blocksize_0, blocksize_1,
-				track->vtoHdrs.uSecsPerPacket[0], track->vtoHdrs.uSecsPerPacket[1]);
+				blocksize_0, blocksize_1, track->vtoHdrs.uSecsPerPacket[0], track->vtoHdrs.uSecsPerPacket[1]);
 #endif
 			// To be valid, "blocksize_0" must be <= "blocksize_1", and both must be in [64,8192]:
 			if (!(blocksize_0 <= blocksize_1 && blocksize_0 >= 64 && blocksize_1 <= 8192))
@@ -1064,11 +1053,9 @@ Boolean OggFileParser::deliverPacketWithinPage()
 	// Deliver the next packet:
 #ifdef DEBUG
 	fprintf(stderr, "\t[track: %s] Delivering packet %d (%d bytes%s)\n", demuxedTrack->MIMEtype(),
-		packetNum, packetSize,
-		packetNum == fPacketSizeTable->numCompletedPackets ? " (incomplete)" : "");
+		packetNum, packetSize, packetNum == fPacketSizeTable->numCompletedPackets ? " (incomplete)" : "");
 #endif
-	unsigned numBytesDelivered
-		= packetSize < demuxedTrack->maxSize() ? packetSize : demuxedTrack->maxSize();
+	unsigned numBytesDelivered = packetSize < demuxedTrack->maxSize() ? packetSize : demuxedTrack->maxSize();
 	getBytes(demuxedTrack->to(), numBytesDelivered);
 	u_int8_t firstByte = numBytesDelivered > 0 ? demuxedTrack->to()[0] : 0x00;
 	u_int8_t secondByte = numBytesDelivered > 1 ? demuxedTrack->to()[1] : 0x00;
@@ -1200,8 +1187,7 @@ Boolean OggFileParser::deliverPacketWithinPage()
 	return True;
 }
 
-void OggFileParser::parseStartOfPage(u_int8_t &header_type_flag,
-	u_int32_t &bitstream_serial_number)
+void OggFileParser::parseStartOfPage(u_int8_t &header_type_flag, u_int32_t &bitstream_serial_number)
 {
 	saveParserState();
 	// First, make sure we start with the 'capture_pattern': 0x4F676753 ('OggS'):
@@ -1240,7 +1226,8 @@ void OggFileParser::parseStartOfPage(u_int8_t &header_type_flag,
 	u_int32_t CRC_checksum = byteSwap(get4Bytes());
 	u_int8_t number_page_segments = get1Byte();
 #ifdef DEBUG
-	fprintf(stderr, "\tgranule_position 0x%08x%08x, bitstream_serial_number 0x%08x, page_sequence_number 0x%08x, CRC_checksum 0x%08x, number_page_segments %d\n", granule_position2, granule_position1, bitstream_serial_number, page_sequence_number, CRC_checksum, number_page_segments);
+	fprintf(stderr, "\tgranule_position 0x%08x%08x, bitstream_serial_number 0x%08x, page_sequence_number 0x%08x, CRC_checksum 0x%08x, number_page_segments %d\n",
+		granule_position2, granule_position1, bitstream_serial_number, page_sequence_number, CRC_checksum, number_page_segments);
 #else
 	// Dummy statements to prevent 'unused variable' compiler warnings:
 #define DUMMY_STATEMENT(x) do {x = x;} while (0)

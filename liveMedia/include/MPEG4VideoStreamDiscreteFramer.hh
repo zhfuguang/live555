@@ -28,14 +28,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG4VideoStreamFramer.hh"
 #endif
 
-class MPEG4VideoStreamDiscreteFramer: public MPEG4VideoStreamFramer
+class MPEG4VideoStreamDiscreteFramer : public MPEG4VideoStreamFramer
 {
 public:
 	static MPEG4VideoStreamDiscreteFramer *createNew(UsageEnvironment &env, FramedSource *inputSource, Boolean leavePresentationTimesUnmodified = False);
 
 protected:
-	MPEG4VideoStreamDiscreteFramer(UsageEnvironment &env,
-		FramedSource *inputSource, Boolean leavePresentationTimesUnmodified);
+	MPEG4VideoStreamDiscreteFramer(UsageEnvironment &env, FramedSource *inputSource, Boolean leavePresentationTimesUnmodified);
 	// called only by createNew()
 	virtual ~MPEG4VideoStreamDiscreteFramer();
 
@@ -44,14 +43,8 @@ protected:
 	virtual void doGetNextFrame();
 
 protected:
-	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
-	void afterGettingFrame1(unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+	static void afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
+	void afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 
 	Boolean getNextFrameBit(u_int8_t &result);
 	Boolean getNextFrameBits(unsigned numBits, u_int32_t &result);

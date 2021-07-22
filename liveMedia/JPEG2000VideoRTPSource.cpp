@@ -20,18 +20,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "JPEG2000VideoRTPSource.hh"
 
 JPEG2000VideoRTPSource *JPEG2000VideoRTPSource::createNew(UsageEnvironment &env,
-	Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency,
-	char const *sampling)
+	Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, char const *sampling)
 {
 	return new JPEG2000VideoRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, sampling);
 }
 
-JPEG2000VideoRTPSource
-::JPEG2000VideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency,
-	char const *sampling)
+JPEG2000VideoRTPSource::JPEG2000VideoRTPSource(UsageEnvironment &env,
+	Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, char const *sampling)
 	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency)
 {
 	fSampling = strDup(sampling);
@@ -44,9 +39,7 @@ JPEG2000VideoRTPSource::~JPEG2000VideoRTPSource()
 
 #define JPEG2000_PAYLOAD_HEADER_SIZE 8
 
-Boolean JPEG2000VideoRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean JPEG2000VideoRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	unsigned char *headerStart = packet->data();
 	unsigned packetSize = packet->dataSize();

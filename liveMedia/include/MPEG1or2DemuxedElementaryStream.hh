@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG1or2Demux.hh"
 #endif
 
-class MPEG1or2DemuxedElementaryStream: public FramedSource
+class MPEG1or2DemuxedElementaryStream : public FramedSource
 {
 public:
 	MPEG1or2Demux::SCR lastSeenSCR() const
@@ -44,9 +44,7 @@ public:
 	}
 
 private: // We are created only by a MPEG1or2Demux (a friend)
-	MPEG1or2DemuxedElementaryStream(UsageEnvironment &env,
-		u_int8_t streamIdTag,
-		MPEG1or2Demux &sourceDemux);
+	MPEG1or2DemuxedElementaryStream(UsageEnvironment &env, u_int8_t streamIdTag, MPEG1or2Demux &sourceDemux);
 	virtual ~MPEG1or2DemuxedElementaryStream();
 
 private:
@@ -57,14 +55,9 @@ private:
 	virtual unsigned maxFrameSize() const;
 
 private:
-	static void afterGettingFrame(void *clientData,
-		unsigned frameSize, unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+	static void afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 
-	void afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+	void afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 
 private:
 	u_int8_t fOurStreamIdTag;

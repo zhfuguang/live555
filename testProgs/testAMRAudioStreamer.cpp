@@ -66,11 +66,8 @@ int main(int argc, char **argv)
 	unsigned char CNAME[maxCNAMElen + 1];
 	gethostname((char *)CNAME, maxCNAMElen);
 	CNAME[maxCNAMElen] = '\0'; // just in case
-	RTCPInstance *rtcp
-		= RTCPInstance::createNew(*env, &rtcpGroupsock,
-				estimatedSessionBandwidth, CNAME,
-				audioSink, NULL /* we're a server */,
-				True /* we're a SSM source */);
+	RTCPInstance *rtcp = RTCPInstance::createNew(*env, &rtcpGroupsock,
+		estimatedSessionBandwidth, CNAME, audioSink, NULL /* we're a server */, True /* we're a SSM source */);
 	// Note: This starts RTCP running automatically
 
 	// Create and start a RTSP server to serve this stream.
@@ -80,10 +77,7 @@ int main(int argc, char **argv)
 		*env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
 		exit(1);
 	}
-	ServerMediaSession *sms
-		= ServerMediaSession::createNew(*env, "testStream", inputFileName,
-				"Session streamed by \"testAMRAudioStreamer\"",
-				True /*SSM*/);
+	ServerMediaSession *sms = ServerMediaSession::createNew(*env, "testStream", inputFileName, "Session streamed by \"testAMRAudioStreamer\"", True /*SSM*/);
 	sms->addSubsession(PassiveServerMediaSubsession::createNew(*audioSink, rtcp));
 	rtspServer->addServerMediaSession(sms);
 	announceURL(rtspServer, sms);
@@ -93,7 +87,6 @@ int main(int argc, char **argv)
 	play();
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 
@@ -111,13 +104,10 @@ void afterPlaying(void * /*clientData*/)
 void play()
 {
 	// Open the input file as an 'AMR audio file source':
-	AMRAudioFileSource *audioSource
-		= AMRAudioFileSource::createNew(*env, inputFileName);
+	AMRAudioFileSource *audioSource = AMRAudioFileSource::createNew(*env, inputFileName);
 	if (audioSource == NULL)
 	{
-		*env << "Unable to open file \"" << inputFileName
-			<< "\" as an AMR audio file source: "
-			<< env->getResultMsg() << "\n";
+		*env << "Unable to open file \"" << inputFileName << "\" as an AMR audio file source: " << env->getResultMsg() << "\n";
 		exit(1);
 	}
 

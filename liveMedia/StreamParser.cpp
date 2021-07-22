@@ -32,18 +32,11 @@ void StreamParser::flushInput()
 	fTotNumValidBytes = 0;
 }
 
-StreamParser::StreamParser(FramedSource *inputSource,
-	FramedSource::onCloseFunc *onInputCloseFunc,
-	void *onInputCloseClientData,
-	clientContinueFunc *clientContinueFunc,
-	void *clientContinueClientData)
-	: fInputSource(inputSource), fClientOnInputCloseFunc(onInputCloseFunc),
-	  fClientOnInputCloseClientData(onInputCloseClientData),
-	  fClientContinueFunc(clientContinueFunc),
-	  fClientContinueClientData(clientContinueClientData),
-	  fSavedParserIndex(0), fSavedRemainingUnparsedBits(0),
-	  fCurParserIndex(0), fRemainingUnparsedBits(0),
-	  fTotNumValidBytes(0), fHaveSeenEOF(False)
+StreamParser::StreamParser(FramedSource *inputSource, FramedSource::onCloseFunc *onInputCloseFunc,
+	void *onInputCloseClientData, clientContinueFunc *clientContinueFunc, void *clientContinueClientData)
+	: fInputSource(inputSource), fClientOnInputCloseFunc(onInputCloseFunc), fClientOnInputCloseClientData(onInputCloseClientData)
+	, fClientContinueFunc(clientContinueFunc), fClientContinueClientData(clientContinueClientData)
+	, fSavedParserIndex(0), fSavedRemainingUnparsedBits(0), fCurParserIndex(0), fRemainingUnparsedBits(0), fTotNumValidBytes(0), fHaveSeenEOF(False)
 {
 	fBank[0] = new unsigned char[BANK_SIZE];
 	fBank[1] = new unsigned char[BANK_SIZE];
@@ -81,11 +74,9 @@ void StreamParser::skipBits(unsigned numBits)
 	else
 	{
 		numBits -= fRemainingUnparsedBits;
-
 		unsigned numBytesToExamine = (numBits + 7) / 8; // round up
 		ensureValidBytes(numBytesToExamine);
 		fCurParserIndex += numBytesToExamine;
-
 		fRemainingUnparsedBits = 8 * numBytesToExamine - numBits;
 	}
 }
@@ -169,27 +160,19 @@ void StreamParser::ensureValidBytes1(unsigned numBytesNeeded)
 		// If this happens, it means that we have too much saved parser state.
 		// To fix this, increase BANK_SIZE as appropriate.
 		fInputSource->envir() << "StreamParser internal error ("
-			<< fCurParserIndex << " + "
-			<< numBytesNeeded << " > "
-			<< BANK_SIZE << ")\n";
+			<< fCurParserIndex << " + " << numBytesNeeded << " > " << BANK_SIZE << ")\n";
 		fInputSource->envir().internalError();
 	}
 
 	// Try to read as many new bytes as will fit in the current bank:
 	unsigned maxNumBytesToRead = BANK_SIZE - fTotNumValidBytes;
-	fInputSource->getNextFrame(&curBank()[fTotNumValidBytes],
-		maxNumBytesToRead,
-		afterGettingBytes, this,
-		onInputClosure, this);
+	fInputSource->getNextFrame(&curBank()[fTotNumValidBytes], maxNumBytesToRead, afterGettingBytes, this, onInputClosure, this);
 
 	throw NO_MORE_BUFFERED_INPUT;
 }
 
-void StreamParser::afterGettingBytes(void *clientData,
-	unsigned numBytesRead,
-	unsigned /*numTruncatedBytes*/,
-	struct timeval presentationTime,
-	unsigned /*durationInMicroseconds*/)
+void StreamParser::afterGettingBytes(void *clientData, unsigned numBytesRead,
+	unsigned /*numTruncatedBytes*/, struct timeval presentationTime, unsigned /*durationInMicroseconds*/)
 {
 	StreamParser *parser = (StreamParser *)clientData;
 	if (parser != NULL)
@@ -201,10 +184,8 @@ void StreamParser::afterGettingBytes1(unsigned numBytesRead, struct timeval pres
 	// Sanity check: Make sure we didn't get too many bytes for our bank:
 	if (fTotNumValidBytes + numBytesRead > BANK_SIZE)
 	{
-		fInputSource->envir()
-				<< "StreamParser::afterGettingBytes() warning: read "
-					<< numBytesRead << " bytes; expected no more than "
-					<< BANK_SIZE - fTotNumValidBytes << "\n";
+		fInputSource->envir() << "StreamParser::afterGettingBytes() warning: read "
+			<< numBytesRead << " bytes; expected no more than " << BANK_SIZE - fTotNumValidBytes << "\n";
 	}
 
 	fLastSeenPresentationTime = presentationTime;

@@ -23,28 +23,22 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class JPEG2000VideoRTPSource: public MultiFramedRTPSource
+class JPEG2000VideoRTPSource : public MultiFramedRTPSource
 {
 public:
-	static JPEG2000VideoRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency,
-		char const *sampling);
+	static JPEG2000VideoRTPSource *createNew(UsageEnvironment &env,
+		Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, char const *sampling);
 
 protected:
 	virtual ~JPEG2000VideoRTPSource();
 
 protected:
-	JPEG2000VideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency,
-		char const *sampling);
+	JPEG2000VideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, char const *sampling);
 	// called only by createNew()
 
 private:
 	// redefined virtual functions:
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	virtual char const *MIMEtype() const;
 
 private:

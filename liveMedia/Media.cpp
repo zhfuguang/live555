@@ -40,8 +40,7 @@ Medium::~Medium()
 	fEnviron.taskScheduler().unscheduleDelayedTask(fNextTask);
 }
 
-Boolean Medium::lookupByName(UsageEnvironment &env, char const *mediumName,
-	Medium *&resultMedium)
+Boolean Medium::lookupByName(UsageEnvironment &env, char const *mediumName, Medium *&resultMedium)
 {
 	resultMedium = MediaLookupTable::ourMedia(env)->lookup(mediumName);
 	if (resultMedium == NULL)
@@ -175,8 +174,7 @@ void MediaLookupTable::remove(char const *name)
 	}
 }
 
-void MediaLookupTable::generateNewName(char *mediumName,
-	unsigned /*maxLen*/)
+void MediaLookupTable::generateNewName(char *mediumName, unsigned /*maxLen*/)
 {
 	// We should really use snprintf() here, but not all systems have it
 	sprintf(mediumName, "liveMedia%d", fNameGenerator++);

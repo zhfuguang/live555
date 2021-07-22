@@ -49,15 +49,11 @@ int TLSState::connect(int socketNum)
 		return sslConnectResult; // connection has completed
 	}
 	else if (sslConnectResult < 0
-		&& (sslGetErrorResult == SSL_ERROR_WANT_READ ||
-			sslGetErrorResult == SSL_ERROR_WANT_WRITE))
+		&& (sslGetErrorResult == SSL_ERROR_WANT_READ || sslGetErrorResult == SSL_ERROR_WANT_WRITE))
 	{
 		// We need to wait until the socket is readable or writable:
-		fClient.envir().taskScheduler()
-		.setBackgroundHandling(socketNum,
-			sslGetErrorResult == SSL_ERROR_WANT_READ ? SOCKET_READABLE : SOCKET_WRITABLE,
-			(TaskScheduler::BackgroundHandlerProc *)&RTSPClient::connectionHandler,
-			&fClient);
+		fClient.envir().taskScheduler().setBackgroundHandling(socketNum, sslGetErrorResult == SSL_ERROR_WANT_READ ? SOCKET_READABLE : SOCKET_WRITABLE,
+			(TaskScheduler::BackgroundHandlerProc *)&RTSPClient::connectionHandler, &fClient);
 		return 0; // connection is pending
 	}
 	else

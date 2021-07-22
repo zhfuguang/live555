@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "VideoRTPSink.hh"
 #endif
 
-class TheoraVideoRTPSink: public VideoRTPSink
+class TheoraVideoRTPSink : public VideoRTPSink
 {
 public:
 	static TheoraVideoRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
@@ -35,14 +35,12 @@ public:
 		u_int8_t *setupHeader, unsigned setupHeaderSize,
 		u_int32_t identField = 0xFACADE);
 
-	static TheoraVideoRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
-		char const *configStr);
+	static TheoraVideoRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat, char const *configStr);
 	// an optional variant of "createNew()" that takes a Base-64-encoded 'configuration' string,
 	// rather than the raw configuration headers as parameter.
 
 protected:
-	TheoraVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
-		u_int8_t rtpPayloadFormat,
+	TheoraVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
 		u_int8_t *identificationHeader, unsigned identificationHeaderSize,
 		u_int8_t *commentHeader, unsigned commentHeaderSize,
 		u_int8_t *setupHeader, unsigned setupHeaderSize,
@@ -54,13 +52,9 @@ protected:
 private: // redefined virtual functions:
 	virtual char const *auxSDPLine(); // for the "a=fmtp:" SDP line
 
-	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
-	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart,
-		unsigned numBytesInFrame) const;
+	virtual void doSpecialFrameHandling(unsigned fragmentationOffset, unsigned char *frameStart,
+		unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
+	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart, unsigned numBytesInFrame) const;
 	virtual unsigned specialHeaderSize() const;
 
 private:

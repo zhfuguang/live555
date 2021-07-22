@@ -27,17 +27,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "ByteStreamFileSource.hh"
 #include "H263plusVideoStreamFramer.hh"
 
-H263plusVideoFileServerMediaSubsession *H263plusVideoFileServerMediaSubsession::createNew(UsageEnvironment &env,
-	char const *fileName,
-	Boolean reuseFirstSource)
+H263plusVideoFileServerMediaSubsession *H263plusVideoFileServerMediaSubsession::createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource)
 {
 	return new H263plusVideoFileServerMediaSubsession(env, fileName, reuseFirstSource);
 }
 
-H263plusVideoFileServerMediaSubsession
-::H263plusVideoFileServerMediaSubsession(UsageEnvironment &env,
-	char const *fileName,
-	Boolean reuseFirstSource)
+H263plusVideoFileServerMediaSubsession::H263plusVideoFileServerMediaSubsession(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource)
 	: FileServerMediaSubsession(env, fileName, reuseFirstSource)
 {
 }
@@ -46,8 +41,7 @@ H263plusVideoFileServerMediaSubsession::~H263plusVideoFileServerMediaSubsession(
 {
 }
 
-FramedSource *H263plusVideoFileServerMediaSubsession
-::createNewStreamSource(unsigned /*clientSessionId*/, unsigned &estBitrate)
+FramedSource *H263plusVideoFileServerMediaSubsession::createNewStreamSource(unsigned /*clientSessionId*/, unsigned &estBitrate)
 {
 	estBitrate = 500; // kbps, estimate ??
 
@@ -61,9 +55,7 @@ FramedSource *H263plusVideoFileServerMediaSubsession
 	return H263plusVideoStreamFramer::createNew(envir(), fileSource);
 }
 
-RTPSink *H263plusVideoFileServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock,
-	unsigned char rtpPayloadTypeIfDynamic,
-	FramedSource * /*inputSource*/)
+RTPSink *H263plusVideoFileServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource * /*inputSource*/)
 {
 	return H263plusVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
 }

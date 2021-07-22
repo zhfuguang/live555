@@ -24,20 +24,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// MPEG4GenericBufferedPacket and MPEG4GenericBufferedPacketFactory
 
-class MPEG4GenericBufferedPacket: public BufferedPacket
+class MPEG4GenericBufferedPacket : public BufferedPacket
 {
 public:
 	MPEG4GenericBufferedPacket(MPEG4GenericRTPSource *ourSource);
 	virtual ~MPEG4GenericBufferedPacket();
 
 private: // redefined virtual functions
-	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr,
-		unsigned dataSize);
+	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize);
 private:
 	MPEG4GenericRTPSource *fOurSource;
 };
 
-class MPEG4GenericBufferedPacketFactory: public BufferedPacketFactory
+class MPEG4GenericBufferedPacketFactory : public BufferedPacketFactory
 {
 private: // redefined virtual functions
 	virtual BufferedPacket *createNewPacket(MultiFramedRTPSource *ourSource);
@@ -56,40 +55,19 @@ struct AUHeader
 
 //##### NOTE: INCOMPLETE!!! Support more modes, and interleaving #####
 
-MPEG4GenericRTPSource *MPEG4GenericRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency,
-	char const *mediumName,
-	char const *mode,
-	unsigned sizeLength, unsigned indexLength,
-	unsigned indexDeltaLength
+MPEG4GenericRTPSource *MPEG4GenericRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat,
+	unsigned rtpTimestampFrequency, char const *mediumName, char const *mode, unsigned sizeLength, unsigned indexLength, unsigned indexDeltaLength
 )
 {
-	return new MPEG4GenericRTPSource(env, RTPgs, rtpPayloadFormat,
-			rtpTimestampFrequency, mediumName,
-			mode, sizeLength, indexLength,
-			indexDeltaLength
-		);
+	return new MPEG4GenericRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, mediumName, mode, sizeLength, indexLength, indexDeltaLength);
 }
 
-MPEG4GenericRTPSource
-::MPEG4GenericRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency,
-	char const *mediumName,
-	char const *mode,
-	unsigned sizeLength, unsigned indexLength,
-	unsigned indexDeltaLength
-)
-	: MultiFramedRTPSource(env, RTPgs,
-		  rtpPayloadFormat, rtpTimestampFrequency,
-		  new MPEG4GenericBufferedPacketFactory),
-	  fSizeLength(sizeLength), fIndexLength(indexLength),
-	  fIndexDeltaLength(indexDeltaLength),
-	  fNumAUHeaders(0), fNextAUHeader(0), fAUHeaders(NULL)
+MPEG4GenericRTPSource::MPEG4GenericRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat,
+	unsigned rtpTimestampFrequency, char const *mediumName, char const *mode, unsigned sizeLength, unsigned indexLength, unsigned indexDeltaLength)
+	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, new MPEG4GenericBufferedPacketFactory)
+	, fSizeLength(sizeLength), fIndexLength(indexLength), fIndexDeltaLength(indexDeltaLength), fNumAUHeaders(0), fNextAUHeader(0), fAUHeaders(NULL)
 {
-	unsigned mimeTypeLength =
-		strlen(mediumName) + 14 /* strlen("/MPEG4-GENERIC") */ + 1;
+	unsigned mimeTypeLength = strlen(mediumName) + 14 /* strlen("/MPEG4-GENERIC") */ + 1;
 	fMIMEType = new char[mimeTypeLength];
 	if (fMIMEType != NULL)
 	{
@@ -98,11 +76,9 @@ MPEG4GenericRTPSource
 
 	fMode = strDup(mode);
 	// Check for a "mode" that we don't yet support: //#####
-	if (mode == NULL ||
-		(strcmp(mode, "aac-hbr") != 0 && strcmp(mode, "generic") != 0))
+	if (mode == NULL || (strcmp(mode, "aac-hbr") != 0 && strcmp(mode, "generic") != 0))
 	{
-		envir() << "MPEG4GenericRTPSource Warning: Unknown or unsupported \"mode\": "
-			<< mode << "\n";
+		envir() << "MPEG4GenericRTPSource Warning: Unknown or unsupported \"mode\": " << mode << "\n";
 	}
 }
 
@@ -113,9 +89,7 @@ MPEG4GenericRTPSource::~MPEG4GenericRTPSource()
 	delete[] fMIMEType;
 }
 
-Boolean MPEG4GenericRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean MPEG4GenericRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	unsigned char *headerStart = packet->data();
 	unsigned packetSize = packet->dataSize();
@@ -143,8 +117,7 @@ Boolean MPEG4GenericRTPSource
 
 		unsigned AU_headers_length = (headerStart[0] << 8) | headerStart[1];
 		unsigned AU_headers_length_bytes = (AU_headers_length + 7) / 8;
-		if (packetSize
-			< resultSpecialHeaderSize + AU_headers_length_bytes)
+		if (packetSize < resultSpecialHeaderSize + AU_headers_length_bytes)
 			return False;
 		resultSpecialHeaderSize += AU_headers_length_bytes;
 
@@ -168,7 +141,6 @@ Boolean MPEG4GenericRTPSource
 				fAUHeaders[i].index = bv.getBits(fIndexDeltaLength);
 			}
 		}
-
 	}
 
 	return True;
@@ -183,8 +155,7 @@ char const *MPEG4GenericRTPSource::MIMEtype() const
 ////////// MPEG4GenericBufferedPacket
 ////////// and MPEG4GenericBufferedPacketFactory implementation
 
-MPEG4GenericBufferedPacket
-::MPEG4GenericBufferedPacket(MPEG4GenericRTPSource *ourSource)
+MPEG4GenericBufferedPacket::MPEG4GenericBufferedPacket(MPEG4GenericRTPSource *ourSource)
 	: fOurSource(ourSource)
 {
 }
@@ -193,8 +164,7 @@ MPEG4GenericBufferedPacket::~MPEG4GenericBufferedPacket()
 {
 }
 
-unsigned MPEG4GenericBufferedPacket
-::nextEnclosedFrameSize(unsigned char *& /*framePtr*/, unsigned dataSize)
+unsigned MPEG4GenericBufferedPacket::nextEnclosedFrameSize(unsigned char *& /*framePtr*/, unsigned dataSize)
 {
 	// WE CURRENTLY DON'T IMPLEMENT INTERLEAVING.  FIX THIS! #####
 	AUHeader *auHeader = fOurSource->fAUHeaders;
@@ -205,9 +175,7 @@ unsigned MPEG4GenericBufferedPacket
 	if (fOurSource->fNextAUHeader >= numAUHeaders)
 	{
 		fOurSource->envir() << "MPEG4GenericBufferedPacket::nextEnclosedFrameSize("
-			<< dataSize << "): data error ("
-			<< auHeader << "," << fOurSource->fNextAUHeader
-			<< "," << numAUHeaders << ")!\n";
+			<< dataSize << "): data error (" << auHeader << "," << fOurSource->fNextAUHeader << "," << numAUHeaders << ")!\n";
 		return dataSize;
 	}
 
@@ -215,8 +183,7 @@ unsigned MPEG4GenericBufferedPacket
 	return auHeader->size <= dataSize ? auHeader->size : dataSize;
 }
 
-BufferedPacket *MPEG4GenericBufferedPacketFactory
-::createNewPacket(MultiFramedRTPSource *ourSource)
+BufferedPacket *MPEG4GenericBufferedPacketFactory::createNewPacket(MultiFramedRTPSource *ourSource)
 {
 	return new MPEG4GenericBufferedPacket((MPEG4GenericRTPSource *)ourSource);
 }

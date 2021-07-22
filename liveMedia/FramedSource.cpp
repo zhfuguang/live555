@@ -24,10 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 ////////// FramedSource //////////
 
 FramedSource::FramedSource(UsageEnvironment &env)
-	: MediaSource(env),
-	  fAfterGettingFunc(NULL), fAfterGettingClientData(NULL),
-	  fOnCloseFunc(NULL), fOnCloseClientData(NULL),
-	  fIsCurrentlyAwaitingData(False)
+	: MediaSource(env), fAfterGettingFunc(NULL), fAfterGettingClientData(NULL), fOnCloseFunc(NULL), fOnCloseClientData(NULL), fIsCurrentlyAwaitingData(False)
 {
 	fPresentationTime.tv_sec = fPresentationTime.tv_usec = 0; // initially
 }
@@ -41,8 +38,7 @@ Boolean FramedSource::isFramedSource() const
 	return True;
 }
 
-Boolean FramedSource::lookupByName(UsageEnvironment &env, char const *sourceName,
-	FramedSource *&resultSource)
+Boolean FramedSource::lookupByName(UsageEnvironment &env, char const *sourceName, FramedSource *&resultSource)
 {
 	resultSource = NULL; // unless we succeed
 
@@ -61,10 +57,7 @@ Boolean FramedSource::lookupByName(UsageEnvironment &env, char const *sourceName
 }
 
 void FramedSource::getNextFrame(unsigned char *to, unsigned maxSize,
-	afterGettingFunc *afterGettingFunc,
-	void *afterGettingClientData,
-	onCloseFunc *onCloseFunc,
-	void *onCloseClientData)
+	afterGettingFunc *afterGettingFunc, void *afterGettingClientData, onCloseFunc *onCloseFunc, void *onCloseClientData)
 {
 	// Make sure we're not already being read:
 	if (fIsCurrentlyAwaitingData)
@@ -97,9 +90,7 @@ void FramedSource::afterGetting(FramedSource *source)
 	if (source->fAfterGettingFunc != NULL)
 	{
 		(*(source->fAfterGettingFunc))(source->fAfterGettingClientData,
-			source->fFrameSize, source->fNumTruncatedBytes,
-			source->fPresentationTime,
-			source->fDurationInMicroseconds);
+			source->fFrameSize, source->fNumTruncatedBytes, source->fPresentationTime, source->fDurationInMicroseconds);
 	}
 }
 

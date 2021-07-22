@@ -25,12 +25,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class VorbisAudioRTPSource: public MultiFramedRTPSource
+class VorbisAudioRTPSource : public MultiFramedRTPSource
 {
 public:
-	static VorbisAudioRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency);
+	static VorbisAudioRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency);
 
 	u_int32_t curPacketIdent() const
 	{
@@ -38,17 +36,14 @@ public:
 	}
 
 protected:
-	VorbisAudioRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency);
+	VorbisAudioRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency);
 	// called only by createNew()
 
 	virtual ~VorbisAudioRTPSource();
 
 protected:
 	// redefined virtual functions:
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	virtual char const *MIMEtype() const;
 
 private:

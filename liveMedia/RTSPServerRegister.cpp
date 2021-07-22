@@ -29,23 +29,21 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 static void rtspRegisterResponseHandler(RTSPClient *rtspClient, int resultCode, char *resultString); // forward
 
 // A class that represents the state of a "REGISTER" request in progress:
-class RegisterRequestRecord: public RTSPRegisterSender
+class RegisterRequestRecord : public RTSPRegisterSender
 {
 public:
 	RegisterRequestRecord(RTSPServer &ourServer, unsigned requestId,
 		char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum, char const *rtspURLToRegister,
-		RTSPServer::responseHandlerForREGISTER *responseHandler, Authenticator *authenticator,
-		Boolean requestStreamingViaTCP, char const *proxyURLSuffix)
-		: RTSPRegisterSender(ourServer.envir(), remoteClientNameOrAddress, remoteClientPortNum, rtspURLToRegister,
-			  rtspRegisterResponseHandler, authenticator,
-			  requestStreamingViaTCP, proxyURLSuffix, True/*reuseConnection*/,
+		RTSPServer::responseHandlerForREGISTER *responseHandler, Authenticator *authenticator, Boolean requestStreamingViaTCP, char const *proxyURLSuffix)
+		: RTSPRegisterSender(ourServer.envir(), remoteClientNameOrAddress, remoteClientPortNum,
+			rtspURLToRegister, rtspRegisterResponseHandler, authenticator, requestStreamingViaTCP, proxyURLSuffix, True/*reuseConnection*/,
 #ifdef DEBUG
-			  1/*verbosityLevel*/,
+			1/*verbosityLevel*/,
 #else
-			  0/*verbosityLevel*/,
+			0/*verbosityLevel*/,
 #endif
-			  NULL),
-		  fOurServer(ourServer), fRequestId(requestId), fResponseHandler(responseHandler)
+			NULL),
+		fOurServer(ourServer), fRequestId(requestId), fResponseHandler(responseHandler)
 	{
 		// Add ourself to our server's 'pending REGISTER or DEREGISTER requests' table:
 		ourServer.fPendingRegisterOrDeregisterRequests->Add((char const *)this, this);
@@ -97,15 +95,12 @@ private:
 static void rtspRegisterResponseHandler(RTSPClient *rtspClient, int resultCode, char *resultString)
 {
 	RegisterRequestRecord *registerRequestRecord = (RegisterRequestRecord *)rtspClient;
-
 	registerRequestRecord->handleResponse(resultCode, resultString);
 }
 
 unsigned RTSPServer::registerStream(ServerMediaSession *serverMediaSession,
-	char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum,
-	responseHandlerForREGISTER *responseHandler,
-	char const *username, char const *password,
-	Boolean receiveOurStreamViaTCP, char const *proxyURLSuffix)
+	char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum, responseHandlerForREGISTER *responseHandler,
+	char const *username, char const *password, Boolean receiveOurStreamViaTCP, char const *proxyURLSuffix)
 {
 	// Create a new "RegisterRequestRecord" that will send the "REGISTER" command.
 	// (This object will automatically get deleted after we get a response to the "REGISTER" command, or if we're deleted.)
@@ -118,10 +113,8 @@ unsigned RTSPServer::registerStream(ServerMediaSession *serverMediaSession,
 	}
 	unsigned requestId = ++fRegisterOrDeregisterRequestCounter;
 	char const *url = rtspURL(serverMediaSession);
-	new RegisterRequestRecord(*this, requestId,
-		remoteClientNameOrAddress, remoteClientPortNum, url,
-		responseHandler, authenticator,
-		receiveOurStreamViaTCP, proxyURLSuffix);
+	new RegisterRequestRecord(*this, requestId, remoteClientNameOrAddress,
+		remoteClientPortNum, url, responseHandler, authenticator, receiveOurStreamViaTCP, proxyURLSuffix);
 
 	delete[](char *)url; // we can do this here because it was copied to the "RegisterRequestRecord"
 	delete authenticator; // ditto
@@ -133,22 +126,21 @@ unsigned RTSPServer::registerStream(ServerMediaSession *serverMediaSession,
 static void rtspDeregisterResponseHandler(RTSPClient *rtspClient, int resultCode, char *resultString); // forward
 
 // A class that represents the state of a "DEREGISTER" request in progress:
-class DeregisterRequestRecord: public RTSPDeregisterSender
+class DeregisterRequestRecord : public RTSPDeregisterSender
 {
 public:
 	DeregisterRequestRecord(RTSPServer &ourServer, unsigned requestId,
 		char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum, char const *rtspURLToDeregister,
-		RTSPServer::responseHandlerForDEREGISTER *responseHandler, Authenticator *authenticator,
-		char const *proxyURLSuffix)
-		: RTSPDeregisterSender(ourServer.envir(), remoteClientNameOrAddress, remoteClientPortNum, rtspURLToDeregister,
-			  rtspDeregisterResponseHandler, authenticator, proxyURLSuffix,
+		RTSPServer::responseHandlerForDEREGISTER *responseHandler, Authenticator *authenticator, char const *proxyURLSuffix)
+		: RTSPDeregisterSender(ourServer.envir(), remoteClientNameOrAddress,
+			remoteClientPortNum, rtspURLToDeregister, rtspDeregisterResponseHandler, authenticator, proxyURLSuffix,
 #ifdef DEBUG
-			  1/*verbosityLevel*/,
+			1/*verbosityLevel*/,
 #else
-			  0/*verbosityLevel*/,
+			0/*verbosityLevel*/,
 #endif
-			  NULL),
-		  fOurServer(ourServer), fRequestId(requestId), fResponseHandler(responseHandler)
+			NULL),
+		fOurServer(ourServer), fRequestId(requestId), fResponseHandler(responseHandler)
 	{
 		// Add ourself to our server's 'pending REGISTER or DEREGISTER requests' table:
 		ourServer.fPendingRegisterOrDeregisterRequests->Add((char const *)this, this);
@@ -186,15 +178,12 @@ private:
 static void rtspDeregisterResponseHandler(RTSPClient *rtspClient, int resultCode, char *resultString)
 {
 	DeregisterRequestRecord *deregisterRequestRecord = (DeregisterRequestRecord *)rtspClient;
-
 	deregisterRequestRecord->handleResponse(resultCode, resultString);
 }
 
 unsigned RTSPServer::deregisterStream(ServerMediaSession *serverMediaSession,
-	char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum,
-	responseHandlerForDEREGISTER *responseHandler,
-	char const *username, char const *password,
-	char const *proxyURLSuffix)
+	char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum, responseHandlerForDEREGISTER *responseHandler,
+	char const *username, char const *password, char const *proxyURLSuffix)
 {
 	// Create a new "DeregisterRequestRecord" that will send the "DEREGISTER" command.
 	// (This object will automatically get deleted after we get a response to the "DEREGISTER" command, or if we're deleted.)
@@ -207,18 +196,14 @@ unsigned RTSPServer::deregisterStream(ServerMediaSession *serverMediaSession,
 	}
 	unsigned requestId = ++fRegisterOrDeregisterRequestCounter;
 	char const *url = rtspURL(serverMediaSession);
-	new DeregisterRequestRecord(*this, requestId,
-		remoteClientNameOrAddress, remoteClientPortNum, url,
-		responseHandler, authenticator,
-		proxyURLSuffix);
+	new DeregisterRequestRecord(*this, requestId, remoteClientNameOrAddress, remoteClientPortNum, url, responseHandler, authenticator, proxyURLSuffix);
 
 	delete[](char *)url; // we can do this here because it was copied to the "DeregisterRequestRecord"
 	delete authenticator; // ditto
 	return requestId;
 }
 
-Boolean RTSPServer::weImplementREGISTER(char const * /*cmd*//*"REGISTER" or "DEREGISTER"*/,
-	char const * /*proxyURLSuffix*/, char *&responseStr)
+Boolean RTSPServer::weImplementREGISTER(char const * /*cmd*//*"REGISTER" or "DEREGISTER"*/, char const * /*proxyURLSuffix*/, char *&responseStr)
 {
 	// By default, servers do not implement our custom "REGISTER"/"DEREGISTER" commands:
 	responseStr = NULL;
@@ -226,20 +211,17 @@ Boolean RTSPServer::weImplementREGISTER(char const * /*cmd*//*"REGISTER" or "DER
 }
 
 void RTSPServer::implementCmd_REGISTER(char const * /*cmd*//*"REGISTER" or "DEREGISTER"*/,
-	char const * /*url*/, char const * /*urlSuffix*/, int /*socketToRemoteServer*/,
-	Boolean /*deliverViaTCP*/, char const * /*proxyURLSuffix*/)
+	char const * /*url*/, char const * /*urlSuffix*/, int /*socketToRemoteServer*/, Boolean /*deliverViaTCP*/, char const * /*proxyURLSuffix*/)
 {
 	// By default, this function is a 'noop'
 }
 
 // Special mechanism for handling our custom "REGISTER" command:
 
-RTSPServer::RTSPClientConnection::ParamsForREGISTER
-::ParamsForREGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/,
-	RTSPServer::RTSPClientConnection *ourConnection, char const *url, char const *urlSuffix,
-	Boolean reuseConnection, Boolean deliverViaTCP, char const *proxyURLSuffix)
-	: fCmd(strDup(cmd)), fOurConnection(ourConnection), fURL(strDup(url)), fURLSuffix(strDup(urlSuffix)),
-	  fReuseConnection(reuseConnection), fDeliverViaTCP(deliverViaTCP), fProxyURLSuffix(strDup(proxyURLSuffix))
+RTSPServer::RTSPClientConnection::ParamsForREGISTER::ParamsForREGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/,
+	RTSPServer::RTSPClientConnection *ourConnection, char const *url, char const *urlSuffix, Boolean reuseConnection, Boolean deliverViaTCP, char const *proxyURLSuffix)
+	: fCmd(strDup(cmd)), fOurConnection(ourConnection), fURL(strDup(url)), fURLSuffix(strDup(urlSuffix))
+	, fReuseConnection(reuseConnection), fDeliverViaTCP(deliverViaTCP), fProxyURLSuffix(strDup(proxyURLSuffix))
 {
 }
 
@@ -253,10 +235,8 @@ RTSPServer::RTSPClientConnection::ParamsForREGISTER::~ParamsForREGISTER()
 
 #define DELAY_USECS_AFTER_REGISTER_RESPONSE 100000 /*100ms*/
 
-void RTSPServer
-::RTSPClientConnection::handleCmd_REGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/,
-	char const *url, char const *urlSuffix, char const *fullRequestStr,
-	Boolean reuseConnection, Boolean deliverViaTCP, char const *proxyURLSuffix)
+void RTSPServer::RTSPClientConnection::handleCmd_REGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/,
+	char const *url, char const *urlSuffix, char const *fullRequestStr, Boolean reuseConnection, Boolean deliverViaTCP, char const *proxyURLSuffix)
 {
 	char *responseStr;
 	if (fOurRTSPServer.weImplementREGISTER(cmd, proxyURLSuffix, responseStr))
@@ -276,8 +256,7 @@ void RTSPServer
 		delete[] responseStr;
 
 		ParamsForREGISTER *registerParams = new ParamsForREGISTER(cmd, this, url, urlSuffix, reuseConnection, deliverViaTCP, proxyURLSuffix);
-		envir().taskScheduler().scheduleDelayedTask(reuseConnection ? DELAY_USECS_AFTER_REGISTER_RESPONSE : 0,
-			(TaskFunc *)continueHandlingREGISTER, registerParams);
+		envir().taskScheduler().scheduleDelayedTask(reuseConnection ? DELAY_USECS_AFTER_REGISTER_RESPONSE : 0, (TaskFunc *)continueHandlingREGISTER, registerParams);
 		++fScheduledDelayedTask;
 	}
 	else if (responseStr != NULL)
@@ -292,10 +271,7 @@ void RTSPServer
 }
 
 // A special version of "parseTransportHeader()", used just for parsing the "Transport:" header in an incoming "REGISTER" command:
-void parseTransportHeaderForREGISTER(char const *buf,
-	Boolean &reuseConnection,
-	Boolean &deliverViaTCP,
-	char *&proxyURLSuffix)
+void parseTransportHeaderForREGISTER(char const *buf, Boolean &reuseConnection, Boolean &deliverViaTCP, char *&proxyURLSuffix)
 {
 	// Initialize the result parameters to default values:
 	reuseConnection = False;
@@ -359,7 +335,6 @@ void RTSPServer::RTSPClientConnection::continueHandlingREGISTER1(ParamsForREGIST
 
 	// Reuse our socket if requested:
 	int socketNumToBackEndServer = params->fReuseConnection ? fClientOutputSocket : -1;
-
 	RTSPServer *ourServer = &fOurRTSPServer; // copy the pointer now, in case we "delete this" below
 
 	if (socketNumToBackEndServer >= 0)
@@ -375,21 +350,16 @@ void RTSPServer::RTSPClientConnection::continueHandlingREGISTER1(ParamsForREGIST
 		delete this;
 	}
 
-	ourServer->implementCmd_REGISTER(params->fCmd,
-		params->fURL, params->fURLSuffix, socketNumToBackEndServer,
-		params->fDeliverViaTCP, params->fProxyURLSuffix);
+	ourServer->implementCmd_REGISTER(params->fCmd, params->fURL, params->fURLSuffix, socketNumToBackEndServer, params->fDeliverViaTCP, params->fProxyURLSuffix);
 	delete params;
 }
 
 
 ///////// RTSPServerWithREGISTERProxying implementation /////////
 
-RTSPServerWithREGISTERProxying *RTSPServerWithREGISTERProxying
-::createNew(UsageEnvironment &env, Port ourPort,
-	UserAuthenticationDatabase *authDatabase, UserAuthenticationDatabase *authDatabaseForREGISTER,
-	unsigned reclamationSeconds,
-	Boolean streamRTPOverTCP, int verbosityLevelForProxying,
-	char const *backEndUsername, char const *backEndPassword)
+RTSPServerWithREGISTERProxying *RTSPServerWithREGISTERProxying::createNew(UsageEnvironment &env, Port ourPort,
+	UserAuthenticationDatabase *authDatabase, UserAuthenticationDatabase *authDatabaseForREGISTER, unsigned reclamationSeconds,
+	Boolean streamRTPOverTCP, int verbosityLevelForProxying, char const *backEndUsername, char const *backEndPassword)
 {
 	int ourSocketIPv4 = setUpOurSocket(env, ourPort, AF_INET);
 	int ourSocketIPv6 = setUpOurSocket(env, ourPort, AF_INET6);
@@ -397,22 +367,16 @@ RTSPServerWithREGISTERProxying *RTSPServerWithREGISTERProxying
 		return NULL;
 
 	return new RTSPServerWithREGISTERProxying(env, ourSocketIPv4, ourSocketIPv6, ourPort,
-			authDatabase, authDatabaseForREGISTER,
-			reclamationSeconds,
-			streamRTPOverTCP, verbosityLevelForProxying,
-			backEndUsername, backEndPassword);
+		authDatabase, authDatabaseForREGISTER, reclamationSeconds, streamRTPOverTCP, verbosityLevelForProxying, backEndUsername, backEndPassword);
 }
 
-RTSPServerWithREGISTERProxying
-::RTSPServerWithREGISTERProxying(UsageEnvironment &env, int ourSocketIPv4, int ourSocketIPv6, Port ourPort,
-	UserAuthenticationDatabase *authDatabase, UserAuthenticationDatabase *authDatabaseForREGISTER,
-	unsigned reclamationSeconds,
-	Boolean streamRTPOverTCP, int verbosityLevelForProxying,
-	char const *backEndUsername, char const *backEndPassword)
-	: RTSPServer(env, ourSocketIPv4, ourSocketIPv6, ourPort, authDatabase, reclamationSeconds),
-	  fStreamRTPOverTCP(streamRTPOverTCP), fVerbosityLevelForProxying(verbosityLevelForProxying),
-	  fRegisteredProxyCounter(0), fAllowedCommandNames(NULL), fAuthDBForREGISTER(authDatabaseForREGISTER),
-	  fBackEndUsername(strDup(backEndUsername)), fBackEndPassword(strDup(backEndPassword))
+RTSPServerWithREGISTERProxying::RTSPServerWithREGISTERProxying(UsageEnvironment &env, int ourSocketIPv4, int ourSocketIPv6,
+	Port ourPort, UserAuthenticationDatabase *authDatabase, UserAuthenticationDatabase *authDatabaseForREGISTER,
+	unsigned reclamationSeconds, Boolean streamRTPOverTCP, int verbosityLevelForProxying, char const *backEndUsername, char const *backEndPassword)
+	: RTSPServer(env, ourSocketIPv4, ourSocketIPv6, ourPort, authDatabase, reclamationSeconds)
+	, fStreamRTPOverTCP(streamRTPOverTCP), fVerbosityLevelForProxying(verbosityLevelForProxying)
+	, fRegisteredProxyCounter(0), fAllowedCommandNames(NULL), fAuthDBForREGISTER(authDatabaseForREGISTER)
+	, fBackEndUsername(strDup(backEndUsername)), fBackEndPassword(strDup(backEndPassword))
 {
 }
 
@@ -435,9 +399,7 @@ char const *RTSPServerWithREGISTERProxying::allowedCommandNames()
 	return fAllowedCommandNames;
 }
 
-Boolean RTSPServerWithREGISTERProxying
-::weImplementREGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/,
-	char const *proxyURLSuffix, char *&responseStr)
+Boolean RTSPServerWithREGISTERProxying::weImplementREGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/, char const *proxyURLSuffix, char *&responseStr)
 {
 	// First, check whether we have already proxied a stream as "proxyURLSuffix":
 	if (proxyURLSuffix != NULL)
@@ -456,10 +418,8 @@ Boolean RTSPServerWithREGISTERProxying
 	return True;
 }
 
-void RTSPServerWithREGISTERProxying
-::implementCmd_REGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/,
-	char const *url, char const * /*urlSuffix*/, int socketToRemoteServer,
-	Boolean deliverViaTCP, char const *proxyURLSuffix)
+void RTSPServerWithREGISTERProxying::implementCmd_REGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/,
+	char const *url, char const * /*urlSuffix*/, int socketToRemoteServer, Boolean deliverViaTCP, char const *proxyURLSuffix)
 {
 	// Continue setting up proxying for the specified URL.
 	// By default:
@@ -489,10 +449,8 @@ void RTSPServerWithREGISTERProxying
 		portNumBits tunnelOverHTTPPortNum = deliverViaTCP ? (portNumBits)(~0) : 0;
 		// We don't support streaming from the back-end via RTSP/RTP/RTCP-over-HTTP; only via RTP/RTCP-over-TCP or RTP/RTCP-over-UDP
 
-		ServerMediaSession *sms
-			= ProxyServerMediaSession::createNew(envir(), this, url, proxyStreamName,
-					fBackEndUsername, fBackEndPassword,
-					tunnelOverHTTPPortNum, fVerbosityLevelForProxying, socketToRemoteServer);
+		ServerMediaSession *sms = ProxyServerMediaSession::createNew(envir(), this, url, proxyStreamName,
+			fBackEndUsername, fBackEndPassword, tunnelOverHTTPPortNum, fVerbosityLevelForProxying, socketToRemoteServer);
 		addServerMediaSession(sms);
 
 		// (Regardless of the verbosity level) announce the fact that we're proxying this new stream, and the URL to use to access it:

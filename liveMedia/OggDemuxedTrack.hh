@@ -27,7 +27,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class OggDemux; // forward
 
-class OggDemuxedTrack: public FramedSource
+class OggDemuxedTrack : public FramedSource
 {
 private: // We are created only by a OggDemux (a friend)
 	friend class OggDemux;

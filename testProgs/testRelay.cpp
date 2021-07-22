@@ -86,6 +86,5 @@ int main(int argc, char **argv)
 	sink->startPlaying(*source, NULL, NULL);
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }

@@ -25,23 +25,23 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
    subclass of "MultiFramedRTPSource" (or "BasicUDPSource") that implements it.
    Then define your own subclass of "MediaSession" and "MediaSubsession", as follows:
    - In your subclass of "MediaSession" (named, for example, "myMediaSession"):
-       - Define and implement your own static member function
-           static myMediaSession* createNew(UsageEnvironment& env, char const* sdpDescription);
+	   - Define and implement your own static member function
+		   static myMediaSession* createNew(UsageEnvironment& env, char const* sdpDescription);
 	 and call this - instead of "MediaSession::createNew()" - in your application,
 	 when you create a new "MediaSession" object.
-       - Reimplement the "createNewMediaSubsession()" virtual function, as follows:
-           MediaSubsession* myMediaSession::createNewMediaSubsession() { return new myMediaSubsession(*this); }
+	   - Reimplement the "createNewMediaSubsession()" virtual function, as follows:
+		   MediaSubsession* myMediaSession::createNewMediaSubsession() { return new myMediaSubsession(*this); }
    - In your subclass of "MediaSubsession" (named, for example, "myMediaSubsession"):
-       - Reimplement the "createSourceObjects()" virtual function, perhaps similar to this:
-           Boolean myMediaSubsession::createSourceObjects(int useSpecialRTPoffset) {
-	     if (strcmp(fCodecName, "X-MY-RTP-PAYLOAD-FORMAT") == 0) {
-	       // This subsession uses our custom RTP payload format:
-	       fReadSource = fRTPSource = myRTPPayloadFormatRTPSource::createNew( <parameters> );
-	       return True;
-	     } else {
-	       // This subsession uses some other RTP payload format - perhaps one that we already implement:
-	       return ::createSourceObjects(useSpecialRTPoffset);
-	     }
+	   - Reimplement the "createSourceObjects()" virtual function, perhaps similar to this:
+		   Boolean myMediaSubsession::createSourceObjects(int useSpecialRTPoffset) {
+		 if (strcmp(fCodecName, "X-MY-RTP-PAYLOAD-FORMAT") == 0) {
+		   // This subsession uses our custom RTP payload format:
+		   fReadSource = fRTPSource = myRTPPayloadFormatRTPSource::createNew( <parameters> );
+		   return True;
+		 } else {
+		   // This subsession uses some other RTP payload format - perhaps one that we already implement:
+		   return ::createSourceObjects(useSpecialRTPoffset);
+		 }
 	   }
 */
 
@@ -60,14 +60,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class MediaSubsession; // forward
 
-class MediaSession: public Medium
+class MediaSession : public Medium
 {
 public:
-	static MediaSession *createNew(UsageEnvironment &env,
-		char const *sdpDescription);
+	static MediaSession *createNew(UsageEnvironment &env, char const *sdpDescription);
 
-	static Boolean lookupByName(UsageEnvironment &env, char const *sourceName,
-		MediaSession *&resultSession);
+	static Boolean lookupByName(UsageEnvironment &env, char const *sourceName, MediaSession *&resultSession);
 
 	Boolean hasSubsessions() const
 	{
@@ -135,9 +133,7 @@ public:
 		return fAbsEndTime;
 	}
 
-	Boolean initiateByMediaType(char const *mimeType,
-		MediaSubsession *&resultSubsession,
-		int useSpecialRTPoffset = -1);
+	Boolean initiateByMediaType(char const *mimeType, MediaSubsession *&resultSubsession, int useSpecialRTPoffset = -1);
 	// Initiates the first subsession with the specified MIME type
 	// Returns the resulting subsession, or 'multi source' (not both)
 
@@ -171,11 +167,8 @@ protected:
 	Boolean parseSDPAttribute_source_filter(char const *sdpLine);
 	Boolean parseSDPAttribute_key_mgmt(char const *sdpLine);
 
-	static char *lookupPayloadFormat(unsigned char rtpPayloadType,
-		unsigned &rtpTimestampFrequency,
-		unsigned &numChannels);
-	static unsigned guessRTPTimestampFrequency(char const *mediumName,
-		char const *codecName);
+	static char *lookupPayloadFormat(unsigned char rtpPayloadType, unsigned &rtpTimestampFrequency, unsigned &numChannels);
+	static unsigned guessRTPTimestampFrequency(char const *mediumName, char const *codecName);
 
 protected:
 	friend class MediaSubsessionIterator;

@@ -256,7 +256,7 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime)
 	fDelayQueue.handleAlarm();
 }
 
-void BasicTaskScheduler::setBackgroundHandling(int socketNum, int conditionSet, BackgroundHandlerProc * handlerProc, void *clientData)
+void BasicTaskScheduler::setBackgroundHandling(int socketNum, int conditionSet, BackgroundHandlerProc *handlerProc, void *clientData)
 {
 	if (socketNum < 0)
 		return;

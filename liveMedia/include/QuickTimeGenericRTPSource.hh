@@ -26,12 +26,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class QuickTimeGenericRTPSource: public MultiFramedRTPSource
+class QuickTimeGenericRTPSource : public MultiFramedRTPSource
 {
 public:
 	static QuickTimeGenericRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency,
-		char const *mimeTypeString);
+		unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, char const *mimeTypeString);
 
 	// QuickTime-specific information, set from the QuickTime header
 	// in each packet.  This, along with the data following the header,
@@ -51,15 +50,12 @@ protected:
 
 private:
 	QuickTimeGenericRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency,
-		char const *mimeTypeString);
+		unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, char const *mimeTypeString);
 	// called only by createNew()
 
 private:
 	// redefined virtual functions:
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	virtual char const *MIMEtype() const;
 
 private:

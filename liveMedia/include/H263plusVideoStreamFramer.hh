@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 
-class H263plusVideoStreamFramer: public FramedFilter
+class H263plusVideoStreamFramer : public FramedFilter
 {
 public:
 
@@ -39,16 +39,12 @@ public:
 
 protected:
 	// Constructor called only by createNew(), or by subclass constructors
-	H263plusVideoStreamFramer(UsageEnvironment &env,
-		FramedSource *inputSource,
-		Boolean createParser = True);
+	H263plusVideoStreamFramer(UsageEnvironment &env, FramedSource *inputSource, Boolean createParser = True);
 	virtual ~H263plusVideoStreamFramer();
 
 
 public:
-	static void continueReadProcessing(void *clientData,
-		unsigned char *ptr, unsigned size,
-		struct timeval presentationTime);
+	static void continueReadProcessing(void *clientData, unsigned char *ptr, unsigned size, struct timeval presentationTime);
 	void continueReadProcessing();
 
 private:

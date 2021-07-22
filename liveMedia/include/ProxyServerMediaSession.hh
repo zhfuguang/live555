@@ -39,12 +39,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // It is used only within the implementation of "ProxyServerMediaSession", but is defined here, in case developers wish to
 // subclass it.
 
-class ProxyRTSPClient: public RTSPClient
+class ProxyRTSPClient : public RTSPClient
 {
 public:
 	ProxyRTSPClient(class ProxyServerMediaSession &ourServerMediaSession, char const *rtspURL,
-		char const *username, char const *password,
-		portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer);
+		char const *username, char const *password, portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer);
 	virtual ~ProxyRTSPClient();
 
 	void continueAfterDESCRIBE(char const *sdpDescription);
@@ -90,29 +89,19 @@ private:
 
 
 typedef ProxyRTSPClient *createNewProxyRTSPClientFunc(ProxyServerMediaSession &ourServerMediaSession,
-	char const *rtspURL,
-	char const *username, char const *password,
-	portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
-	int socketNumToServer);
+	char const *rtspURL, char const *username, char const *password, portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer);
 ProxyRTSPClient *defaultCreateNewProxyRTSPClientFunc(ProxyServerMediaSession &ourServerMediaSession,
-	char const *rtspURL,
-	char const *username, char const *password,
-	portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
-	int socketNumToServer);
+	char const *rtspURL, char const *username, char const *password, portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer);
 
-class ProxyServerMediaSession: public ServerMediaSession
+class ProxyServerMediaSession : public ServerMediaSession
 {
 public:
 	static ProxyServerMediaSession *createNew(UsageEnvironment &env,
 		GenericMediaServer *ourMediaServer, // Note: We can be used by just one server
 		char const *inputStreamURL, // the "rtsp://" URL of the stream we'll be proxying
-		char const *streamName = NULL,
-		char const *username = NULL, char const *password = NULL,
-		portNumBits tunnelOverHTTPPortNum = 0,
+		char const *streamName = NULL, char const *username = NULL, char const *password = NULL, portNumBits tunnelOverHTTPPortNum = 0,
 		// for streaming the *proxied* (i.e., back-end) stream
-		int verbosityLevel = 0,
-		int socketNumToServer = -1,
-		MediaTranscodingTable *transcodingTable = NULL);
+		int verbosityLevel = 0, int socketNumToServer = -1, MediaTranscodingTable *transcodingTable = NULL);
 	// Hack: "tunnelOverHTTPPortNum" == 0xFFFF (i.e., all-ones) means: Stream RTP/RTCP-over-TCP, but *not* using HTTP
 	// "verbosityLevel" == 1 means display basic proxy setup info; "verbosityLevel" == 2 means display RTSP client protocol also.
 	// If "socketNumToServer" is >= 0, then it is the socket number of an already-existing TCP connection to the server.
@@ -132,16 +121,10 @@ public:
 	// This can be used - along with "describeCompletedFlag" - to check whether the back-end "DESCRIBE" completed *successfully*.
 
 protected:
-	ProxyServerMediaSession(UsageEnvironment &env, GenericMediaServer *ourMediaServer,
-		char const *inputStreamURL, char const *streamName,
-		char const *username, char const *password,
-		portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
-		int socketNumToServer,
-		MediaTranscodingTable *transcodingTable,
-		createNewProxyRTSPClientFunc *ourCreateNewProxyRTSPClientFunc
-		= defaultCreateNewProxyRTSPClientFunc,
-		portNumBits initialPortNum = 6970,
-		Boolean multiplexRTCPWithRTP = False);
+	ProxyServerMediaSession(UsageEnvironment &env, GenericMediaServer *ourMediaServer, char const *inputStreamURL,
+		char const *streamName, char const *username, char const *password, portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer,
+		MediaTranscodingTable *transcodingTable, createNewProxyRTSPClientFunc *ourCreateNewProxyRTSPClientFunc = defaultCreateNewProxyRTSPClientFunc,
+		portNumBits initialPortNum = 6970, Boolean multiplexRTCPWithRTP = False);
 
 	// If you subclass "ProxyRTSPClient", then you will also need to define your own function
 	// - with signature "createNewProxyRTSPClientFunc" (see above) - that creates a new object
@@ -153,8 +136,7 @@ protected:
 	// Subclasses may redefine the following functions, if they want "ProxyServerSubsession"s
 	// to create subclassed "Groupsock" and/or "RTCPInstance" objects:
 	virtual Groupsock *createGroupsock(struct sockaddr_storage const &addr, Port port);
-	virtual RTCPInstance *createRTCP(Groupsock *RTCPgs, unsigned totSessionBW, /* in kbps */
-		unsigned char const *cname, RTPSink *sink);
+	virtual RTCPInstance *createRTCP(Groupsock *RTCPgs, unsigned totSessionBW, /* in kbps */unsigned char const *cname, RTPSink *sink);
 
 	virtual Boolean allowProxyingForSubsession(MediaSubsession const &mss);
 	// By default, this function always returns True.  However, a subclass may redefine this
@@ -189,7 +171,7 @@ private:
 // (For multi-subsession (i.e., audio+video) sessions, the outgoing streams' presentation times retain the same relative
 //  separation as those of the incoming streams.)
 
-class PresentationTimeSubsessionNormalizer: public FramedFilter
+class PresentationTimeSubsessionNormalizer : public FramedFilter
 {
 public:
 	void setRTPSink(RTPSink *rtpSink)
@@ -199,19 +181,14 @@ public:
 
 private:
 	friend class PresentationTimeSessionNormalizer;
-	PresentationTimeSubsessionNormalizer(PresentationTimeSessionNormalizer &parent, FramedSource *inputSource, RTPSource *rtpSource,
-		char const *codecName, PresentationTimeSubsessionNormalizer *next);
+	PresentationTimeSubsessionNormalizer(PresentationTimeSessionNormalizer &parent,
+		FramedSource *inputSource, RTPSource *rtpSource, char const *codecName, PresentationTimeSubsessionNormalizer *next);
 	// called only from within "PresentationTimeSessionNormalizer"
 	virtual ~PresentationTimeSubsessionNormalizer();
 
 	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
-	void afterGettingFrame(unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+		unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
+	void afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 
 private: // redefined virtual functions:
 	virtual void doGetNextFrame();
@@ -224,7 +201,7 @@ private:
 	PresentationTimeSubsessionNormalizer *fNext;
 };
 
-class PresentationTimeSessionNormalizer: public Medium
+class PresentationTimeSessionNormalizer : public Medium
 {
 public:
 	PresentationTimeSessionNormalizer(UsageEnvironment &env);
@@ -234,8 +211,7 @@ public:
 
 private: // called only from within "~PresentationTimeSubsessionNormalizer":
 	friend class PresentationTimeSubsessionNormalizer;
-	void normalizePresentationTime(PresentationTimeSubsessionNormalizer *ssNormalizer,
-		struct timeval &toPT, struct timeval const &fromPT);
+	void normalizePresentationTime(PresentationTimeSubsessionNormalizer *ssNormalizer, struct timeval &toPT, struct timeval const &fromPT);
 	void removePresentationTimeSubsessionNormalizer(PresentationTimeSubsessionNormalizer *ssNormalizer);
 
 private:

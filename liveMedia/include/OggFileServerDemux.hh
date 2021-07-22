@@ -29,12 +29,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "OggFile.hh"
 #endif
 
-class OggFileServerDemux: public Medium
+class OggFileServerDemux : public Medium
 {
 public:
 	typedef void (onCreationFunc)(OggFileServerDemux *newDemux, void *clientData);
-	static void createNew(UsageEnvironment &env, char const *fileName,
-		onCreationFunc *onCreation, void *onCreationClientData);
+	static void createNew(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData);
 	// Note: Unlike most "createNew()" functions, this one doesn't return a new object immediately.  Instead, because this class
 	// requires file reading (to parse the Ogg 'Track' headers) before a new object can be initialized, the creation of a new
 	// object is signalled by calling - from the event loop - an 'onCreationFunc' that is passed as a parameter to "createNew()".
@@ -64,8 +63,7 @@ public:
 	// Used by the "ServerMediaSubsession" objects to implement their "createNewStreamSource()" virtual function.
 
 private:
-	OggFileServerDemux(UsageEnvironment &env, char const *fileName,
-		onCreationFunc *onCreation, void *onCreationClientData);
+	OggFileServerDemux(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData);
 	// called only by createNew()
 	virtual ~OggFileServerDemux();
 

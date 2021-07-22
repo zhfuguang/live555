@@ -21,12 +21,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "OggFileServerDemux.hh"
 #include "OggFileServerMediaSubsession.hh"
 
-void OggFileServerDemux
-::createNew(UsageEnvironment &env, char const *fileName,
-	onCreationFunc *onCreation, void *onCreationClientData)
+void OggFileServerDemux::createNew(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData)
 {
-	(void)new OggFileServerDemux(env, fileName,
-		onCreation, onCreationClientData);
+	(void)new OggFileServerDemux(env, fileName, onCreation, onCreationClientData);
 }
 
 ServerMediaSubsession *OggFileServerDemux::newServerMediaSubsession()
@@ -35,8 +32,7 @@ ServerMediaSubsession *OggFileServerDemux::newServerMediaSubsession()
 	return newServerMediaSubsession(dummyResultTrackNumber);
 }
 
-ServerMediaSubsession *OggFileServerDemux
-::newServerMediaSubsession(u_int32_t &resultTrackNumber)
+ServerMediaSubsession *OggFileServerDemux::newServerMediaSubsession(u_int32_t &resultTrackNumber)
 {
 	resultTrackNumber = 0;
 
@@ -47,8 +43,7 @@ ServerMediaSubsession *OggFileServerDemux
 	return newServerMediaSubsessionByTrackNumber(nextTrack->trackNumber);
 }
 
-ServerMediaSubsession *OggFileServerDemux
-::newServerMediaSubsessionByTrackNumber(u_int32_t trackNumber)
+ServerMediaSubsession *OggFileServerDemux::newServerMediaSubsessionByTrackNumber(u_int32_t trackNumber)
 {
 	OggTrack *track = fOurOggFile->lookup(trackNumber);
 	if (track == NULL)
@@ -89,13 +84,9 @@ FramedSource *OggFileServerDemux::newDemuxedTrack(unsigned clientSessionId, u_in
 	return demuxToUse->newDemuxedTrackByTrackNumber(trackNumber);
 }
 
-OggFileServerDemux
-::OggFileServerDemux(UsageEnvironment &env, char const *fileName,
-	onCreationFunc *onCreation, void *onCreationClientData)
-	: Medium(env),
-	  fFileName(fileName), fOnCreation(onCreation), fOnCreationClientData(onCreationClientData),
-	  fIter(NULL/*until the OggFile is created*/),
-	  fLastClientSessionId(0), fLastCreatedDemux(NULL)
+OggFileServerDemux::OggFileServerDemux(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData)
+	: Medium(env), fFileName(fileName), fOnCreation(onCreation), fOnCreationClientData(onCreationClientData)
+	, fIter(NULL/*until the OggFile is created*/), fLastClientSessionId(0), fLastCreatedDemux(NULL)
 {
 	OggFile::createNew(env, fileName, onOggFileCreation, this);
 }
@@ -103,7 +94,6 @@ OggFileServerDemux
 OggFileServerDemux::~OggFileServerDemux()
 {
 	Medium::close(fOurOggFile);
-
 	delete fIter;
 }
 
@@ -115,7 +105,6 @@ void OggFileServerDemux::onOggFileCreation(OggFile *newFile, void *clientData)
 void OggFileServerDemux::onOggFileCreation(OggFile *newFile)
 {
 	fOurOggFile = newFile;
-
 	fIter = new OggTrackTableIterator(fOurOggFile->trackTable());
 
 	// Now, call our own creation notification function:

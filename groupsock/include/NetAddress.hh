@@ -41,8 +41,7 @@ typedef u_int8_t ipv6AddressBits[16]; // 128 bits
 class NetAddress
 {
 public:
-	NetAddress(u_int8_t const *data,
-		unsigned length = 4 /* default: 32 bits (for IPv4); use 16 (128 bits) for IPv6 */);
+	NetAddress(u_int8_t const *data, unsigned length = 4 /* default: 32 bits (for IPv4); use 16 (128 bits) for IPv6 */);
 	NetAddress(unsigned length = 4); // sets address data to all-zeros
 	NetAddress(NetAddress const &orig);
 	NetAddress &operator=(NetAddress const &rightSide);
@@ -139,33 +138,22 @@ public:
 	AddressPortLookupTable();
 	virtual ~AddressPortLookupTable();
 
-	void *Add(struct sockaddr_storage const &address1,
-		struct sockaddr_storage const &address2,
-		Port port,
-		void *value);
+	void *Add(struct sockaddr_storage const &address1, struct sockaddr_storage const &address2, Port port, void *value);
 	// Returns the old value if different, otherwise 0
-	void *Add(struct sockaddr_storage const &address1,
-		Port port,
-		void *value)
+	void *Add(struct sockaddr_storage const &address1, Port port, void *value)
 	{
 		return Add(address1, nullAddress(), port, value);
 	}
 
-	Boolean Remove(struct sockaddr_storage const &address1,
-		struct sockaddr_storage const &address2,
-		Port port);
-	Boolean Remove(struct sockaddr_storage const &address1,
-		Port port)
+	Boolean Remove(struct sockaddr_storage const &address1, struct sockaddr_storage const &address2, Port port);
+	Boolean Remove(struct sockaddr_storage const &address1, Port port)
 	{
 		return Remove(address1, nullAddress(), port);
 	}
 
-	void *Lookup(struct sockaddr_storage const &address1,
-		struct sockaddr_storage const &address2,
-		Port port);
+	void *Lookup(struct sockaddr_storage const &address1, struct sockaddr_storage const &address2, Port port);
 	// Returns 0 if not found
-	void *Lookup(struct sockaddr_storage const &address1,
-		Port port)
+	void *Lookup(struct sockaddr_storage const &address1, Port port)
 	{
 		return Lookup(address1, nullAddress(), port);
 	}

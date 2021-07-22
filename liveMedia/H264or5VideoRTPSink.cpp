@@ -30,11 +30,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // class, rather than in "H264or5VideoRTPSink".
 // (Note: This class should be used only by "H264or5VideoRTPSink", or a subclass.)
 
-class H264or5Fragmenter: public FramedFilter
+class H264or5Fragmenter : public FramedFilter
 {
 public:
-	H264or5Fragmenter(int hNumber, UsageEnvironment &env, FramedSource *inputSource,
-		unsigned inputBufferMax, unsigned maxOutputPacketSize);
+	H264or5Fragmenter(int hNumber, UsageEnvironment &env, FramedSource *inputSource, unsigned inputBufferMax, unsigned maxOutputPacketSize);
 	virtual ~H264or5Fragmenter();
 
 	Boolean lastFragmentCompletedNALUnit() const
@@ -47,14 +46,8 @@ private: // redefined virtual functions:
 	virtual void doStopGettingFrames();
 
 private:
-	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
-	void afterGettingFrame1(unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+	static void afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
+	void afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 	void reset();
 
 private:
@@ -71,14 +64,9 @@ private:
 
 ////////// H264or5VideoRTPSink implementation //////////
 
-H264or5VideoRTPSink
-::H264or5VideoRTPSink(int hNumber,
-	UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat,
-	u_int8_t const *vps, unsigned vpsSize,
-	u_int8_t const *sps, unsigned spsSize,
-	u_int8_t const *pps, unsigned ppsSize)
-	: VideoRTPSink(env, RTPgs, rtpPayloadFormat, 90000, hNumber == 264 ? "H264" : "H265"),
-	  fHNumber(hNumber), fOurFragmenter(NULL), fFmtpSDPLine(NULL)
+H264or5VideoRTPSink::H264or5VideoRTPSink(int hNumber, UsageEnvironment &env, Groupsock *RTPgs,
+	unsigned char rtpPayloadFormat, u_int8_t const *vps, unsigned vpsSize, u_int8_t const *sps, unsigned spsSize, u_int8_t const *pps, unsigned ppsSize)
+	: VideoRTPSink(env, RTPgs, rtpPayloadFormat, 90000, hNumber == 264 ? "H264" : "H265"), fHNumber(hNumber), fOurFragmenter(NULL), fFmtpSDPLine(NULL)
 {
 	if (vps != NULL)
 	{
@@ -135,8 +123,7 @@ Boolean H264or5VideoRTPSink::continuePlaying()
 	// If not, create it now:
 	if (fOurFragmenter == NULL)
 	{
-		fOurFragmenter = new H264or5Fragmenter(fHNumber, envir(), fSource, OutPacketBuffer::maxSize,
-			ourMaxPacketSize() - 12/*RTP hdr size*/);
+		fOurFragmenter = new H264or5Fragmenter(fHNumber, envir(), fSource, OutPacketBuffer::maxSize, ourMaxPacketSize() - 12/*RTP hdr size*/);
 	}
 	else
 	{
@@ -149,18 +136,14 @@ Boolean H264or5VideoRTPSink::continuePlaying()
 }
 
 void H264or5VideoRTPSink::doSpecialFrameHandling(unsigned /*fragmentationOffset*/,
-	unsigned char * /*frameStart*/,
-	unsigned /*numBytesInFrame*/,
-	struct timeval framePresentationTime,
-	unsigned /*numRemainingBytes*/)
+	unsigned char * /*frameStart*/, unsigned /*numBytesInFrame*/, struct timeval framePresentationTime, unsigned /*numRemainingBytes*/)
 {
 	// Set the RTP 'M' (marker) bit iff
 	// 1/ The most recently delivered fragment was the end of (or the only fragment of) an NAL unit, and
 	// 2/ This NAL unit was the last NAL unit of an 'access unit' (i.e. video frame).
 	if (fOurFragmenter != NULL)
 	{
-		H264or5VideoStreamFramer *framerSource
-			= (H264or5VideoStreamFramer *)(fOurFragmenter->inputSource());
+		H264or5VideoStreamFramer *framerSource = (H264or5VideoStreamFramer *)(fOurFragmenter->inputSource());
 		// This relies on our fragmenter's source being a "H264or5VideoStreamFramer".
 		if (((H264or5Fragmenter *)fOurFragmenter)->lastFragmentCompletedNALUnit()
 			&& framerSource != NULL && framerSource->pictureEndMarker())
@@ -173,9 +156,7 @@ void H264or5VideoRTPSink::doSpecialFrameHandling(unsigned /*fragmentationOffset*
 	setTimestamp(framePresentationTime);
 }
 
-Boolean H264or5VideoRTPSink
-::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/,
-	unsigned /*numBytesInFrame*/) const
+Boolean H264or5VideoRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/, unsigned /*numBytesInFrame*/) const
 {
 	return False;
 }
@@ -183,12 +164,8 @@ Boolean H264or5VideoRTPSink
 
 ////////// H264or5Fragmenter implementation //////////
 
-H264or5Fragmenter::H264or5Fragmenter(int hNumber,
-	UsageEnvironment &env, FramedSource *inputSource,
-	unsigned inputBufferMax, unsigned maxOutputPacketSize)
-	: FramedFilter(env, inputSource),
-	  fHNumber(hNumber),
-	  fInputBufferSize(inputBufferMax + 1), fMaxOutputPacketSize(maxOutputPacketSize)
+H264or5Fragmenter::H264or5Fragmenter(int hNumber, UsageEnvironment &env, FramedSource *inputSource, unsigned inputBufferMax, unsigned maxOutputPacketSize)
+	: FramedFilter(env, inputSource), fHNumber(hNumber), fInputBufferSize(inputBufferMax + 1), fMaxOutputPacketSize(maxOutputPacketSize)
 {
 	fInputBuffer = new unsigned char[fInputBufferSize];
 	reset();
@@ -205,9 +182,7 @@ void H264or5Fragmenter::doGetNextFrame()
 	if (fNumValidDataBytes == 1)
 	{
 		// We have no NAL unit data currently in the buffer.  Read a new one:
-		fInputSource->getNextFrame(&fInputBuffer[1], fInputBufferSize - 1,
-			afterGettingFrame, this,
-			FramedSource::handleClosure, this);
+		fInputSource->getNextFrame(&fInputBuffer[1], fInputBufferSize - 1, afterGettingFrame, this, FramedSource::handleClosure, this);
 	}
 	else
 	{
@@ -224,8 +199,7 @@ void H264or5Fragmenter::doGetNextFrame()
 
 		if (fMaxSize < fMaxOutputPacketSize)   // shouldn't happen
 		{
-			envir() << "H264or5Fragmenter::doGetNextFrame(): fMaxSize ("
-				<< fMaxSize << ") is smaller than expected\n";
+			envir() << "H264or5Fragmenter::doGetNextFrame(): fMaxSize (" << fMaxSize << ") is smaller than expected\n";
 		}
 		else
 		{
@@ -321,20 +295,13 @@ void H264or5Fragmenter::doStopGettingFrames()
 	FramedFilter::doStopGettingFrames();
 }
 
-void H264or5Fragmenter::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void H264or5Fragmenter::afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	H264or5Fragmenter *fragmenter = (H264or5Fragmenter *)clientData;
-	fragmenter->afterGettingFrame1(frameSize, numTruncatedBytes, presentationTime,
-		durationInMicroseconds);
+	fragmenter->afterGettingFrame1(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
 }
 
-void H264or5Fragmenter::afterGettingFrame1(unsigned frameSize,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void H264or5Fragmenter::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	fNumValidDataBytes += frameSize;
 	fSaveNumTruncatedBytes = numTruncatedBytes;

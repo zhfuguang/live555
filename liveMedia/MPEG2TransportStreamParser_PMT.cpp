@@ -20,8 +20,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "MPEG2TransportStreamParser.hh"
 
-void MPEG2TransportStreamParser
-::parsePMT(PIDState_PMT *pidState, Boolean pusi, unsigned numDataBytes)
+void MPEG2TransportStreamParser::parsePMT(PIDState_PMT *pidState, Boolean pusi, unsigned numDataBytes)
 {
 #ifdef DEBUG_CONTENTS
 	fprintf(stderr, "\tProgram Map Table\n");
@@ -86,8 +85,7 @@ void MPEG2TransportStreamParser
 		u_int8_t version_number = (version_number_byte & 0x1E) >> 1;
 		u_int8_t section_number = get1Byte();
 		u_int8_t last_section_number = get1Byte();
-		fprintf(stderr, "\t\tversion_number: %d; section_number: %d; last_section_number: %d\n",
-			version_number, section_number, last_section_number);
+		fprintf(stderr, "\t\tversion_number: %d; section_number: %d; last_section_number: %d\n", version_number, section_number, last_section_number);
 		u_int16_t PCR_PID = get2Bytes();
 		PCR_PID &= 0x1FFF;
 		fprintf(stderr, "\t\tPCR_PID: 0x%04x\n", PCR_PID);
@@ -137,8 +135,7 @@ void MPEG2TransportStreamParser
 
 			if (fPIDState[elementary_PID] == NULL)
 			{
-				fPIDState[elementary_PID]
-					= new PIDState_STREAM(*this, elementary_PID, program_number, stream_type);
+				fPIDState[elementary_PID] = new PIDState_STREAM(*this, elementary_PID, program_number, stream_type);
 			}
 		}
 	} while (0);
@@ -191,8 +188,7 @@ void MPEG2TransportStreamParser::parseStreamDescriptors(unsigned numDescriptorBy
 				u_int8_t flags = get1Byte();
 				Boolean MPEG_1_only_flag = (flags & 0x04) != 0;
 #ifdef DEBUG_CONTENTS
-				fprintf(stderr, "\t\t\t\tflags: 0x%02x (frame_rate_code 0x%1x; MPEG_1_only_flag %d)\n",
-					flags, (flags & 0x78) >> 3, MPEG_1_only_flag);
+				fprintf(stderr, "\t\t\t\tflags: 0x%02x (frame_rate_code 0x%1x; MPEG_1_only_flag %d)\n", flags, (flags & 0x78) >> 3, MPEG_1_only_flag);
 #endif
 				if (MPEG_1_only_flag == 0)
 				{
@@ -233,8 +229,7 @@ void MPEG2TransportStreamParser::parseStreamDescriptors(unsigned numDescriptorBy
 					break;
 #ifdef DEBUG_CONTENTS
 				u_int32_t format_identifier = get4Bytes();
-				fprintf(stderr, "\t\t\t\tformat_identifier: 0x%08x (%c%c%c%c)\n",
-					format_identifier,
+				fprintf(stderr, "\t\t\t\tformat_identifier: 0x%08x (%c%c%c%c)\n", format_identifier,
 					format_identifier >> 24, format_identifier >> 16, format_identifier >> 8, format_identifier);
 				if (descriptor_length > 4)
 				{
@@ -271,8 +266,7 @@ void MPEG2TransportStreamParser::parseStreamDescriptors(unsigned numDescriptorBy
 				for (unsigned i = 0; i < descriptor_length / 4; ++i)
 				{
 #ifdef DEBUG_CONTENTS
-					fprintf(stderr, "\t\t\t\tISO_639_language_code: %c%c%c; audio_type: 0x%02x\n",
-						get1Byte(), get1Byte(), get1Byte(), get1Byte());
+					fprintf(stderr, "\t\t\t\tISO_639_language_code: %c%c%c; audio_type: 0x%02x\n", get1Byte(), get1Byte(), get1Byte(), get1Byte());
 #else
 					skipBytes(4);
 #endif
@@ -312,8 +306,7 @@ void MPEG2TransportStreamParser::parseStreamDescriptors(unsigned numDescriptorBy
 					break;
 #ifdef DEBUG_CONTENTS
 				u_int32_t maximum_bitrate = ((get1Byte() & 0x3F) << 16) | get2Bytes(); // 22 bits
-				fprintf(stderr, "\t\t\t\tmaximum_bitrate: %d => %f Mbps\n",
-					maximum_bitrate, (maximum_bitrate * 50 * 8) / 1000000.0);
+				fprintf(stderr, "\t\t\t\tmaximum_bitrate: %d => %f Mbps\n", maximum_bitrate, (maximum_bitrate * 50 * 8) / 1000000.0);
 #else
 				skipBytes(3);
 #endif
@@ -329,8 +322,7 @@ void MPEG2TransportStreamParser::parseStreamDescriptors(unsigned numDescriptorBy
 #ifdef DEBUG_CONTENTS
 				u_int32_t sb_leak_rate = ((get1Byte() & 0x3F) << 16) | get2Bytes(); // 22 bits
 				u_int32_t sb_size = ((get1Byte() & 0x3F) << 16) | get2Bytes(); // 22 bits
-				fprintf(stderr, "\t\t\t\tsb_leak_rate: %d => %f Mbps; sb_size: %d bytes\n",
-					sb_leak_rate, (sb_leak_rate * 400) / 1000000.0, sb_size);
+				fprintf(stderr, "\t\t\t\tsb_leak_rate: %d => %f Mbps; sb_size: %d bytes\n", sb_leak_rate, (sb_leak_rate * 400) / 1000000.0, sb_size);
 #else
 				skipBytes(6);
 #endif
@@ -387,11 +379,9 @@ void MPEG2TransportStreamParser::parseStreamDescriptors(unsigned numDescriptorBy
 				for (unsigned i = 0; i < descriptor_length / 5; ++i)
 				{
 #ifdef DEBUG_CONTENTS
-					fprintf(stderr, "\t\t\t\tISO_639_language_code: %c%c%c",
-						get1Byte(), get1Byte(), get1Byte());
+					fprintf(stderr, "\t\t\t\tISO_639_language_code: %c%c%c", get1Byte(), get1Byte(), get1Byte());
 					u_int8_t typePlusMagazine = get1Byte();
-					fprintf(stderr, "; type: 0x%02x; magazine: %d; page: %d\n",
-						typePlusMagazine >> 3, typePlusMagazine & 0x07, get1Byte());
+					fprintf(stderr, "; type: 0x%02x; magazine: %d; page: %d\n", typePlusMagazine >> 3, typePlusMagazine & 0x07, get1Byte());
 #else
 					skipBytes(5);
 #endif
@@ -406,8 +396,7 @@ void MPEG2TransportStreamParser::parseStreamDescriptors(unsigned numDescriptorBy
 				for (unsigned i = 0; i < descriptor_length / 8; ++i)
 				{
 #ifdef DEBUG_CONTENTS
-					fprintf(stderr, "\t\t\t\tISO_639_language_code: %c%c%c",
-						get1Byte(), get1Byte(), get1Byte());
+					fprintf(stderr, "\t\t\t\tISO_639_language_code: %c%c%c", get1Byte(), get1Byte(), get1Byte());
 					fprintf(stderr, "; subtitling_type: 0x%02x; composition_page_id: 0x%04x; ancillary_page_id: 0x%04x\n",
 						get1Byte(), get2Bytes(), get2Bytes());
 #else
@@ -424,8 +413,7 @@ void MPEG2TransportStreamParser::parseStreamDescriptors(unsigned numDescriptorBy
 				for (unsigned i = 0; i < descriptor_length / 3; ++i)
 				{
 #ifdef DEBUG_CONTENTS
-					fprintf(stderr, "\t\t\t\tapplication_type: 0x%04x; AIT_version_number: %d\n",
-						get2Bytes() & 0x7FFF, get1Byte() & 0x1F);
+					fprintf(stderr, "\t\t\t\tapplication_type: 0x%04x; AIT_version_number: %d\n", get2Bytes() & 0x7FFF, get1Byte() & 0x1F);
 #else
 					skipBytes(3);
 #endif
@@ -463,14 +451,11 @@ void MPEG2TransportStreamParser::parseStreamDescriptors(unsigned numDescriptorBy
 					break;
 #ifdef DEBUG_CONTENTS
 				u_int8_t flags = get1Byte();
-				fprintf(stderr, "\t\t\t\tsample_rate_code: %d; bsid: 0x%02x",
-					flags >> 5, flags & 0x1F);
+				fprintf(stderr, "\t\t\t\tsample_rate_code: %d; bsid: 0x%02x", flags >> 5, flags & 0x1F);
 				flags = get1Byte();
-				fprintf(stderr, "; bit_rate_code: %d; surround_mode: %d",
-					flags >> 2, flags & 0x03);
+				fprintf(stderr, "; bit_rate_code: %d; surround_mode: %d", flags >> 2, flags & 0x03);
 				flags = get1Byte();
-				fprintf(stderr, "; bsmod: %d; num_channels: %d; full_svc: %d",
-					flags >> 5, (flags & 0x1E) >> 1, (flags & 0x01));
+				fprintf(stderr, "; bsmod: %d; num_channels: %d; full_svc: %d", flags >> 5, (flags & 0x1E) >> 1, (flags & 0x01));
 				if (descriptor_length > 3)
 				{
 					fprintf(stderr, "; extra bytes: ");
@@ -514,8 +499,7 @@ void MPEG2TransportStreamParser::parseStreamDescriptors(unsigned numDescriptorBy
 					}
 
 					u_int16_t flags2 = get2Bytes();
-					fprintf(stderr, "; easy_reader: %d; wide_aspect_ratio: %d\n",
-						(flags2 & 0x8000) != 0, (flags2 & 0x4000) != 0);
+					fprintf(stderr, "; easy_reader: %d; wide_aspect_ratio: %d\n", (flags2 & 0x8000) != 0, (flags2 & 0x4000) != 0);
 				}
 #else
 				skipBytes(number_of_services * 6);
@@ -551,10 +535,8 @@ void MPEG2TransportStreamParser::parseStreamDescriptors(unsigned numDescriptorBy
 
 //########## PIDState_PMT implementation ##########
 
-PIDState_PMT
-::PIDState_PMT(MPEG2TransportStreamParser &parser, u_int16_t pid, u_int16_t programNumber)
-	: PIDState(parser, pid, PMT),
-	  program_number(programNumber)
+PIDState_PMT::PIDState_PMT(MPEG2TransportStreamParser &parser, u_int16_t pid, u_int16_t programNumber)
+	: PIDState(parser, pid, PMT), program_number(programNumber)
 {
 }
 

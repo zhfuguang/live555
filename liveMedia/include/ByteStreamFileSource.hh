@@ -25,20 +25,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedFileSource.hh"
 #endif
 
-class ByteStreamFileSource: public FramedFileSource
+class ByteStreamFileSource : public FramedFileSource
 {
 public:
-	static ByteStreamFileSource *createNew(UsageEnvironment &env,
-		char const *fileName,
-		unsigned preferredFrameSize = 0,
-		unsigned playTimePerFrame = 0);
+	static ByteStreamFileSource *createNew(UsageEnvironment &env, char const *fileName, unsigned preferredFrameSize = 0, unsigned playTimePerFrame = 0);
 	// "preferredFrameSize" == 0 means 'no preference'
 	// "playTimePerFrame" is in microseconds
 
-	static ByteStreamFileSource *createNew(UsageEnvironment &env,
-		FILE *fid,
-		unsigned preferredFrameSize = 0,
-		unsigned playTimePerFrame = 0);
+	static ByteStreamFileSource *createNew(UsageEnvironment &env, FILE *fid, unsigned preferredFrameSize = 0, unsigned playTimePerFrame = 0);
 	// an alternative version of "createNew()" that's used if you already have
 	// an open file.
 
@@ -54,10 +48,7 @@ public:
 	void seekToEnd(); // to force EOF handling on the next read
 
 protected:
-	ByteStreamFileSource(UsageEnvironment &env,
-		FILE *fid,
-		unsigned preferredFrameSize,
-		unsigned playTimePerFrame);
+	ByteStreamFileSource(UsageEnvironment &env, FILE *fid, unsigned preferredFrameSize, unsigned playTimePerFrame);
 	// called only by createNew()
 
 	virtual ~ByteStreamFileSource();

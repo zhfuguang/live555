@@ -24,8 +24,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 ////////// T140TextRTPSink implementation //////////
 
 T140TextRTPSink::T140TextRTPSink(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat)
-	: TextRTPSink(env, RTPgs, rtpPayloadFormat, 1000/*mandatory RTP timestamp frequency for this payload format*/, "T140"),
-	  fOurIdleFilter(NULL), fAreInIdlePeriod(True)
+	: TextRTPSink(env, RTPgs, rtpPayloadFormat, 1000/*mandatory RTP timestamp frequency for this payload format*/, "T140")
+	, fOurIdleFilter(NULL), fAreInIdlePeriod(True)
 {
 }
 
@@ -39,8 +39,7 @@ T140TextRTPSink::~T140TextRTPSink()
 	fSource = NULL; // for the base class destructor, which gets called next
 }
 
-T140TextRTPSink *T140TextRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat)
+T140TextRTPSink *T140TextRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat)
 {
 	return new T140TextRTPSink(env, RTPgs, rtpPayloadFormat);
 }
@@ -63,10 +62,7 @@ Boolean T140TextRTPSink::continuePlaying()
 }
 
 void T140TextRTPSink::doSpecialFrameHandling(unsigned /*fragmentationOffset*/,
-	unsigned char * /*frameStart*/,
-	unsigned numBytesInFrame,
-	struct timeval framePresentationTime,
-	unsigned /*numRemainingBytes*/)
+	unsigned char * /*frameStart*/, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned /*numRemainingBytes*/)
 {
 	// Set the RTP 'M' (marker) bit if we have just ended an idle period - i.e., if we were in an idle period, but just got data:
 	if (fAreInIdlePeriod && numBytesInFrame > 0)
@@ -85,9 +81,7 @@ Boolean T140TextRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*
 ////////// T140IdleFilter implementation //////////
 
 T140IdleFilter::T140IdleFilter(UsageEnvironment &env, FramedSource *inputSource)
-	: FramedFilter(env, inputSource),
-	  fIdleTimerTask(NULL),
-	  fBufferSize(OutPacketBuffer::maxSize), fNumBufferedBytes(0)
+	: FramedFilter(env, inputSource), fIdleTimerTask(NULL), fBufferSize(OutPacketBuffer::maxSize), fNumBufferedBytes(0)
 {
 	fBuffer = new char[fBufferSize];
 }
@@ -121,17 +115,12 @@ void T140IdleFilter::doGetNextFrame()
 }
 
 void T140IdleFilter::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+	unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	((T140IdleFilter *)clientData)->afterGettingFrame(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
 }
 
-void T140IdleFilter::afterGettingFrame(unsigned frameSize,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void T140IdleFilter::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	// First, cancel any pending idle timer:
 	envir().taskScheduler().unscheduleDelayedTask(fIdleTimerTask);

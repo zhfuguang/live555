@@ -20,18 +20,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "VP9VideoRTPSource.hh"
 
-VP9VideoRTPSource *VP9VideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
+VP9VideoRTPSource *VP9VideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
 {
-	return new VP9VideoRTPSource(env, RTPgs, rtpPayloadFormat,
-			rtpTimestampFrequency);
+	return new VP9VideoRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency);
 }
 
-VP9VideoRTPSource
-::VP9VideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
+VP9VideoRTPSource::VP9VideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
 	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency)
 {
 }
@@ -42,9 +36,7 @@ VP9VideoRTPSource::~VP9VideoRTPSource()
 
 #define incrHeader do { ++resultSpecialHeaderSize; ++headerStart; if (--packetSize == 0) return False; } while (0)
 
-Boolean VP9VideoRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean VP9VideoRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	unsigned char *headerStart = packet->data();
 	unsigned packetSize = packet->dataSize();

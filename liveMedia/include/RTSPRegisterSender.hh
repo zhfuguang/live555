@@ -26,22 +26,21 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RTSPClient.hh"
 #endif
 
-class RTSPRegisterOrDeregisterSender: public RTSPClient
+class RTSPRegisterOrDeregisterSender : public RTSPClient
 {
 public:
 	virtual ~RTSPRegisterOrDeregisterSender();
 protected: // we're a virtual base class
-	RTSPRegisterOrDeregisterSender(UsageEnvironment &env,
-		char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum,
-		Authenticator *authenticator,
-		int verbosityLevel, char const *applicationName);
+	RTSPRegisterOrDeregisterSender(UsageEnvironment &env, char const *remoteClientNameOrAddress,
+		portNumBits remoteClientPortNum, Authenticator *authenticator, int verbosityLevel, char const *applicationName);
 
 public: // Some compilers complain if this is "protected:"
 	// A subclass of "RTSPClient::RequestRecord", specific to our "REGISTER" and "DEREGISTER" commands:
-	class RequestRecord_REGISTER_or_DEREGISTER: public RTSPClient::RequestRecord
+	class RequestRecord_REGISTER_or_DEREGISTER : public RTSPClient::RequestRecord
 	{
 	public:
-		RequestRecord_REGISTER_or_DEREGISTER(unsigned cseq, char const *cmdName, RTSPClient::responseHandler *rtspResponseHandler, char const *rtspURLToRegisterOrDeregister, char const *proxyURLSuffix);
+		RequestRecord_REGISTER_or_DEREGISTER(unsigned cseq, char const *cmdName,
+			RTSPClient::responseHandler *rtspResponseHandler, char const *rtspURLToRegisterOrDeregister, char const *proxyURLSuffix);
 		virtual ~RequestRecord_REGISTER_or_DEREGISTER();
 
 		char const *proxyURLSuffix() const
@@ -60,39 +59,34 @@ protected:
 
 //////////
 
-class RTSPRegisterSender: public RTSPRegisterOrDeregisterSender
+class RTSPRegisterSender : public RTSPRegisterOrDeregisterSender
 {
 public:
-	static RTSPRegisterSender *createNew(UsageEnvironment &env,
-		char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum, char const *rtspURLToRegister,
-		RTSPClient::responseHandler *rtspResponseHandler, Authenticator *authenticator = NULL,
-		Boolean requestStreamingViaTCP = False, char const *proxyURLSuffix = NULL, Boolean reuseConnection = False,
-		int verbosityLevel = 0, char const *applicationName = NULL);
+	static RTSPRegisterSender *createNew(UsageEnvironment &env, char const *remoteClientNameOrAddress,
+		portNumBits remoteClientPortNum, char const *rtspURLToRegister, RTSPClient::responseHandler *rtspResponseHandler,
+		Authenticator *authenticator = NULL, Boolean requestStreamingViaTCP = False, char const *proxyURLSuffix = NULL,
+		Boolean reuseConnection = False, int verbosityLevel = 0, char const *applicationName = NULL);
 
 	void grabConnection(int &sock, struct sockaddr_storage &remoteAddress); // so that the socket doesn't get closed when we're deleted
 
 protected:
-	RTSPRegisterSender(UsageEnvironment &env,
-		char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum, char const *rtspURLToRegister,
-		RTSPClient::responseHandler *rtspResponseHandler, Authenticator *authenticator,
-		Boolean requestStreamingViaTCP, char const *proxyURLSuffix, Boolean reuseConnection,
-		int verbosityLevel, char const *applicationName);
+	RTSPRegisterSender(UsageEnvironment &env, char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum,
+		char const *rtspURLToRegister, RTSPClient::responseHandler *rtspResponseHandler, Authenticator *authenticator,
+		Boolean requestStreamingViaTCP, char const *proxyURLSuffix, Boolean reuseConnection, int verbosityLevel, char const *applicationName);
 	// called only by "createNew()"
 	virtual ~RTSPRegisterSender();
 
 	// Redefined virtual functions:
-	virtual Boolean setRequestFields(RequestRecord *request,
-		char *&cmdURL, Boolean &cmdURLWasAllocated,
-		char const *&protocolStr,
-		char *&extraHeaders, Boolean &extraHeadersWereAllocated);
+	virtual Boolean setRequestFields(RequestRecord *request, char *&cmdURL,
+		Boolean &cmdURLWasAllocated, char const *&protocolStr, char *&extraHeaders, Boolean &extraHeadersWereAllocated);
 
 public: // Some compilers complain if this is "protected:"
 	// A subclass of "RequestRecord_REGISTER_or_DEREGISTER", specific to our "REGISTER" command:
-	class RequestRecord_REGISTER: public RTSPRegisterOrDeregisterSender::RequestRecord_REGISTER_or_DEREGISTER
+	class RequestRecord_REGISTER : public RTSPRegisterOrDeregisterSender::RequestRecord_REGISTER_or_DEREGISTER
 	{
 	public:
-		RequestRecord_REGISTER(unsigned cseq, RTSPClient::responseHandler *rtspResponseHandler, char const *rtspURLToRegister,
-			Boolean reuseConnection, Boolean requestStreamingViaTCP, char const *proxyURLSuffix);
+		RequestRecord_REGISTER(unsigned cseq, RTSPClient::responseHandler *rtspResponseHandler,
+			char const *rtspURLToRegister, Boolean reuseConnection, Boolean requestStreamingViaTCP, char const *proxyURLSuffix);
 		virtual ~RequestRecord_REGISTER();
 
 		char const *rtspURLToRegister() const
@@ -115,21 +109,17 @@ public: // Some compilers complain if this is "protected:"
 
 //////////
 
-class RTSPDeregisterSender: public RTSPRegisterOrDeregisterSender
+class RTSPDeregisterSender : public RTSPRegisterOrDeregisterSender
 {
 public:
-	static RTSPDeregisterSender *createNew(UsageEnvironment &env,
-		char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum, char const *rtspURLToDeregister,
-		RTSPClient::responseHandler *rtspResponseHandler, Authenticator *authenticator = NULL,
-		char const *proxyURLSuffix = NULL,
-		int verbosityLevel = 0, char const *applicationName = NULL);
+	static RTSPDeregisterSender *createNew(UsageEnvironment &env, char const *remoteClientNameOrAddress,
+		portNumBits remoteClientPortNum, char const *rtspURLToDeregister, RTSPClient::responseHandler *rtspResponseHandler,
+		Authenticator *authenticator = NULL, char const *proxyURLSuffix = NULL, int verbosityLevel = 0, char const *applicationName = NULL);
 
 protected:
-	RTSPDeregisterSender(UsageEnvironment &env,
-		char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum, char const *rtspURLToDeregister,
-		RTSPClient::responseHandler *rtspResponseHandler, Authenticator *authenticator,
-		char const *proxyURLSuffix,
-		int verbosityLevel, char const *applicationName);
+	RTSPDeregisterSender(UsageEnvironment &env, char const *remoteClientNameOrAddress,
+		portNumBits remoteClientPortNum, char const *rtspURLToDeregister, RTSPClient::responseHandler *rtspResponseHandler,
+		Authenticator *authenticator, char const *proxyURLSuffix, int verbosityLevel, char const *applicationName);
 	// called only by "createNew()"
 	virtual ~RTSPDeregisterSender();
 
@@ -141,7 +131,7 @@ protected:
 
 public: // Some compilers complain if this is "protected:"
 	// A subclass of "RequestRecord_REGISTER_or_DEREGISTER", specific to our "DEREGISTER" command:
-	class RequestRecord_DEREGISTER: public RTSPRegisterOrDeregisterSender::RequestRecord_REGISTER_or_DEREGISTER
+	class RequestRecord_DEREGISTER : public RTSPRegisterOrDeregisterSender::RequestRecord_REGISTER_or_DEREGISTER
 	{
 	public:
 		RequestRecord_DEREGISTER(unsigned cseq, RTSPClient::responseHandler *rtspResponseHandler, char const *rtspURLToDeregister, char const *proxyURLSuffix);

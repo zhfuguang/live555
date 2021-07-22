@@ -90,8 +90,7 @@ public:
 	unsigned sideInfoSize;
 	Boolean hasCRC;
 
-	void setBytePointer(unsigned char const *restOfFrame,
-		unsigned totNumBytes)  // called during setup
+	void setBytePointer(unsigned char const *restOfFrame, unsigned totNumBytes)  // called during setup
 	{
 		bv.setup((unsigned char *)restOfFrame, 0, 8 * totNumBytes);
 	}
@@ -132,23 +131,15 @@ private:
 	unsigned computeSideInfoSize();
 };
 
-unsigned ComputeFrameSize(unsigned bitrate, unsigned samplingFreq,
-	Boolean usePadding, Boolean isMPEG2,
-	unsigned char layer);
+unsigned ComputeFrameSize(unsigned bitrate, unsigned samplingFreq, Boolean usePadding, Boolean isMPEG2, unsigned char layer);
 
-Boolean GetADUInfoFromMP3Frame(unsigned char const *framePtr,
-	unsigned totFrameSize,
-	unsigned &hdr, unsigned &frameSize,
-	MP3SideInfo &sideInfo, unsigned &sideInfoSize,
-	unsigned &backpointer, unsigned &aduSize);
+Boolean GetADUInfoFromMP3Frame(unsigned char const *framePtr, unsigned totFrameSize, unsigned &hdr,
+	unsigned &frameSize, MP3SideInfo &sideInfo, unsigned &sideInfoSize, unsigned &backpointer, unsigned &aduSize);
 
-Boolean ZeroOutMP3SideInfo(unsigned char *framePtr, unsigned totFrameSize,
-	unsigned newBackpointer);
+Boolean ZeroOutMP3SideInfo(unsigned char *framePtr, unsigned totFrameSize, unsigned newBackpointer);
 
 unsigned TranscodeMP3ADU(unsigned char const *fromPtr, unsigned fromSize,
-	unsigned toBitrate,
-	unsigned char *toPtr, unsigned toMaxSize,
-	unsigned &availableBytesForBackpointer);
+	unsigned toBitrate, unsigned char *toPtr, unsigned toMaxSize, unsigned &availableBytesForBackpointer);
 // returns the size of the resulting ADU (0 on failure)
 
 #endif

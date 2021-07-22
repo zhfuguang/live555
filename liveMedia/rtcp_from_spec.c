@@ -5,73 +5,68 @@
 
 #include "rtcp_from_spec.h"
 
-/*****
+ /*****
 
-A.7 Computing the RTCP Transmission Interval
+ A.7 Computing the RTCP Transmission Interval
 
-   The following functions implement the RTCP transmission and reception
-   rules described in Section 6.2. These rules are coded in several
-   functions:
+	The following functions implement the RTCP transmission and reception
+	rules described in Section 6.2. These rules are coded in several
+	functions:
 
-       o  rtcp_interval() computes the deterministic calculated
-          interval, measured in seconds.  The parameters are defined in
-          Section 6.3.
+		o  rtcp_interval() computes the deterministic calculated
+		   interval, measured in seconds.  The parameters are defined in
+		   Section 6.3.
 
-       o  OnExpire() is called when the RTCP transmission timer expires.
+		o  OnExpire() is called when the RTCP transmission timer expires.
 
-       o  OnReceive() is called whenever an RTCP packet is received.
+		o  OnReceive() is called whenever an RTCP packet is received.
 
-   Both OnExpire() and OnReceive() have event e as an argument. This is
-   the next scheduled event for that participant, either an RTCP report
-   or a BYE packet.  It is assumed that the following functions are
-   available:
+	Both OnExpire() and OnReceive() have event e as an argument. This is
+	the next scheduled event for that participant, either an RTCP report
+	or a BYE packet.  It is assumed that the following functions are
+	available:
 
-       o  Schedule(time t, event e) schedules an event e to occur at
-          time t. When time t arrives, the function OnExpire is called
-          with e as an argument.
+		o  Schedule(time t, event e) schedules an event e to occur at
+		   time t. When time t arrives, the function OnExpire is called
+		   with e as an argument.
 
-       o  Reschedule(time t, event e) reschedules a previously scheduled
-          event e for time t.
+		o  Reschedule(time t, event e) reschedules a previously scheduled
+		   event e for time t.
 
-       o  SendRTCPReport(event e) sends an RTCP report.
+		o  SendRTCPReport(event e) sends an RTCP report.
 
-       o  SendBYEPacket(event e) sends a BYE packet.
+		o  SendBYEPacket(event e) sends a BYE packet.
 
-       o  TypeOfEvent(event e) returns EVENT_BYE if the event being
-          processed is for a BYE packet to be sent, else it returns
-          EVENT_REPORT.
+		o  TypeOfEvent(event e) returns EVENT_BYE if the event being
+		   processed is for a BYE packet to be sent, else it returns
+		   EVENT_REPORT.
 
-       o  PacketType(p) returns PACKET_RTCP_REPORT if packet p is an
-          RTCP report (not BYE), PACKET_BYE if its a BYE RTCP packet,
-          and PACKET_RTP if its a regular RTP data packet.
+		o  PacketType(p) returns PACKET_RTCP_REPORT if packet p is an
+		   RTCP report (not BYE), PACKET_BYE if its a BYE RTCP packet,
+		   and PACKET_RTP if its a regular RTP data packet.
 
-       o  ReceivedPacketSize() and SentPacketSize() return the size of
-          the referenced packet in octets.
+		o  ReceivedPacketSize() and SentPacketSize() return the size of
+		   the referenced packet in octets.
 
-       o  NewMember(p) returns a 1 if the participant who sent packet p
-          is not currently in the member list, 0 otherwise. Note this
-          function is not sufficient for a complete implementation
-          because each CSRC identifier in an RTP packet and each SSRC in
-          a BYE packet should be processed.
+		o  NewMember(p) returns a 1 if the participant who sent packet p
+		   is not currently in the member list, 0 otherwise. Note this
+		   function is not sufficient for a complete implementation
+		   because each CSRC identifier in an RTP packet and each SSRC in
+		   a BYE packet should be processed.
 
-       o  NewSender(p) returns a 1 if the participant who sent packet p
-          is not currently in the sender sublist of the member list, 0
-          otherwise.
+		o  NewSender(p) returns a 1 if the participant who sent packet p
+		   is not currently in the sender sublist of the member list, 0
+		   otherwise.
 
-       o  AddMember() and RemoveMember() to add and remove participants
-          from the member list.
+		o  AddMember() and RemoveMember() to add and remove participants
+		   from the member list.
 
-       o  AddSender() and RemoveSender() to add and remove participants
-          from the sender sublist of the member list.
-*****/
+		o  AddSender() and RemoveSender() to add and remove participants
+		   from the sender sublist of the member list.
+ *****/
 
 
-double rtcp_interval(int members,
-	int senders,
-	double rtcp_bw,
-	int we_sent,
-	double avg_rtcp_size,
-	int initial)
+double rtcp_interval(int members, int senders, double rtcp_bw, int we_sent, double avg_rtcp_size, int initial)
 {
 	/*
 	 * Minimum average time between RTCP packets from this site (in
@@ -157,16 +152,7 @@ double rtcp_interval(int members,
 	return t;
 }
 
-void OnExpire(event e,
-	int    members,
-	int    senders,
-	double rtcp_bw,
-	int    we_sent,
-	double *avg_rtcp_size,
-	int    *initial,
-	time_tp   tc,
-	time_tp   *tp,
-	int    *pmembers)
+void OnExpire(event e, int members, int senders, double rtcp_bw, int we_sent, double *avg_rtcp_size, int *initial, time_tp tc, time_tp *tp, int *pmembers)
 {
 	/* This function is responsible for deciding whether to send
 	 * an RTCP report or BYE packet now, or to reschedule transmission.
@@ -182,12 +168,7 @@ void OnExpire(event e,
 
 	if (TypeOfEvent(e) == EVENT_BYE)
 	{
-		t = rtcp_interval(members,
-				senders,
-				rtcp_bw,
-				we_sent,
-				*avg_rtcp_size,
-				*initial);
+		t = rtcp_interval(members, senders, rtcp_bw, we_sent, *avg_rtcp_size, *initial);
 		tn = *tp + t;
 		if (tn <= tc)
 		{
@@ -202,19 +183,13 @@ void OnExpire(event e,
 	}
 	else if (TypeOfEvent(e) == EVENT_REPORT)
 	{
-		t = rtcp_interval(members,
-				senders,
-				rtcp_bw,
-				we_sent,
-				*avg_rtcp_size,
-				*initial);
+		t = rtcp_interval(members, senders, rtcp_bw, we_sent, *avg_rtcp_size, *initial);
 		tn = *tp + t;
 
 		if (tn <= tc)
 		{
 			SendRTCPReport(e);
-			*avg_rtcp_size = (1. / 16.) * SentPacketSize(e) +
-				(15. / 16.) * (*avg_rtcp_size);
+			*avg_rtcp_size = (1. / 16.) * SentPacketSize(e) + (15. / 16.) * (*avg_rtcp_size);
 			*tp = tc;
 
 			/* We must redraw the interval. Don't reuse the
@@ -223,12 +198,7 @@ void OnExpire(event e,
 			   on it being small enough to cause a packet to
 			   be sent */
 
-			t = rtcp_interval(members,
-					senders,
-					rtcp_bw,
-					we_sent,
-					*avg_rtcp_size,
-					*initial);
+			t = rtcp_interval(members, senders, rtcp_bw, we_sent, *avg_rtcp_size, *initial);
 
 			Schedule(t + tc, e);
 			*initial = 0;
@@ -242,15 +212,7 @@ void OnExpire(event e,
 }
 
 
-void OnReceive(packet p,
-	event e,
-	int *members,
-	int *pmembers,
-	int *senders,
-	double *avg_rtcp_size,
-	double *tp,
-	double tc,
-	double tn)
+void OnReceive(packet p, event e, int *members, int *pmembers, int *senders, double *avg_rtcp_size, double *tp, double tc, double tn)
 {
 	/* What we do depends on whether we have left the group, and
 	 * are waiting to send a BYE (TypeOfEvent(e) == EVENT_BYE) or
@@ -300,8 +262,8 @@ void OnReceive(packet p,
 
 			if (*members < *pmembers)
 			{
-				tn = tc + (((double) * members) / (*pmembers)) * (tn - tc);
-				*tp = tc - (((double) * members) / (*pmembers)) * (tc - *tp);
+				tn = tc + (((double)*members) / (*pmembers)) * (tn - tc);
+				*tp = tc - (((double)*members) / (*pmembers)) * (tc - *tp);
 
 				/* Reschedule the next report for time tn */
 

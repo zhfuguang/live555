@@ -25,17 +25,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 //#include "GroupsockHelper.hh"
 
 
-H263plusVideoStreamParser::H263plusVideoStreamParser(
-	H263plusVideoStreamFramer *usingSource,
-	FramedSource *inputSource)
-	: StreamParser(inputSource,
-		  FramedSource::handleClosure,
-		  usingSource,
-		  &H263plusVideoStreamFramer::continueReadProcessing,
-		  usingSource),
-	  fUsingSource(usingSource),
-	  fnextTR(0),
-	  fcurrentPT(0)
+H263plusVideoStreamParser::H263plusVideoStreamParser(H263plusVideoStreamFramer *usingSource, FramedSource *inputSource)
+	: StreamParser(inputSource, FramedSource::handleClosure, usingSource, &H263plusVideoStreamFramer::continueReadProcessing, usingSource)
+	, fUsingSource(usingSource), fnextTR(0), fcurrentPT(0)
 {
 	memset(fStates, 0, sizeof(fStates));
 	memset(&fNextInfo, 0, sizeof(fNextInfo));
@@ -67,9 +59,7 @@ void H263plusVideoStreamParser::setParseState()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-void H263plusVideoStreamParser::registerReadInterest(
-	unsigned char *to,
-	unsigned maxSize)
+void H263plusVideoStreamParser::registerReadInterest(unsigned char *to, unsigned maxSize)
 {
 	fStartOfFrame = fTo = fSavedTo = to;
 	fLimit = to + maxSize;
@@ -205,8 +195,7 @@ int H263plusVideoStreamParser::parseH263Frame()
 
 	if (row != -1)
 	{
-		fprintf(stderr, "%s: Buffer too small (%u)\n",
-			"h263reader:", bufferEnd - fTo + ADDITIONAL_BYTES_NEEDED);
+		fprintf(stderr, "%s: Buffer too small (%u)\n", "h263reader:", bufferEnd - fTo + ADDITIONAL_BYTES_NEEDED);
 		return 0;
 	}
 
@@ -252,13 +241,11 @@ int H263plusVideoStreamParser::parseH263Frame()
 //      frame and the sync - or "frame type" - bit. It reports success or
 //      failure to the calling function.
 ////////////////////////////////////////////////////////////////////////////////
-bool H263plusVideoStreamParser::ParseShortHeader(
-	u_int8_t *headerBuffer,
-	H263INFO *outputInfoStruct)
+bool H263plusVideoStreamParser::ParseShortHeader(u_int8_t *headerBuffer, H263INFO *outputInfoStruct)
 {
 	u_int8_t fmt = 0;
 	// Extract temporal reference (TR) from the buffer (bits 22-29 inclusive)
-	outputInfoStruct->tr  = (headerBuffer[2] << 6) & 0xC0; // 2 LS bits out of the 3rd byte
+	outputInfoStruct->tr = (headerBuffer[2] << 6) & 0xC0; // 2 LS bits out of the 3rd byte
 	outputInfoStruct->tr |= (headerBuffer[3] >> 2) & 0x3F; // 6 MS bits out of the 4th byte
 	// Extract the FMT part of PTYPE from the buffer (bits 35-37 inclusive)
 	fmt = (headerBuffer[4] >> 2) & 0x07; // bits 3-5 ouf of the 5th byte
@@ -270,8 +257,7 @@ bool H263plusVideoStreamParser::ParseShortHeader(
 	}
 	// If PTYPE is supported, calculate the current width and height according to
 	// a predefined table
-	if (!GetWidthAndHeight(fmt, &(outputInfoStruct->width),
-			&(outputInfoStruct->height)))
+	if (!GetWidthAndHeight(fmt, &(outputInfoStruct->width), &(outputInfoStruct->height)))
 	{
 		return false;
 	}
@@ -296,9 +282,7 @@ bool H263plusVideoStreamParser::ParseShortHeader(
 // Outputs:
 //      This function returns the up-to-date maximum bitrate
 ////////////////////////////////////////////////////////////////////////////////
-void H263plusVideoStreamParser::GetMaxBitrate(MaxBitrate_CTX *ctx,
-	u_int32_t      frameSize,
-	u_int8_t       frameTRDiff)
+void H263plusVideoStreamParser::GetMaxBitrate(MaxBitrate_CTX *ctx, u_int32_t frameSize, u_int8_t frameTRDiff)
 {
 	if (frameTRDiff == 0)
 		return;
@@ -323,8 +307,7 @@ void H263plusVideoStreamParser::GetMaxBitrate(MaxBitrate_CTX *ctx,
 		}
 		// Advance the table index
 		// Wrapping around the bitrateTable size
-		ctx->tableIndex = (ctx->tableIndex + 1) %
-			(sizeof(ctx->bitrateTable) / sizeof(ctx->bitrateTable[0]));
+		ctx->tableIndex = (ctx->tableIndex + 1) % (sizeof(ctx->bitrateTable) / sizeof(ctx->bitrateTable[0]));
 	}
 }
 
@@ -356,9 +339,7 @@ u_int64_t H263plusVideoStreamParser::CalculateDuration(u_int8_t trDiff)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool H263plusVideoStreamParser::GetWidthAndHeight(u_int8_t  fmt,
-	u_int16_t *width,
-	u_int16_t *height)
+bool H263plusVideoStreamParser::GetWidthAndHeight(u_int8_t fmt, u_int16_t *width, u_int16_t *height)
 {
 	// The 'fmt' corresponds to bits 5-7 of the PTYPE
 	static struct
@@ -380,19 +361,17 @@ bool H263plusVideoStreamParser::GetWidthAndHeight(u_int8_t  fmt,
 	if (fmt > 7)
 		return false;
 
-	*width  = dimensionsTable[fmt].width;
+	*width = dimensionsTable[fmt].width;
 	*height = dimensionsTable[fmt].height;
 
-	if (*width  == 0)
+	if (*width == 0)
 		return false;
 
 	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-u_int8_t H263plusVideoStreamParser::GetTRDifference(
-	u_int8_t nextTR,
-	u_int8_t currentTR)
+u_int8_t H263plusVideoStreamParser::GetTRDifference(u_int8_t nextTR, u_int8_t currentTR)
 {
 	if (currentTR > nextTR)
 	{
@@ -451,26 +430,26 @@ typedef struct _MaxBitrate_CTX {
 
 // Forward declarations:
 static int LoadNextH263Object(  FILE           *inputFileHandle,
-                                u_int8_t       *frameBuffer,
-                                u_int32_t      *frameBufferSize,
-                                u_int32_t       additionalBytesNeeded,
-                                u_int8_t      **ppNextHeader);
+								u_int8_t       *frameBuffer,
+								u_int32_t      *frameBufferSize,
+								u_int32_t       additionalBytesNeeded,
+								u_int8_t      **ppNextHeader);
 
 static bool ParseShortHeader(   u_int8_t       *headerBuffer,
-                                H263INFO       *outputInfoStruct);
+								H263INFO       *outputInfoStruct);
 
 static u_int8_t GetTRDifference(u_int8_t        nextTR,
-                                u_int8_t        currentTR);
+								u_int8_t        currentTR);
 
 static void GetMaxBitrate(      MaxBitrate_CTX *ctx,
-                                u_int32_t       frameSize,
-                                u_int8_t        frameTRDiff);
+								u_int32_t       frameSize,
+								u_int8_t        frameTRDiff);
 
 static MP4Duration CalculateDuration(u_int8_t   trDiff);
 
 static bool GetWidthAndHeight(  u_int8_t        fmt,
-                                u_int16_t      *width,
-                                u_int16_t      *height);
+								u_int16_t      *width,
+								u_int16_t      *height);
 
 static char   states[3][256];
 / *
@@ -490,11 +469,11 @@ static char   states[3][256];
  *      success or a predefined value representing an erroneous state.
  * /
 MP4TrackId H263Creator(MP4FileHandle outputFileHandle,
-                       FILE*         inputFileHandle,
-                       u_int8_t      h263Profile,
-                       u_int8_t      h263Level,
-                       bool          h263Bitrates,
-                       u_int8_t      cbrTolerance)
+					   FILE*         inputFileHandle,
+					   u_int8_t      h263Profile,
+					   u_int8_t      h263Level,
+					   bool          h263Bitrates,
+					   u_int8_t      cbrTolerance)
 {
   H263INFO       nextInfo;   // Holds information about the next frame
   H263INFO       currentInfo;// Holds information about the current frame
@@ -504,14 +483,14 @@ MP4TrackId H263Creator(MP4FileHandle outputFileHandle,
   memset(&maxBitrateCtx, 0, sizeof(maxBitrateCtx));
   memset(states, 0, sizeof(states));
   u_int8_t       frameBuffer[H263_BUFFER_SIZE]; // The input buffer
-                 // Pointer which tells LoadNextH263Object where to read data to
+				 // Pointer which tells LoadNextH263Object where to read data to
   u_int8_t*      pFrameBuffer = frameBuffer + H263_REQUIRE_HEADER_SIZE_BYTES;
   u_int32_t      frameSize;        // The current frame size
-                                // Pointer to receive address of the header data
+								// Pointer to receive address of the header data
   u_int8_t*      pCurrentHeader = pFrameBuffer;
   MP4Duration    currentDuration;  // The current frame's duration
   u_int8_t       trDifference;     // The current TR difference
-                                   // The previous TR difference
+								   // The previous TR difference
   u_int8_t       prevTrDifference = H263_BASIC_FRAME_RATE;
   MP4Duration    totalDuration = 0;// Duration accumulator
   MP4Duration    avgBitrate;       // Average bitrate
@@ -520,92 +499,92 @@ MP4TrackId H263Creator(MP4FileHandle outputFileHandle,
   bool           stay = true;      // loop flag
 
   while (stay) {
-    currentInfo = nextInfo;
-    memmove(frameBuffer, pCurrentHeader, H263_REQUIRE_HEADER_SIZE_BYTES);
-    frameSize = H263_BUFFER_SIZE - H263_REQUIRE_HEADER_SIZE_BYTES;
-    // Read 1 frame and the next frame's header from the file.
-    // For the first frame, only the first frame's header is returned.
-    // For the last frame, only the last frame's data is returned.
-    if (! LoadNextH263Object(inputFileHandle, pFrameBuffer, &frameSize,
-          H263_REQUIRE_HEADER_SIZE_BYTES - H263_STARTCODE_SIZE_BYTES,
-          &pCurrentHeader))
-      break; // Fatal error ...
+	currentInfo = nextInfo;
+	memmove(frameBuffer, pCurrentHeader, H263_REQUIRE_HEADER_SIZE_BYTES);
+	frameSize = H263_BUFFER_SIZE - H263_REQUIRE_HEADER_SIZE_BYTES;
+	// Read 1 frame and the next frame's header from the file.
+	// For the first frame, only the first frame's header is returned.
+	// For the last frame, only the last frame's data is returned.
+	if (! LoadNextH263Object(inputFileHandle, pFrameBuffer, &frameSize,
+		  H263_REQUIRE_HEADER_SIZE_BYTES - H263_STARTCODE_SIZE_BYTES,
+		  &pCurrentHeader))
+	  break; // Fatal error ...
 
-    if (pCurrentHeader) {
-      // Parse the returned frame header (if any)
-      if (!ParseShortHeader(pCurrentHeader, &nextInfo))
-        break; // Fatal error
-      trDifference = GetTRDifference(nextInfo.tr, currentInfo.tr);
-    } else {
-      // This is the last frame ... we have to fake the trDifference ...
-      trDifference = 1;
-      // No header data has been read at this iteration, so we have to manually
-      // add the frame's header we read at the previous iteration.
-      // Note that LoadNextH263Object returns the number of bytes read, which
-      // are the current frame's data and the next frame's header
-      frameSize += H263_REQUIRE_HEADER_SIZE_BYTES;
-      // There is no need for the next iteration ...
-      stay = false;
-    }
+	if (pCurrentHeader) {
+	  // Parse the returned frame header (if any)
+	  if (!ParseShortHeader(pCurrentHeader, &nextInfo))
+		break; // Fatal error
+	  trDifference = GetTRDifference(nextInfo.tr, currentInfo.tr);
+	} else {
+	  // This is the last frame ... we have to fake the trDifference ...
+	  trDifference = 1;
+	  // No header data has been read at this iteration, so we have to manually
+	  // add the frame's header we read at the previous iteration.
+	  // Note that LoadNextH263Object returns the number of bytes read, which
+	  // are the current frame's data and the next frame's header
+	  frameSize += H263_REQUIRE_HEADER_SIZE_BYTES;
+	  // There is no need for the next iteration ...
+	  stay = false;
+	}
 
-    // If this is the first iteration ...
-    if (currentInfo.width == 0) {
-      // If we have more data than just the header
-      if ((frameSize > H263_REQUIRE_HEADER_SIZE_BYTES) ||
-          !pCurrentHeader)  // Or no header at all
-        break;     // Fatal error
-      else
-        continue;  // We have only the first frame's header ...
-    }
+	// If this is the first iteration ...
+	if (currentInfo.width == 0) {
+	  // If we have more data than just the header
+	  if ((frameSize > H263_REQUIRE_HEADER_SIZE_BYTES) ||
+		  !pCurrentHeader)  // Or no header at all
+		break;     // Fatal error
+	  else
+		continue;  // We have only the first frame's header ...
+	}
 
-    if (trackId == MP4_INVALID_TRACK_ID) {
-      //  If a track has not been added yet, add the track to the file.
-      trackId = MP4AddH263VideoTrack(outputFileHandle, H263_TIMESCALE,
-          0, currentInfo.width, currentInfo.height,
-          h263Level, h263Profile, 0, 0);
-      if (trackId == MP4_INVALID_TRACK_ID)
-        break; // Fatal error
-    }
+	if (trackId == MP4_INVALID_TRACK_ID) {
+	  //  If a track has not been added yet, add the track to the file.
+	  trackId = MP4AddH263VideoTrack(outputFileHandle, H263_TIMESCALE,
+		  0, currentInfo.width, currentInfo.height,
+		  h263Level, h263Profile, 0, 0);
+	  if (trackId == MP4_INVALID_TRACK_ID)
+		break; // Fatal error
+	}
 
-    // calculate the current frame duration
-    currentDuration = CalculateDuration(trDifference);
-    // Write the current frame to the file.
-    if (!MP4WriteSample(outputFileHandle, trackId, frameBuffer, frameSize,
-          currentDuration, 0, currentInfo.isSyncFrame))
-      break; // Fatal error
+	// calculate the current frame duration
+	currentDuration = CalculateDuration(trDifference);
+	// Write the current frame to the file.
+	if (!MP4WriteSample(outputFileHandle, trackId, frameBuffer, frameSize,
+		  currentDuration, 0, currentInfo.isSyncFrame))
+	  break; // Fatal error
 
-    // Accumulate the frame's size and duration for avgBitrate calculation
-    totalDuration += currentDuration;
-    totalBytes += frameSize;
-    //  If needed, recalculate bitrate information
-    if (h263Bitrates)
-      GetMaxBitrate(&maxBitrateCtx, frameSize, prevTrDifference);
-    prevTrDifference = trDifference;
+	// Accumulate the frame's size and duration for avgBitrate calculation
+	totalDuration += currentDuration;
+	totalBytes += frameSize;
+	//  If needed, recalculate bitrate information
+	if (h263Bitrates)
+	  GetMaxBitrate(&maxBitrateCtx, frameSize, prevTrDifference);
+	prevTrDifference = trDifference;
   } // while (stay)
 
   // If this is the last frame,
   if (!stay) {
-    // If needed and possible, update bitrate information in the file
-    if (h263Bitrates && totalDuration) {
-      avgBitrate = (totalBytes * 8 * H263_TIMESCALE) / totalDuration;
-      if (cbrTolerance == 0)
-        cbrTolerance = H263_DEFAULT_CBR_TOLERANCE;
-      // Same as: if (maxBitrate / avgBitrate > (cbrTolerance + 100) / 100.0)
-      if (maxBitrateCtx.maxBitrate * 100 > (cbrTolerance + 100) * avgBitrate)
-        avgBitrate = 0;
-      MP4SetH263Bitrates(outputFileHandle, trackId,
-          avgBitrate, maxBitrateCtx.maxBitrate);
-    }
-    // Return the newly added track ID
-    return trackId;
+	// If needed and possible, update bitrate information in the file
+	if (h263Bitrates && totalDuration) {
+	  avgBitrate = (totalBytes * 8 * H263_TIMESCALE) / totalDuration;
+	  if (cbrTolerance == 0)
+		cbrTolerance = H263_DEFAULT_CBR_TOLERANCE;
+	  // Same as: if (maxBitrate / avgBitrate > (cbrTolerance + 100) / 100.0)
+	  if (maxBitrateCtx.maxBitrate * 100 > (cbrTolerance + 100) * avgBitrate)
+		avgBitrate = 0;
+	  MP4SetH263Bitrates(outputFileHandle, trackId,
+		  avgBitrate, maxBitrateCtx.maxBitrate);
+	}
+	// Return the newly added track ID
+	return trackId;
   }
 
   // If we got to here... something went wrong ...
   fprintf(stderr,
-    "%s: Could not parse input file, invalid video stream?\n", ProgName);
+	"%s: Could not parse input file, invalid video stream?\n", ProgName);
   // Upon failure, delete the newly added track if it has been added
   if (trackId != MP4_INVALID_TRACK_ID) {
-    MP4DeleteTrack(outputFileHandle, trackId);
+	MP4DeleteTrack(outputFileHandle, trackId);
   }
   return MP4_INVALID_TRACK_ID;
 }
@@ -641,10 +620,10 @@ MP4TrackId H263Creator(MP4FileHandle outputFileHandle,
  *      for the last frame read.
  * /
 static int LoadNextH263Object(  FILE           *inputFileHandle,
-                                u_int8_t       *frameBuffer,
-                                u_int32_t      *frameBufferSize,
-                                u_int32_t       additionalBytesNeeded,
-                                u_int8_t      **ppNextHeader)
+								u_int8_t       *frameBuffer,
+								u_int32_t      *frameBufferSize,
+								u_int32_t       additionalBytesNeeded,
+								u_int8_t      **ppNextHeader)
 {
   // This table and the following loop implements a state machine enabling
   // us to read bytes from the file untill (and inclusing) the requested
@@ -654,33 +633,33 @@ static int LoadNextH263Object(  FILE           *inputFileHandle,
   // The buffer end which will allow the loop to leave place for
   // the additionalBytesNeeded
   u_int8_t     *bufferEnd = frameBuffer + *frameBufferSize -
-                                              additionalBytesNeeded - 1;
+											  additionalBytesNeeded - 1;
 
   // Initialize the states array, if it hasn't been initialized yet...
   if (!states[0][0]) {
-    // One 00 was read
-    states[0][0] = 1;
-    // Two sequential 0x00 ware read
-    states[1][0] = states[2][0] = 2;
-    // A full start code was read
-    states[2][128] = states[2][129] = states[2][130] = states[2][131] = -1;
+	// One 00 was read
+	states[0][0] = 1;
+	// Two sequential 0x00 ware read
+	states[1][0] = states[2][0] = 2;
+	// A full start code was read
+	states[2][128] = states[2][129] = states[2][130] = states[2][131] = -1;
   }
 
   // Read data from file into the output buffer until either a start code
   // is found, or the end of file has been reached.
   do {
-    if (fread(frameBuffer, 1, 1, inputFileHandle) != 1){
-      // EOF or other error before we got a start code
-      *ppNextHeader = NULL;
-      *frameBufferSize = frameBuffer - bufferStart;
-      return 1;
-    }
+	if (fread(frameBuffer, 1, 1, inputFileHandle) != 1){
+	  // EOF or other error before we got a start code
+	  *ppNextHeader = NULL;
+	  *frameBufferSize = frameBuffer - bufferStart;
+	  return 1;
+	}
   } while ((frameBuffer < bufferEnd) &&                    // We have place in the buffer
-           ((row = states[row][*(frameBuffer++)]) != -1)); // Start code was not found
+		   ((row = states[row][*(frameBuffer++)]) != -1)); // Start code was not found
   if (row != -1) {
-    fprintf(stderr, "%s: Buffer too small (%u)\n",
-            ProgName, bufferEnd - bufferStart + additionalBytesNeeded);
-    return 0;
+	fprintf(stderr, "%s: Buffer too small (%u)\n",
+			ProgName, bufferEnd - bufferStart + additionalBytesNeeded);
+	return 0;
   }
 
   // Cool ... now we have a start code
@@ -689,9 +668,9 @@ static int LoadNextH263Object(  FILE           *inputFileHandle,
 
   // Now we just have to read the additionalBytesNeeded
   if(fread(frameBuffer, additionalBytesNeeded, 1, inputFileHandle) != 1) {
-    /// We got a start code but can't read additionalBytesNeeded ... that's a fatal error
-    fprintf(stderr, "%s: Invalid H263 bitstream\n", ProgName);
-    return 0;
+	/// We got a start code but can't read additionalBytesNeeded ... that's a fatal error
+	fprintf(stderr, "%s: Invalid H263 bitstream\n", ProgName);
+	return 0;
   }
 
   return 1;
@@ -728,7 +707,7 @@ static int LoadNextH263Object(  FILE           *inputFileHandle,
  *      failure to the calling function.
  * /
 static bool ParseShortHeader(   u_int8_t       *headerBuffer,
-                                H263INFO       *outputInfoStruct)
+								H263INFO       *outputInfoStruct)
 {
   u_int8_t fmt = 0;
   // Extract temporal reference (TR) from the buffer (bits 22-29 inclusive)
@@ -739,13 +718,13 @@ static bool ParseShortHeader(   u_int8_t       *headerBuffer,
   // If PTYPE is not supported, return a failure notice to the calling function
   // FIXME: PLUSPTYPE is not supported
    if (fmt == 0x07) {
-    return false;
+	return false;
   }
   // If PTYPE is supported, calculate the current width and height according to
   // a predefined table
   if (!GetWidthAndHeight(fmt, &(outputInfoStruct->width),
-                              &(outputInfoStruct->height))) {
-    return false;
+							  &(outputInfoStruct->height))) {
+	return false;
   }
   // Extract the frame-type bit, which is the 9th bit of PTYPE (bit 38)
   outputInfoStruct->isSyncFrame = !(headerBuffer[4] & 0x02);
@@ -769,11 +748,11 @@ static bool ParseShortHeader(   u_int8_t       *headerBuffer,
  *      This function returns the up-to-date maximum bitrate
  * /
 static void GetMaxBitrate(      MaxBitrate_CTX *ctx,
-                                u_int32_t       frameSize,
-                                u_int8_t        frameTRDiff)
+								u_int32_t       frameSize,
+								u_int8_t        frameTRDiff)
 {
   if (frameTRDiff == 0)
-    return;
+	return;
 
   // Calculate the current frame's bitrate as bits per TR unit (round the result
   // upwards)
@@ -781,20 +760,20 @@ static void GetMaxBitrate(      MaxBitrate_CTX *ctx,
 
   // for each TRdiff received,
   while (frameTRDiff--) {
-    // Subtract the oldest bitrate entry from the current bitrate
-    ctx->windowBitrate -= ctx->bitrateTable[ctx->tableIndex];
-     // Update the oldest bitrate entry with the current frame's bitrate
-    ctx->bitrateTable[ctx->tableIndex] = frameBitrate;
-    // Add the current frame's bitrate to the current bitrate
-    ctx->windowBitrate += frameBitrate;
-    // Check if we have a new maximum bitrate
-    if (ctx->windowBitrate > ctx->maxBitrate) {
-      ctx->maxBitrate = ctx->windowBitrate;
-    }
-    // Advance the table index
-    ctx->tableIndex = (ctx->tableIndex + 1) %
-        // Wrapping around the bitrateTable size
-        ( sizeof(ctx->bitrateTable) / sizeof(ctx->bitrateTable[0]) );
+	// Subtract the oldest bitrate entry from the current bitrate
+	ctx->windowBitrate -= ctx->bitrateTable[ctx->tableIndex];
+	 // Update the oldest bitrate entry with the current frame's bitrate
+	ctx->bitrateTable[ctx->tableIndex] = frameBitrate;
+	// Add the current frame's bitrate to the current bitrate
+	ctx->windowBitrate += frameBitrate;
+	// Check if we have a new maximum bitrate
+	if (ctx->windowBitrate > ctx->maxBitrate) {
+	  ctx->maxBitrate = ctx->windowBitrate;
+	}
+	// Advance the table index
+	ctx->tableIndex = (ctx->tableIndex + 1) %
+		// Wrapping around the bitrateTable size
+		( sizeof(ctx->bitrateTable) / sizeof(ctx->bitrateTable[0]) );
   }
 }
 
@@ -831,44 +810,44 @@ static MP4Duration CalculateDuration(u_int8_t   trDiff)
 }
 
 static bool GetWidthAndHeight(  u_int8_t        fmt,
-                                u_int16_t      *width,
-                                u_int16_t      *height)
+								u_int16_t      *width,
+								u_int16_t      *height)
 {
   // The 'fmt' corresponds to bits 5-7 of the PTYPE
   static struct {
-    u_int16_t width;
-    u_int16_t height;
+	u_int16_t width;
+	u_int16_t height;
   } const dimensionsTable[8] = {
-    { 0,    0 },      // 000 - 0 - forbidden, generates an error
-    { 128,  96 },     // 001 - 1 - Sub QCIF
-    { 176,  144 },    // 010 - 2 - QCIF
-    { 352,  288 },    // 011 - 3 - CIF
-    { 704,  576 },    // 100 - 4 - 4CIF
-    { 1409, 1152 },   // 101 - 5 - 16CIF
-    { 0,    0 },      // 110 - 6 - reserved, generates an error
-    { 0,    0 }       // 111 - 7 - extended, not supported by profile 0
+	{ 0,    0 },      // 000 - 0 - forbidden, generates an error
+	{ 128,  96 },     // 001 - 1 - Sub QCIF
+	{ 176,  144 },    // 010 - 2 - QCIF
+	{ 352,  288 },    // 011 - 3 - CIF
+	{ 704,  576 },    // 100 - 4 - 4CIF
+	{ 1409, 1152 },   // 101 - 5 - 16CIF
+	{ 0,    0 },      // 110 - 6 - reserved, generates an error
+	{ 0,    0 }       // 111 - 7 - extended, not supported by profile 0
   };
 
   if (fmt > 7)
-    return false;
+	return false;
 
   *width  = dimensionsTable[fmt].width;
   *height = dimensionsTable[fmt].height;
 
   if (*width  == 0)
-    return false;
+	return false;
 
   return true;
 }
 
 static u_int8_t GetTRDifference(u_int8_t        nextTR,
-                                u_int8_t        currentTR)
+								u_int8_t        currentTR)
 {
   if (currentTR > nextTR) {
-    // Wrap around 255...
-    return nextTR + (256 - currentTR);
+	// Wrap around 255...
+	return nextTR + (256 - currentTR);
   } else {
-    return nextTR - currentTR;
+	return nextTR - currentTR;
   }
 }
 

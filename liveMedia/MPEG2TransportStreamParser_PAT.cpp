@@ -39,8 +39,7 @@ void MPEG2TransportStreamParser::parsePAT(Boolean pusi, unsigned numDataBytes)
 		if (table_id != 0x00)
 		{
 #ifdef DEBUG_ERRORS
-			fprintf(stderr, "MPEG2TransportStreamParser::parsePAT(%d, %d): bad table_id: 0x%02x\n",
-				pusi, numDataBytes, table_id);
+			fprintf(stderr, "MPEG2TransportStreamParser::parsePAT(%d, %d): bad table_id: 0x%02x\n", pusi, numDataBytes, table_id);
 #endif
 			break;
 		}
@@ -54,8 +53,7 @@ void MPEG2TransportStreamParser::parsePAT(Boolean pusi, unsigned numDataBytes)
 			section_length > 1021/*as per specification*/)
 		{
 #ifdef DEBUG_ERRORS
-			fprintf(stderr, "MPEG2TransportStreamParser::parsePAT(%d, %d): Bad section_length: %d\n",
-				pusi, numDataBytes, section_length);
+			fprintf(stderr, "MPEG2TransportStreamParser::parsePAT(%d, %d): Bad section_length: %d\n", pusi, numDataBytes, section_length);
 #endif
 			break;
 		}
@@ -77,8 +75,7 @@ void MPEG2TransportStreamParser::parsePAT(Boolean pusi, unsigned numDataBytes)
 		u_int8_t version_number = (version_number_byte & 0x1E) >> 1;
 		u_int8_t section_number = get1Byte();
 		u_int8_t last_section_number = get1Byte();
-		fprintf(stderr, "\t\tversion_number: %d; section_number: %d; last_section_number: %d\n",
-			version_number, section_number, last_section_number);
+		fprintf(stderr, "\t\tversion_number: %d; section_number: %d; last_section_number: %d\n", version_number, section_number, last_section_number);
 #else
 		skipBytes(5);
 #endif

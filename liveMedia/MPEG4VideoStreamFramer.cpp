@@ -42,11 +42,10 @@ enum MPEGParseState
 	PARSING_VISUAL_OBJECT_SEQUENCE_END_CODE
 };
 
-class MPEG4VideoStreamParser: public MPEGVideoStreamParser
+class MPEG4VideoStreamParser : public MPEGVideoStreamParser
 {
 public:
-	MPEG4VideoStreamParser(MPEG4VideoStreamFramer *usingSource,
-		FramedSource *inputSource);
+	MPEG4VideoStreamParser(MPEG4VideoStreamFramer *usingSource, FramedSource *inputSource);
 	virtual ~MPEG4VideoStreamParser();
 
 private: // redefined virtual functions:
@@ -90,22 +89,19 @@ private:
 
 ////////// MPEG4VideoStreamFramer implementation //////////
 
-MPEG4VideoStreamFramer *MPEG4VideoStreamFramer::createNew(UsageEnvironment &env,
-	FramedSource *inputSource)
+MPEG4VideoStreamFramer *MPEG4VideoStreamFramer::createNew(UsageEnvironment &env, FramedSource *inputSource)
 {
 	// Need to add source type checking here???  #####
 	return new MPEG4VideoStreamFramer(env, inputSource);
 }
 
-unsigned char *MPEG4VideoStreamFramer
-::getConfigBytes(unsigned &numBytes) const
+unsigned char *MPEG4VideoStreamFramer::getConfigBytes(unsigned &numBytes) const
 {
 	numBytes = fNumConfigBytes;
 	return fConfigBytes;
 }
 
-void MPEG4VideoStreamFramer
-::setConfigInfo(u_int8_t profileAndLevelIndication, char const *configStr)
+void MPEG4VideoStreamFramer::setConfigInfo(u_int8_t profileAndLevelIndication, char const *configStr)
 {
 	fProfileAndLevelIndication = profileAndLevelIndication;
 
@@ -113,17 +109,10 @@ void MPEG4VideoStreamFramer
 	fConfigBytes = parseGeneralConfigStr(configStr, fNumConfigBytes);
 }
 
-MPEG4VideoStreamFramer::MPEG4VideoStreamFramer(UsageEnvironment &env,
-	FramedSource *inputSource,
-	Boolean createParser)
-	: MPEGVideoStreamFramer(env, inputSource),
-	  fProfileAndLevelIndication(0),
-	  fConfigBytes(NULL), fNumConfigBytes(0),
-	  fNewConfigBytes(NULL), fNumNewConfigBytes(0)
+MPEG4VideoStreamFramer::MPEG4VideoStreamFramer(UsageEnvironment &env, FramedSource *inputSource, Boolean createParser)
+	: MPEGVideoStreamFramer(env, inputSource), fProfileAndLevelIndication(0), fConfigBytes(NULL), fNumConfigBytes(0), fNewConfigBytes(NULL), fNumNewConfigBytes(0)
 {
-	fParser = createParser
-		? new MPEG4VideoStreamParser(this, inputSource)
-		: NULL;
+	fParser = createParser ? new MPEG4VideoStreamParser(this, inputSource) : NULL;
 }
 
 MPEG4VideoStreamFramer::~MPEG4VideoStreamFramer()
@@ -139,12 +128,10 @@ void MPEG4VideoStreamFramer::startNewConfig()
 	fNumNewConfigBytes = 0;
 }
 
-void MPEG4VideoStreamFramer
-::appendToNewConfig(unsigned char *newConfigBytes, unsigned numNewBytes)
+void MPEG4VideoStreamFramer::appendToNewConfig(unsigned char *newConfigBytes, unsigned numNewBytes)
 {
 	// Allocate a new block of memory for the new config bytes:
-	unsigned char *configNew
-		= new unsigned char[fNumNewConfigBytes + numNewBytes];
+	unsigned char *configNew = new unsigned char[fNumNewConfigBytes + numNewBytes];
 
 	// Copy the old, then the new, config bytes there:
 	memmove(configNew, fNewConfigBytes, fNumNewConfigBytes);
@@ -171,15 +158,10 @@ Boolean MPEG4VideoStreamFramer::isMPEG4VideoStreamFramer() const
 
 ////////// MPEG4VideoStreamParser implementation //////////
 
-MPEG4VideoStreamParser
-::MPEG4VideoStreamParser(MPEG4VideoStreamFramer *usingSource,
-	FramedSource *inputSource)
-	: MPEGVideoStreamParser(usingSource, inputSource),
-	  fCurrentParseState(PARSING_VISUAL_OBJECT_SEQUENCE),
-	  vop_time_increment_resolution(0), fNumVTIRBits(0),
-	  fixed_vop_rate(0), fixed_vop_time_increment(0),
-	  fSecondsSinceLastTimeCode(0), fTotalTicksSinceLastTimeCode(0),
-	  fPrevNewTotalTicks(0), fPrevPictureCountDelta(1), fJustSawTimeCode(False)
+MPEG4VideoStreamParser::MPEG4VideoStreamParser(MPEG4VideoStreamFramer *usingSource, FramedSource *inputSource)
+	: MPEGVideoStreamParser(usingSource, inputSource), fCurrentParseState(PARSING_VISUAL_OBJECT_SEQUENCE)
+	, vop_time_increment_resolution(0), fNumVTIRBits(0), fixed_vop_rate(0), fixed_vop_time_increment(0)
+	, fSecondsSinceLastTimeCode(0), fTotalTicksSinceLastTimeCode(0), fPrevNewTotalTicks(0), fPrevPictureCountDelta(1), fJustSawTimeCode(False)
 {
 }
 
@@ -263,8 +245,7 @@ unsigned MPEG4VideoStreamParser::parse()
 #define VISUAL_OBJECT_START_CODE          0x000001B5
 #define VOP_START_CODE                    0x000001B6
 
-unsigned MPEG4VideoStreamParser
-::parseVisualObjectSequence(Boolean haveSeenStartCode)
+unsigned MPEG4VideoStreamParser::parseVisualObjectSequence(Boolean haveSeenStartCode)
 {
 #ifdef DEBUG
 	fprintf(stderr, "parsing VisualObjectSequence\n");
@@ -397,8 +378,7 @@ Boolean MPEG4VideoStreamParser::getNextFrameBit(u_int8_t &result)
 	return True;
 }
 
-Boolean MPEG4VideoStreamParser::getNextFrameBits(unsigned numBits,
-	u_int32_t &result)
+Boolean MPEG4VideoStreamParser::getNextFrameBits(unsigned numBits, u_int32_t &result)
 {
 	result = 0;
 	for (unsigned i = 0; i < numBits; ++i)
@@ -530,14 +510,11 @@ unsigned MPEG4VideoStreamParser::parseVideoObjectLayer()
 	do
 	{
 		saveToNextCode(next4Bytes);
-	} while (next4Bytes != GROUP_VOP_START_CODE
-		&& next4Bytes != VOP_START_CODE);
+	} while (next4Bytes != GROUP_VOP_START_CODE && next4Bytes != VOP_START_CODE);
 
 	analyzeVOLHeader();
 
-	setParseState((next4Bytes == GROUP_VOP_START_CODE)
-		? PARSING_GROUP_OF_VIDEO_OBJECT_PLANE
-		: PARSING_VIDEO_OBJECT_PLANE);
+	setParseState((next4Bytes == GROUP_VOP_START_CODE) ? PARSING_GROUP_OF_VIDEO_OBJECT_PLANE : PARSING_VIDEO_OBJECT_PLANE);
 
 	// Compute this frame's presentation time:
 	usingSource()->computePresentationTime(fTotalTicksSinceLastTimeCode);
@@ -563,14 +540,13 @@ unsigned MPEG4VideoStreamParser::parseGroupOfVideoObjectPlane()
 	saveByte(next3Bytes[0]);
 	saveByte(next3Bytes[1]);
 	saveByte(next3Bytes[2]);
-	unsigned time_code
-		= (next3Bytes[0] << 10) | (next3Bytes[1] << 2) | (next3Bytes[2] >> 6);
-	unsigned time_code_hours    = (time_code & 0x0003E000) >> 13;
-	unsigned time_code_minutes  = (time_code & 0x00001F80) >> 7;
+	unsigned time_code = (next3Bytes[0] << 10) | (next3Bytes[1] << 2) | (next3Bytes[2] >> 6);
+	unsigned time_code_hours = (time_code & 0x0003E000) >> 13;
+	unsigned time_code_minutes = (time_code & 0x00001F80) >> 7;
 #if defined(DEBUG) || defined(DEBUG_TIMESTAMPS)
-	Boolean marker_bit          = (time_code & 0x00000040) != 0;
+	Boolean marker_bit = (time_code & 0x00000040) != 0;
 #endif
-	unsigned time_code_seconds  = (time_code & 0x0000003F);
+	unsigned time_code_seconds = (time_code & 0x0000003F);
 #if defined(DEBUG) || defined(DEBUG_TIMESTAMPS)
 	fprintf(stderr, "time_code: 0x%05x, hours %d, minutes %d, marker_bit %d, seconds %d\n", time_code, time_code_hours, time_code_minutes, marker_bit, time_code_seconds);
 #endif
@@ -587,8 +563,7 @@ unsigned MPEG4VideoStreamParser::parseGroupOfVideoObjectPlane()
 	usingSource()->computePresentationTime(fTotalTicksSinceLastTimeCode);
 
 	// Record the time code:
-	usingSource()->setTimeCode(time_code_hours, time_code_minutes,
-		time_code_seconds, 0, 0);
+	usingSource()->setTimeCode(time_code_hours, time_code_minutes, time_code_seconds, 0, 0);
 	// Note: Because the GOV header can appear anywhere (not just at a 1s point), we
 	// don't pass "fTotalTicksSinceLastTimeCode" as the "picturesSinceLastGOP" parameter.
 	fSecondsSinceLastTimeCode = 0;
@@ -596,7 +571,6 @@ unsigned MPEG4VideoStreamParser::parseGroupOfVideoObjectPlane()
 		fTotalTicksSinceLastTimeCode = 0;
 
 	setParseState(PARSING_VIDEO_OBJECT_PLANE);
-
 	return curFrameSize();
 }
 
@@ -671,9 +645,7 @@ unsigned MPEG4VideoStreamParser::parseVideoObjectPlane()
 	else
 	{
 		// Use 'vop_time_increment':
-		unsigned newTotalTicks
-			= (fSecondsSinceLastTimeCode + modulo_time_base) * vop_time_increment_resolution
-				+ vop_time_increment;
+		unsigned newTotalTicks = (fSecondsSinceLastTimeCode + modulo_time_base) * vop_time_increment_resolution + vop_time_increment;
 		if (newTotalTicks == fPrevNewTotalTicks && fPrevNewTotalTicks > 0)
 		{
 			// This is apparently a buggy MPEG-4 video stream, because
@@ -713,8 +685,8 @@ unsigned MPEG4VideoStreamParser::parseVideoObjectPlane()
 				fPrevPictureCountDelta = pictureCountDelta;
 				fTotalTicksSinceLastTimeCode = newTotalTicks;
 				fSecondsSinceLastTimeCode += modulo_time_base;
-			}
-		}
+	}
+}
 	}
 	fJustSawTimeCode = False; // for next time
 

@@ -33,9 +33,7 @@ class InputESSourceRecord
 {
 public:
 	InputESSourceRecord(MPEG2TransportStreamFromESSource &parent,
-		FramedSource *inputSource,
-		u_int8_t streamId, int mpegVersion,
-		InputESSourceRecord *next, int16_t PID = -1);
+		FramedSource *inputSource, u_int8_t streamId, int mpegVersion, InputESSourceRecord *next, int16_t PID = -1);
 	virtual ~InputESSourceRecord();
 
 	InputESSourceRecord *next() const
@@ -62,13 +60,8 @@ public:
 	}
 
 private:
-	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
-	void afterGettingFrame1(unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime);
+	static void afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
+	void afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime);
 
 private:
 	InputESSourceRecord *fNext;
@@ -88,32 +81,26 @@ private:
 
 unsigned MPEG2TransportStreamFromESSource::maxInputESFrameSize = 100000; // bytes
 
-MPEG2TransportStreamFromESSource *MPEG2TransportStreamFromESSource
-::createNew(UsageEnvironment &env)
+MPEG2TransportStreamFromESSource *MPEG2TransportStreamFromESSource::createNew(UsageEnvironment &env)
 {
 	return new MPEG2TransportStreamFromESSource(env);
 }
 
-void MPEG2TransportStreamFromESSource
-::addNewVideoSource(FramedSource *inputSource, int mpegVersion, int16_t PID)
+void MPEG2TransportStreamFromESSource::addNewVideoSource(FramedSource *inputSource, int mpegVersion, int16_t PID)
 {
 	u_int8_t streamId = 0xE0 | (fVideoSourceCounter++ & 0x0F);
 	addNewInputSource(inputSource, streamId, mpegVersion, PID);
 	fHaveVideoStreams = True;
 }
 
-void MPEG2TransportStreamFromESSource
-::addNewAudioSource(FramedSource *inputSource, int mpegVersion, int16_t PID)
+void MPEG2TransportStreamFromESSource::addNewAudioSource(FramedSource *inputSource, int mpegVersion, int16_t PID)
 {
 	u_int8_t streamId = 0xC0 | (fAudioSourceCounter++ & 0x0F);
 	addNewInputSource(inputSource, streamId, mpegVersion, PID);
 }
 
-MPEG2TransportStreamFromESSource
-::MPEG2TransportStreamFromESSource(UsageEnvironment &env)
-	: MPEG2TransportStreamMultiplexor(env),
-	  fInputSources(NULL), fVideoSourceCounter(0), fAudioSourceCounter(0),
-	  fAwaitingBackgroundDelivery(False)
+MPEG2TransportStreamFromESSource::MPEG2TransportStreamFromESSource(UsageEnvironment &env)
+	: MPEG2TransportStreamMultiplexor(env), fInputSources(NULL), fVideoSourceCounter(0), fAudioSourceCounter(0), fAwaitingBackgroundDelivery(False)
 {
 	fHaveVideoStreams = False; // unless we add a video source
 }
@@ -134,15 +121,13 @@ void MPEG2TransportStreamFromESSource::doStopGettingFrames()
 	}
 }
 
-void MPEG2TransportStreamFromESSource
-::awaitNewBuffer(unsigned char *oldBuffer)
+void MPEG2TransportStreamFromESSource::awaitNewBuffer(unsigned char *oldBuffer)
 {
 	InputESSourceRecord *sourceRec;
 	// Begin by resetting the old buffer:
 	if (oldBuffer != NULL)
 	{
-		for (sourceRec = fInputSources; sourceRec != NULL;
-			sourceRec = sourceRec->next())
+		for (sourceRec = fInputSources; sourceRec != NULL; sourceRec = sourceRec->next())
 		{
 			if (sourceRec->buffer() == oldBuffer)
 			{
@@ -156,8 +141,7 @@ void MPEG2TransportStreamFromESSource
 	if (isCurrentlyAwaitingData())
 	{
 		// Try to deliver one filled-in buffer to the client:
-		for (sourceRec = fInputSources; sourceRec != NULL;
-			sourceRec = sourceRec->next())
+		for (sourceRec = fInputSources; sourceRec != NULL; sourceRec = sourceRec->next())
 		{
 			if (sourceRec->deliverBufferToClient())
 				return;
@@ -166,33 +150,25 @@ void MPEG2TransportStreamFromESSource
 	}
 
 	// No filled-in buffers are available. Ask each of our inputs for data:
-	for (sourceRec = fInputSources; sourceRec != NULL;
-		sourceRec = sourceRec->next())
+	for (sourceRec = fInputSources; sourceRec != NULL; sourceRec = sourceRec->next())
 	{
 		sourceRec->askForNewData();
 	}
 }
 
-void MPEG2TransportStreamFromESSource
-::addNewInputSource(FramedSource *inputSource,
-	u_int8_t streamId, int mpegVersion, int16_t PID)
+void MPEG2TransportStreamFromESSource::addNewInputSource(FramedSource *inputSource, u_int8_t streamId, int mpegVersion, int16_t PID)
 {
 	if (inputSource == NULL)
 		return;
-	fInputSources = new InputESSourceRecord(*this, inputSource, streamId,
-		mpegVersion, fInputSources, PID);
+	fInputSources = new InputESSourceRecord(*this, inputSource, streamId, mpegVersion, fInputSources, PID);
 }
 
 
 ////////// InputESSourceRecord implementation //////////
 
-InputESSourceRecord
-::InputESSourceRecord(MPEG2TransportStreamFromESSource &parent,
-	FramedSource *inputSource,
-	u_int8_t streamId, int mpegVersion,
-	InputESSourceRecord *next, int16_t PID)
-	: fNext(next), fParent(parent), fInputSource(inputSource),
-	  fStreamId(streamId), fMPEGVersion(mpegVersion), fPID(PID)
+InputESSourceRecord::InputESSourceRecord(MPEG2TransportStreamFromESSource &parent,
+	FramedSource *inputSource, u_int8_t streamId, int mpegVersion, InputESSourceRecord *next, int16_t PID)
+	: fNext(next), fParent(parent), fInputSource(inputSource), fStreamId(streamId), fMPEGVersion(mpegVersion), fPID(PID)
 {
 	fInputBuffer = new unsigned char[INPUT_BUFFER_SIZE];
 	reset();
@@ -225,14 +201,11 @@ void InputESSourceRecord::askForNewData()
 		// fInputBuffer[9..13] will be the PTS; fill this in later
 		fInputBufferBytesAvailable = SIMPLE_PES_HEADER_SIZE;
 	}
-	if (fInputBufferBytesAvailable < TS_FROM_ES_LOW_WATER_MARK &&
-		!fInputSource->isCurrentlyAwaitingData())
+	if (fInputBufferBytesAvailable < TS_FROM_ES_LOW_WATER_MARK && !fInputSource->isCurrentlyAwaitingData())
 	{
 		// We don't yet have enough data in our buffer.  Arrange to read more:
 		fInputSource->getNextFrame(&fInputBuffer[fInputBufferBytesAvailable],
-			INPUT_BUFFER_SIZE - fInputBufferBytesAvailable,
-			afterGettingFrame, this,
-			FramedSource::handleClosure, &fParent);
+			INPUT_BUFFER_SIZE - fInputBufferBytesAvailable, afterGettingFrame, this, FramedSource::handleClosure, &fParent);
 	}
 }
 
@@ -261,24 +234,18 @@ Boolean InputESSourceRecord::deliverBufferToClient()
 	fInputBufferInUse = True;
 
 	// Do the delivery:
-	fParent.handleNewBuffer(fInputBuffer, fInputBufferBytesAvailable,
-		fMPEGVersion, fSCR, fPID);
+	fParent.handleNewBuffer(fInputBuffer, fInputBufferBytesAvailable, fMPEGVersion, fSCR, fPID);
 
 	return True;
 }
 
-void InputESSourceRecord
-::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned /*durationInMicroseconds*/)
+void InputESSourceRecord::afterGettingFrame(void *clientData,
+	unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned /*durationInMicroseconds*/)
 {
 	InputESSourceRecord *source = (InputESSourceRecord *)clientData;
 	source->afterGettingFrame1(frameSize, numTruncatedBytes, presentationTime);
 }
-void InputESSourceRecord
-::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes,
-	struct timeval presentationTime)
+void InputESSourceRecord::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime)
 {
 	if (numTruncatedBytes > 0)
 	{
@@ -289,11 +256,8 @@ void InputESSourceRecord
 	if (fInputBufferBytesAvailable == SIMPLE_PES_HEADER_SIZE)
 	{
 		// Use this presentationTime for our SCR:
-		fSCR.highBit
-			= ((presentationTime.tv_sec * 45000 + (presentationTime.tv_usec * 9) / 200) &
-					0x80000000) != 0;
-		fSCR.remainingBits
-			= presentationTime.tv_sec * 90000 + (presentationTime.tv_usec * 9) / 100;
+		fSCR.highBit = ((presentationTime.tv_sec * 45000 + (presentationTime.tv_usec * 9) / 200) & 0x80000000) != 0;
+		fSCR.remainingBits = presentationTime.tv_sec * 90000 + (presentationTime.tv_usec * 9) / 100;
 		fSCR.extension = (presentationTime.tv_usec * 9) % 100;
 #ifdef DEBUG_SCR
 		fprintf(stderr, "PES header: stream_id 0x%02x, pts: %u.%06u => SCR 0x%x%08x:%03x\n", fStreamId, (unsigned)presentationTime.tv_sec, (unsigned)presentationTime.tv_usec, fSCR.highBit, fSCR.remainingBits, fSCR.extension);
@@ -301,7 +265,6 @@ void InputESSourceRecord
 	}
 
 	fInputBufferBytesAvailable += frameSize;
-
 	fParent.fPresentationTime = presentationTime;
 
 	// Now that we have new input data, check if we can deliver to the client:
@@ -310,4 +273,4 @@ void InputESSourceRecord
 		fParent.fAwaitingBackgroundDelivery = False;
 		fParent.awaitNewBuffer(NULL);
 	}
-}
+	}

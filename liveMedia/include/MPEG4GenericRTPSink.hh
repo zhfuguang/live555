@@ -25,35 +25,24 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSink.hh"
 #endif
 
-class MPEG4GenericRTPSink: public MultiFramedRTPSink
+class MPEG4GenericRTPSink : public MultiFramedRTPSink
 {
 public:
-	static MPEG4GenericRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		u_int8_t rtpPayloadFormat, u_int32_t rtpTimestampFrequency,
-		char const *sdpMediaTypeString, char const *mpeg4Mode,
-		char const *configString,
-		unsigned numChannels = 1);
+	static MPEG4GenericRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
+		u_int32_t rtpTimestampFrequency, char const *sdpMediaTypeString, char const *mpeg4Mode, char const *configString, unsigned numChannels = 1);
 
 protected:
-	MPEG4GenericRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
-		u_int8_t rtpPayloadFormat,
-		u_int32_t rtpTimestampFrequency,
-		char const *sdpMediaTypeString,
-		char const *mpeg4Mode, char const *configString,
-		unsigned numChannels);
+	MPEG4GenericRTPSink(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
+		u_int32_t rtpTimestampFrequency, char const *sdpMediaTypeString, char const *mpeg4Mode, char const *configString, unsigned numChannels);
 	// called only by createNew()
 
 	virtual ~MPEG4GenericRTPSink();
 
 private: // redefined virtual functions:
 	virtual
-	Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart,
-		unsigned numBytesInFrame) const;
+		Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart, unsigned numBytesInFrame) const;
 	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
+		unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
 	virtual unsigned specialHeaderSize() const;
 
 	virtual char const *sdpMediaType() const;

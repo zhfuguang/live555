@@ -24,31 +24,25 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG2TransportStreamIndexFile.hh"
 #include "InputFile.hh"
 
-MPEG2TransportStreamIndexFile
-::MPEG2TransportStreamIndexFile(UsageEnvironment &env, char const *indexFileName)
-	: Medium(env),
-	  fFileName(strDup(indexFileName)), fFid(NULL), fMPEGVersion(0), fCurrentIndexRecordNum(0),
-	  fCachedPCR(0.0f), fCachedTSPacketNumber(0), fNumIndexRecords(0)
+MPEG2TransportStreamIndexFile::MPEG2TransportStreamIndexFile(UsageEnvironment &env, char const *indexFileName)
+	: Medium(env), fFileName(strDup(indexFileName)), fFid(NULL), fMPEGVersion(0), fCurrentIndexRecordNum(0)
+	, fCachedPCR(0.0f), fCachedTSPacketNumber(0), fNumIndexRecords(0)
 {
 	// Get the file size, to determine how many index records it contains:
 	u_int64_t indexFileSize = GetFileSize(indexFileName, NULL);
 	if (indexFileSize % INDEX_RECORD_SIZE != 0)
 	{
 		env << "Warning: Size of the index file \"" << indexFileName
-			<< "\" (" << (unsigned)indexFileSize
-			<< ") is not a multiple of the index record size ("
-			<< INDEX_RECORD_SIZE << ")\n";
+			<< "\" (" << (unsigned)indexFileSize << ") is not a multiple of the index record size (" << INDEX_RECORD_SIZE << ")\n";
 	}
 	fNumIndexRecords = (unsigned long)(indexFileSize / INDEX_RECORD_SIZE);
 }
 
-MPEG2TransportStreamIndexFile *MPEG2TransportStreamIndexFile
-::createNew(UsageEnvironment &env, char const *indexFileName)
+MPEG2TransportStreamIndexFile *MPEG2TransportStreamIndexFile::createNew(UsageEnvironment &env, char const *indexFileName)
 {
 	if (indexFileName == NULL)
 		return NULL;
-	MPEG2TransportStreamIndexFile *indexFile
-		= new MPEG2TransportStreamIndexFile(env, indexFileName);
+	MPEG2TransportStreamIndexFile *indexFile = new MPEG2TransportStreamIndexFile(env, indexFileName);
 
 	// Reject empty or non-existent index files:
 	if (indexFile->getPlayingDuration() == 0.0f)
@@ -66,9 +60,7 @@ MPEG2TransportStreamIndexFile::~MPEG2TransportStreamIndexFile()
 	delete[] fFileName;
 }
 
-void MPEG2TransportStreamIndexFile
-::lookupTSPacketNumFromNPT(float &npt, unsigned long &tsPacketNumber,
-	unsigned long &indexRecordNumber)
+void MPEG2TransportStreamIndexFile::lookupTSPacketNumFromNPT(float &npt, unsigned long &tsPacketNumber, unsigned long &indexRecordNumber)
 {
 	if (npt <= 0.0 || fNumIndexRecords == 0)   // Fast-track a common case:
 	{
@@ -102,8 +94,7 @@ void MPEG2TransportStreamIndexFile
 
 		while (ixRight - ixLeft > 1 && pcrLeft < npt && npt <= pcrRight)
 		{
-			unsigned long ixNew = ixLeft
-				+ (unsigned long)(((npt - pcrLeft) / (pcrRight - pcrLeft)) * (ixRight - ixLeft));
+			unsigned long ixNew = ixLeft + (unsigned long)(((npt - pcrLeft) / (pcrRight - pcrLeft)) * (ixRight - ixLeft));
 			if (ixNew == ixLeft || ixNew == ixRight)
 			{
 				// use bisection instead:
@@ -147,9 +138,8 @@ void MPEG2TransportStreamIndexFile
 	closeFid();
 }
 
-void MPEG2TransportStreamIndexFile
-::lookupPCRFromTSPacketNum(unsigned long &tsPacketNumber, Boolean reverseToPreviousCleanPoint,
-	float &pcr, unsigned long &indexRecordNumber)
+void MPEG2TransportStreamIndexFile::lookupPCRFromTSPacketNum(
+	unsigned long &tsPacketNumber, Boolean reverseToPreviousCleanPoint, float &pcr, unsigned long &indexRecordNumber)
 {
 	if (tsPacketNumber == 0 || fNumIndexRecords == 0)   // Fast-track a common case:
 	{
@@ -183,8 +173,7 @@ void MPEG2TransportStreamIndexFile
 
 		while (ixRight - ixLeft > 1 && tsLeft < tsPacketNumber && tsPacketNumber <= tsRight)
 		{
-			unsigned long ixNew = ixLeft
-				+ (unsigned long)(((tsPacketNumber - tsLeft) / (tsRight - tsLeft)) * (ixRight - ixLeft));
+			unsigned long ixNew = ixLeft + (unsigned long)(((tsPacketNumber - tsLeft) / (tsRight - tsLeft)) * (ixRight - ixLeft));
 			if (ixNew == ixLeft || ixNew == ixRight)
 			{
 				// Use bisection instead:
@@ -237,10 +226,8 @@ void MPEG2TransportStreamIndexFile
 	closeFid();
 }
 
-Boolean MPEG2TransportStreamIndexFile
-::readIndexRecordValues(unsigned long indexRecordNum,
-	unsigned long &transportPacketNum, u_int8_t &offset,
-	u_int8_t &size, float &pcr, u_int8_t &recordType)
+Boolean MPEG2TransportStreamIndexFile::readIndexRecordValues(unsigned long indexRecordNum,
+	unsigned long &transportPacketNum, u_int8_t &offset, u_int8_t &size, float &pcr, u_int8_t &recordType)
 {
 	if (!readIndexRecord(indexRecordNum))
 		return False;
@@ -380,7 +367,7 @@ Boolean MPEG2TransportStreamIndexFile::rewindToCleanPoint(unsigned long &ixFound
 
 		if ((recordType & 0x80) != 0) // This is the start of a 'frame'
 		{
-			recordType &= ~ 0x80; // remove the 'start of frame' bit
+			recordType &= ~0x80; // remove the 'start of frame' bit
 			if (fMPEGVersion == 5)   // H.264
 			{
 				if (recordType == 5/*SPS*/)

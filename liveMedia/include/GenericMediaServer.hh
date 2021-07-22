@@ -38,21 +38,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 // Typedef for a handler function that gets called when "lookupServerMediaSession()"
 // (defined below) completes:
-typedef void lookupServerMediaSessionCompletionFunc(void *clientData,
-	ServerMediaSession *sessionLookedUp);
+typedef void lookupServerMediaSessionCompletionFunc(void *clientData, ServerMediaSession *sessionLookedUp);
 
-class GenericMediaServer: public Medium
+class GenericMediaServer : public Medium
 {
 public:
 	void addServerMediaSession(ServerMediaSession *serverMediaSession);
 
 	virtual void lookupServerMediaSession(char const *streamName,
-		lookupServerMediaSessionCompletionFunc *completionFunc,
-		void *completionClientData,
-		Boolean isFirstLookupInSession = True);
+		lookupServerMediaSessionCompletionFunc *completionFunc, void *completionClientData, Boolean isFirstLookupInSession = True);
 	// Note: This is a virtual function, so can be reimplemented by subclasses.
-	void lookupServerMediaSession(char const *streamName,
-		void (GenericMediaServer::*memberFunc)(ServerMediaSession *));
+	void lookupServerMediaSession(char const *streamName, void (GenericMediaServer:: *memberFunc)(ServerMediaSession *));
 	// Special case of "lookupServerMediaSession()" where the 'completion function' is a
 	// member function of "GenericMediaServer" (and the 'completion client data' is "this".)
 
@@ -84,8 +80,7 @@ public:
 	}
 
 protected:
-	GenericMediaServer(UsageEnvironment &env, int ourSocketIPv4, int ourSocketIPv6, Port ourPort,
-		unsigned reclamationSeconds);
+	GenericMediaServer(UsageEnvironment &env, int ourSocketIPv4, int ourSocketIPv6, Port ourPort, unsigned reclamationSeconds);
 	// If "reclamationSeconds" > 0, then the "ClientSession" state for each client will get
 	// reclaimed if no activity from the client is detected in at least "reclamationSeconds".
 	// we're an abstract base class
@@ -201,8 +196,7 @@ private:
 class UserAuthenticationDatabase
 {
 public:
-	UserAuthenticationDatabase(char const *realm = NULL,
-		Boolean passwordsAreMD5 = False);
+	UserAuthenticationDatabase(char const *realm = NULL, Boolean passwordsAreMD5 = False);
 	// If "passwordsAreMD5" is True, then each password stored into, or removed from,
 	// the database is actually the value computed
 	// by md5(<username>:<realm>:<actual-password>)

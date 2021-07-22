@@ -28,16 +28,15 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG1or2DemuxedElementaryStream.hh"
 #endif
 
-class MPEG1or2FileServerDemux: public Medium
+class MPEG1or2FileServerDemux : public Medium
 {
 public:
 	static MPEG1or2FileServerDemux *createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource);
 
 	ServerMediaSubsession *newAudioServerMediaSubsession(); // MPEG-1 or 2 audio
-	ServerMediaSubsession *newVideoServerMediaSubsession(Boolean iFramesOnly = False,
-		double vshPeriod = 5.0
-			/* how often (in seconds) to inject a Video_Sequence_Header,
-			if one doesn't already appear in the stream */);
+	ServerMediaSubsession *newVideoServerMediaSubsession(Boolean iFramesOnly = False, double vshPeriod = 5.0
+		/* how often (in seconds) to inject a Video_Sequence_Header,
+		if one doesn't already appear in the stream */);
 	ServerMediaSubsession *newAC3AudioServerMediaSubsession(); // AC-3 audio (from VOB)
 
 	unsigned fileSize() const
@@ -50,15 +49,13 @@ public:
 	}
 
 private:
-	MPEG1or2FileServerDemux(UsageEnvironment &env, char const *fileName,
-		Boolean reuseFirstSource);
+	MPEG1or2FileServerDemux(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource);
 	// called only by createNew();
 	virtual ~MPEG1or2FileServerDemux();
 
 private:
 	friend class MPEG1or2DemuxedServerMediaSubsession;
-	MPEG1or2DemuxedElementaryStream *newElementaryStream(unsigned clientSessionId,
-		u_int8_t streamIdTag);
+	MPEG1or2DemuxedElementaryStream *newElementaryStream(unsigned clientSessionId, u_int8_t streamIdTag);
 
 private:
 	char const *fFileName;

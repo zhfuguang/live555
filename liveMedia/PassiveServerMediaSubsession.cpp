@@ -24,16 +24,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// PassiveServerMediaSubsession //////////
 
-PassiveServerMediaSubsession *PassiveServerMediaSubsession::createNew(RTPSink &rtpSink,
-	RTCPInstance *rtcpInstance)
+PassiveServerMediaSubsession *PassiveServerMediaSubsession::createNew(RTPSink &rtpSink, RTCPInstance *rtcpInstance)
 {
 	return new PassiveServerMediaSubsession(rtpSink, rtcpInstance);
 }
 
-PassiveServerMediaSubsession
-::PassiveServerMediaSubsession(RTPSink &rtpSink, RTCPInstance *rtcpInstance)
-	: ServerMediaSubsession(rtpSink.envir()),
-	  fSDPLines(NULL), fRTPSink(rtpSink), fRTCPInstance(rtcpInstance)
+PassiveServerMediaSubsession::PassiveServerMediaSubsession(RTPSink &rtpSink, RTCPInstance *rtcpInstance)
+	: ServerMediaSubsession(rtpSink.envir()), fSDPLines(NULL), fRTPSink(rtpSink), fRTCPInstance(rtcpInstance)
 {
 	fClientRTCPSourceRecords = HashTable::create(ONE_WORD_HASH_KEYS);
 }
@@ -87,8 +84,7 @@ char const *PassiveServerMediaSubsession::sdpLines(int /*addressFamily*/)
 		unsigned char ttl = gs.ttl();
 		unsigned char rtpPayloadType = fRTPSink.rtpPayloadType();
 		char const *mediaType = fRTPSink.sdpMediaType();
-		unsigned estBitrate
-			= fRTCPInstance == NULL ? 50 : fRTCPInstance->totSessionBW();
+		unsigned estBitrate = fRTCPInstance == NULL ? 50 : fRTCPInstance->totSessionBW();
 		char *rtpmapLine = fRTPSink.rtpmapLine();
 		char const *rtcpmuxLine = rtcpIsMuxed() ? "a=rtcp-mux\r\n" : "";
 		char const *rangeLine = rangeSDPLine();
@@ -114,6 +110,7 @@ char const *PassiveServerMediaSubsession::sdpLines(int /*addressFamily*/)
 			+ strlen(rangeLine)
 			+ strlen(auxSDPLine)
 			+ strlen(trackId());
+
 		char *sdpLines = new char[sdpFmtSize];
 		sprintf(sdpLines, sdpFmt,
 			mediaType, // m= <media>
@@ -128,6 +125,7 @@ char const *PassiveServerMediaSubsession::sdpLines(int /*addressFamily*/)
 			rangeLine, // a=range:... (if present)
 			auxSDPLine, // optional extra SDP line
 			trackId()); // a=control:<track-id>
+
 		delete[](char *)rangeLine;
 		delete[] rtpmapLine;
 
@@ -138,20 +136,9 @@ char const *PassiveServerMediaSubsession::sdpLines(int /*addressFamily*/)
 	return fSDPLines;
 }
 
-void PassiveServerMediaSubsession
-::getStreamParameters(unsigned clientSessionId,
-	struct sockaddr_storage const &clientAddress,
-	Port const & /*clientRTPPort*/,
-	Port const &clientRTCPPort,
-	int /*tcpSocketNum*/,
-	unsigned char /*rtpChannelId*/,
-	unsigned char /*rtcpChannelId*/,
-	struct sockaddr_storage &destinationAddress,
-	u_int8_t &destinationTTL,
-	Boolean &isMulticast,
-	Port &serverRTPPort,
-	Port &serverRTCPPort,
-	void *&streamToken)
+void PassiveServerMediaSubsession::getStreamParameters(unsigned clientSessionId, struct sockaddr_storage const &clientAddress,
+	Port const & /*clientRTPPort*/, Port const &clientRTCPPort, int /*tcpSocketNum*/, unsigned char /*rtpChannelId*/, unsigned char /*rtcpChannelId*/,
+	struct sockaddr_storage &destinationAddress, u_int8_t &destinationTTL, Boolean &isMulticast, Port &serverRTPPort, Port &serverRTCPPort, void *&streamToken)
 {
 	isMulticast = True;
 	Groupsock &gs = fRTPSink.groupsockBeingUsed();
@@ -185,14 +172,9 @@ void PassiveServerMediaSubsession
 	fClientRTCPSourceRecords->Add((char const *)clientSessionId, source);
 }
 
-void PassiveServerMediaSubsession::startStream(unsigned clientSessionId,
-	void * /*streamToken*/,
-	TaskFunc *rtcpRRHandler,
-	void *rtcpRRHandlerClientData,
-	unsigned short &rtpSeqNum,
-	unsigned &rtpTimestamp,
-	ServerRequestAlternativeByteHandler * /*serverRequestAlternativeByteHandler*/,
-	void * /*serverRequestAlternativeByteHandlerClientData*/)
+void PassiveServerMediaSubsession::startStream(unsigned clientSessionId, void * /*streamToken*/,
+	TaskFunc *rtcpRRHandler, void *rtcpRRHandlerClientData, unsigned short &rtpSeqNum, unsigned &rtpTimestamp,
+	ServerRequestAlternativeByteHandler * /*serverRequestAlternativeByteHandler*/, void * /*serverRequestAlternativeByteHandlerClientData*/)
 {
 	rtpSeqNum = fRTPSink.currentSeqNo();
 	rtpTimestamp = fRTPSink.presetNextTimestamp();
@@ -215,8 +197,7 @@ void PassiveServerMediaSubsession::startStream(unsigned clientSessionId,
 		RTCPSourceRecord *source = (RTCPSourceRecord *)(fClientRTCPSourceRecords->Lookup((char const *)clientSessionId));
 		if (source != NULL)
 		{
-			fRTCPInstance->setSpecificRRHandler(source->addr, source->port,
-				rtcpRRHandler, rtcpRRHandlerClientData);
+			fRTCPInstance->setSpecificRRHandler(source->addr, source->port, rtcpRRHandler, rtcpRRHandlerClientData);
 		}
 	}
 }
@@ -224,7 +205,7 @@ void PassiveServerMediaSubsession::startStream(unsigned clientSessionId,
 float PassiveServerMediaSubsession::getCurrentNPT(void *streamToken)
 {
 	// Return the elapsed time between our "RTPSink"s creation time, and the current time:
-	struct timeval const &creationTime  = fRTPSink.creationTime(); // alias
+	struct timeval const &creationTime = fRTPSink.creationTime(); // alias
 
 	struct timeval timeNow;
 	gettimeofday(&timeNow, NULL);
@@ -232,9 +213,7 @@ float PassiveServerMediaSubsession::getCurrentNPT(void *streamToken)
 	return (float)(timeNow.tv_sec - creationTime.tv_sec + (timeNow.tv_usec - creationTime.tv_usec) / 1000000.0);
 }
 
-void PassiveServerMediaSubsession
-::getRTPSinkandRTCP(void *streamToken,
-	RTPSink const *&rtpSink, RTCPInstance const *&rtcp)
+void PassiveServerMediaSubsession::getRTPSinkandRTCP(void *streamToken, RTPSink const *&rtpSink, RTCPInstance const *&rtcp)
 {
 	rtpSink = &fRTPSink;
 	rtcp = fRTCPInstance;

@@ -25,14 +25,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AudioRTPSink.hh"
 #endif
 
-class AMRAudioRTPSink: public AudioRTPSink
+class AMRAudioRTPSink : public AudioRTPSink
 {
 public:
 	static AMRAudioRTPSink *createNew(UsageEnvironment &env,
-		Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		Boolean sourceIsWideband = False,
-		unsigned numChannelsInSource = 1);
+		Groupsock *RTPgs, unsigned char rtpPayloadFormat, Boolean sourceIsWideband = False, unsigned numChannelsInSource = 1);
 
 	Boolean sourceIsWideband() const
 	{
@@ -40,9 +37,7 @@ public:
 	}
 
 protected:
-	AMRAudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		Boolean sourceIsWideband, unsigned numChannelsInSource);
+	AMRAudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, Boolean sourceIsWideband, unsigned numChannelsInSource);
 	// called only by createNew()
 
 	virtual ~AMRAudioRTPSink();
@@ -50,12 +45,8 @@ protected:
 private: // redefined virtual functions:
 	virtual Boolean sourceIsCompatibleWithUs(MediaSource &source);
 	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
-	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart,
-		unsigned numBytesInFrame) const;
+		unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
+	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart, unsigned numBytesInFrame) const;
 
 	virtual unsigned specialHeaderSize() const;
 	virtual char const *auxSDPLine();

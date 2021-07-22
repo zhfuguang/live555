@@ -24,24 +24,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AMRAudioRTPSink.hh"
 #include "AMRAudioSource.hh"
 
-AMRAudioRTPSink *AMRAudioRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	Boolean sourceIsWideband,
-	unsigned numChannelsInSource)
+AMRAudioRTPSink *AMRAudioRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, Boolean sourceIsWideband, unsigned numChannelsInSource)
 {
-	return new AMRAudioRTPSink(env, RTPgs, rtpPayloadFormat,
-			sourceIsWideband, numChannelsInSource);
+	return new AMRAudioRTPSink(env, RTPgs, rtpPayloadFormat, sourceIsWideband, numChannelsInSource);
 }
 
-AMRAudioRTPSink
-::AMRAudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	Boolean sourceIsWideband, unsigned numChannelsInSource)
-	: AudioRTPSink(env, RTPgs, rtpPayloadFormat,
-		  sourceIsWideband ? 16000 : 8000,
-		  sourceIsWideband ? "AMR-WB" : "AMR",
-		  numChannelsInSource),
-	  fSourceIsWideband(sourceIsWideband), fFmtpSDPLine(NULL)
+AMRAudioRTPSink::AMRAudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, Boolean sourceIsWideband, unsigned numChannelsInSource)
+	: AudioRTPSink(env, RTPgs, rtpPayloadFormat, sourceIsWideband ? 16000 : 8000, sourceIsWideband ? "AMR-WB" : "AMR", numChannelsInSource)
+	, fSourceIsWideband(sourceIsWideband), fFmtpSDPLine(NULL)
 {
 }
 
@@ -58,7 +48,7 @@ Boolean AMRAudioRTPSink::sourceIsCompatibleWithUs(MediaSource &source)
 
 	// Also, the source must be wideband iff we asked for this:
 	AMRAudioSource &amrSource = (AMRAudioSource &)source;
-	if ((amrSource.isWideband()^fSourceIsWideband) != 0)
+	if ((amrSource.isWideband() ^ fSourceIsWideband) != 0)
 		return False;
 
 	// Also, the source must have the same number of channels that we
@@ -81,10 +71,7 @@ Boolean AMRAudioRTPSink::sourceIsCompatibleWithUs(MediaSource &source)
 }
 
 void AMRAudioRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
-	unsigned char *frameStart,
-	unsigned numBytesInFrame,
-	struct timeval framePresentationTime,
-	unsigned numRemainingBytes)
+	unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes)
 {
 	// If this is the 1st frame in the 1st packet, set the RTP 'M' (marker)
 	// bit (because this is considered the start of a talk spurt):
@@ -109,20 +96,15 @@ void AMRAudioRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
 
 	u_int8_t toc = amrSource->lastFrameHeader();
 	// Clear the "F" bit, because we're the last frame in this packet: #####
-	toc &= ~ 0x80;
+	toc &= ~0x80;
 	setSpecialHeaderBytes(&toc, 1, 1 + numFramesUsedSoFar());
 
 	// Important: Also call our base class's doSpecialFrameHandling(),
 	// to set the packet's timestamp:
-	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset,
-		frameStart, numBytesInFrame,
-		framePresentationTime,
-		numRemainingBytes);
+	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset, frameStart, numBytesInFrame, framePresentationTime, numRemainingBytes);
 }
 
-Boolean AMRAudioRTPSink
-::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/,
-	unsigned /*numBytesInFrame*/) const
+Boolean AMRAudioRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/, unsigned /*numBytesInFrame*/) const
 {
 	// For now, pack only one AMR frame into each outgoing RTP packet: #####
 	return False;

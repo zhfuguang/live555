@@ -26,13 +26,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "OnDemandServerMediaSubsession.hh"
 #endif
 
-class MPEG2TransportUDPServerMediaSubsession: public OnDemandServerMediaSubsession
+class MPEG2TransportUDPServerMediaSubsession : public OnDemandServerMediaSubsession
 {
 public:
 	static MPEG2TransportUDPServerMediaSubsession *createNew(UsageEnvironment &env,
 		char const *inputAddressStr, // An IP multicast address, or use "0.0.0.0" or NULL for unicast input
-		Port const &inputPort,
-		Boolean inputStreamIsRawUDP = False); // otherwise (default) the input stream is RTP/UDP
+		Port const &inputPort, Boolean inputStreamIsRawUDP = False); // otherwise (default) the input stream is RTP/UDP
 protected:
 	MPEG2TransportUDPServerMediaSubsession(UsageEnvironment &env,
 		char const *inputAddressStr, Port const &inputPort, Boolean inputStreamIsRawUDP);
@@ -40,11 +39,8 @@ protected:
 	virtual ~MPEG2TransportUDPServerMediaSubsession();
 
 protected: // redefined virtual functions
-	virtual FramedSource *createNewStreamSource(unsigned clientSessionId,
-		unsigned &estBitrate);
-	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock,
-		unsigned char rtpPayloadTypeIfDynamic,
-		FramedSource *inputSource);
+	virtual FramedSource *createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate);
+	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource *inputSource);
 protected:
 	char const *fInputAddressStr;
 	Port fInputPort;

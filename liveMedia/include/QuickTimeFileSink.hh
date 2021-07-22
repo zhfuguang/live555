@@ -25,24 +25,15 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MediaSession.hh"
 #endif
 
-class QuickTimeFileSink: public Medium
+class QuickTimeFileSink : public Medium
 {
 public:
-	static QuickTimeFileSink *createNew(UsageEnvironment &env,
-		MediaSession &inputSession,
-		char const *outputFileName,
-		unsigned bufferSize = 20000,
-		unsigned short movieWidth = 240,
-		unsigned short movieHeight = 180,
-		unsigned movieFPS = 15,
-		Boolean packetLossCompensate = False,
-		Boolean syncStreams = False,
-		Boolean generateHintTracks = False,
-		Boolean generateMP4Format = False);
+	static QuickTimeFileSink *createNew(UsageEnvironment &env, MediaSession &inputSession, char const *outputFileName,
+		unsigned bufferSize = 20000, unsigned short movieWidth = 240, unsigned short movieHeight = 180, unsigned movieFPS = 15,
+		Boolean packetLossCompensate = False, Boolean syncStreams = False, Boolean generateHintTracks = False, Boolean generateMP4Format = False);
 
 	typedef void (afterPlayingFunc)(void *clientData);
-	Boolean startPlaying(afterPlayingFunc *afterFunc,
-		void *afterClientData);
+	Boolean startPlaying(afterPlayingFunc *afterFunc, void *afterClientData);
 
 	unsigned numActiveSubsessions() const
 	{
@@ -51,23 +42,17 @@ public:
 
 protected:
 	QuickTimeFileSink(UsageEnvironment &env, MediaSession &inputSession,
-		char const *outputFileName, unsigned bufferSize,
-		unsigned short movieWidth, unsigned short movieHeight,
-		unsigned movieFPS, Boolean packetLossCompensate,
-		Boolean syncStreams, Boolean generateHintTracks,
-		Boolean generateMP4Format);
+		char const *outputFileName, unsigned bufferSize, unsigned short movieWidth, unsigned short movieHeight,
+		unsigned movieFPS, Boolean packetLossCompensate, Boolean syncStreams, Boolean generateHintTracks, Boolean generateMP4Format);
 	// called only by createNew()
 	virtual ~QuickTimeFileSink();
 
-	virtual void noteRecordedFrame(MediaSubsession &inputSubsession,
-		unsigned packetDataSize, struct timeval const &presentationTime);
+	virtual void noteRecordedFrame(MediaSubsession &inputSubsession, unsigned packetDataSize, struct timeval const &presentationTime);
 
 private:
 	Boolean continuePlaying();
 	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+		unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 	static void onSourceClosure(void *clientData);
 	void onSourceClosure1();
 	static void onRTCPBye(void *clientData);
@@ -103,8 +88,7 @@ private:
 	}
 	unsigned addZeroWords(unsigned numWords);
 	unsigned add4ByteString(char const *str);
-	unsigned addArbitraryString(char const *str,
-		Boolean oneByteLength = True);
+	unsigned addArbitraryString(char const *str, Boolean oneByteLength = True);
 	unsigned addAtomHeader(char const *atomName);
 	unsigned addAtomHeader64(char const *atomName);
 	// strlen(atomName) must be 4
@@ -152,8 +136,8 @@ private:
 	_atom(Fclp);
 	_atom(Hclp);
 	_atom(mp4a);
-	//                            _atom(wave);
-	//                                _atom(frma);
+	//_atom(wave);
+	//_atom(frma);
 	_atom(esds);
 	_atom(srcq);
 	_atom(h263);

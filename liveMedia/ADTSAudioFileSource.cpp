@@ -71,8 +71,7 @@ ADTSAudioFileSource *ADTSAudioFileSource::createNew(UsageEnvironment &env, char 
 		}
 
 		// Get and check the 'channel_configuration':
-		u_int8_t channel_configuration
-			= ((fixedHeader[2] & 0x01) << 2) | ((fixedHeader[3] & 0xC0) >> 6); // 3 bits
+		u_int8_t channel_configuration = ((fixedHeader[2] & 0x01) << 2) | ((fixedHeader[3] & 0xC0) >> 6); // 3 bits
 
 		// If we get here, the frame header was OK.
 		// Reset the fid to the beginning of the file:
@@ -85,12 +84,9 @@ ADTSAudioFileSource *ADTSAudioFileSource::createNew(UsageEnvironment &env, char 
 		fprintf(stderr, "Read first frame: profile %d, "
 			"sampling_frequency_index %d => samplingFrequency %d, "
 			"channel_configuration %d\n",
-			profile,
-			sampling_frequency_index, samplingFrequencyTable[sampling_frequency_index],
-			channel_configuration);
+			profile, sampling_frequency_index, samplingFrequencyTable[sampling_frequency_index], channel_configuration);
 #endif
-		return new ADTSAudioFileSource(env, fid, profile,
-				sampling_frequency_index, channel_configuration);
+		return new ADTSAudioFileSource(env, fid, profile, sampling_frequency_index, channel_configuration);
 	} while (0);
 
 	// An error occurred:
@@ -98,15 +94,12 @@ ADTSAudioFileSource *ADTSAudioFileSource::createNew(UsageEnvironment &env, char 
 	return NULL;
 }
 
-ADTSAudioFileSource
-::ADTSAudioFileSource(UsageEnvironment &env, FILE *fid, u_int8_t profile,
-	u_int8_t samplingFrequencyIndex, u_int8_t channelConfiguration)
+ADTSAudioFileSource::ADTSAudioFileSource(UsageEnvironment &env, FILE *fid, u_int8_t profile, u_int8_t samplingFrequencyIndex, u_int8_t channelConfiguration)
 	: FramedFileSource(env, fid)
 {
 	fSamplingFrequency = samplingFrequencyTable[samplingFrequencyIndex];
 	fNumChannels = channelConfiguration == 0 ? 2 : channelConfiguration;
-	fuSecsPerFrame
-		= (1024/*samples-per-frame*/ * 1000000) / fSamplingFrequency/*samples-per-second*/;
+	fuSecsPerFrame = (1024/*samples-per-frame*/ * 1000000) / fSamplingFrequency/*samples-per-second*/;
 
 	// Construct the 'AudioSpecificConfig', and from it, the corresponding ASCII string:
 	unsigned char audioSpecificConfig[2];
@@ -127,8 +120,7 @@ void ADTSAudioFileSource::doGetNextFrame()
 {
 	// Begin by reading the 7-byte fixed_variable headers:
 	unsigned char headers[7];
-	if (fread(headers, 1, sizeof headers, fFid) < sizeof headers
-		|| feof(fFid) || ferror(fFid))
+	if (fread(headers, 1, sizeof headers, fFid) < sizeof headers || feof(fFid) || ferror(fFid))
 	{
 		// The input source has ended:
 		handleClosure();
@@ -137,16 +129,14 @@ void ADTSAudioFileSource::doGetNextFrame()
 
 	// Extract important fields from the headers:
 	Boolean protection_absent = headers[1] & 0x01;
-	u_int16_t frame_length
-		= ((headers[3] & 0x03) << 11) | (headers[4] << 3) | ((headers[5] & 0xE0) >> 5);
+	u_int16_t frame_length = ((headers[3] & 0x03) << 11) | (headers[4] << 3) | ((headers[5] & 0xE0) >> 5);
 #ifdef DEBUG
 	u_int16_t syncword = (headers[0] << 4) | (headers[1] >> 4);
 	fprintf(stderr, "Read frame: syncword 0x%x, protection_absent %d, frame_length %d\n", syncword, protection_absent, frame_length);
 	if (syncword != 0xFFF)
 		fprintf(stderr, "WARNING: Bad syncword!\n");
 #endif
-	unsigned numBytesToRead
-		= frame_length > sizeof headers ? frame_length - sizeof headers : 0;
+	unsigned numBytesToRead = frame_length > sizeof headers ? frame_length - sizeof headers : 0;
 
 	// If there's a 'crc_check' field, skip it:
 	if (!protection_absent)
@@ -184,6 +174,5 @@ void ADTSAudioFileSource::doGetNextFrame()
 	fDurationInMicroseconds = fuSecsPerFrame;
 
 	// Switch to another task, and inform the reader that he has data:
-	nextTask() = envir().taskScheduler().scheduleDelayedTask(0,
-			(TaskFunc *)FramedSource::afterGetting, this);
+	nextTask() = envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc *)FramedSource::afterGetting, this);
 }

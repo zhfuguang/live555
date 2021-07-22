@@ -258,9 +258,7 @@ void DelayQueue::synchronize()
 _EventTime TimeNow()
 {
 	struct timeval tvNow;
-
 	gettimeofday(&tvNow, NULL);
-
 	return _EventTime(tvNow.tv_sec, tvNow.tv_usec);
 }
 

@@ -24,17 +24,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "ByteStreamFileSource.hh"
 #include "H264VideoStreamFramer.hh"
 
-H264VideoFileServerMediaSubsession *H264VideoFileServerMediaSubsession::createNew(UsageEnvironment &env,
-	char const *fileName,
-	Boolean reuseFirstSource)
+H264VideoFileServerMediaSubsession *H264VideoFileServerMediaSubsession::createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource)
 {
 	return new H264VideoFileServerMediaSubsession(env, fileName, reuseFirstSource);
 }
 
-H264VideoFileServerMediaSubsession::H264VideoFileServerMediaSubsession(UsageEnvironment &env,
-	char const *fileName, Boolean reuseFirstSource)
-	: FileServerMediaSubsession(env, fileName, reuseFirstSource),
-	  fAuxSDPLine(NULL), fDoneFlag(0), fDummyRTPSink(NULL)
+H264VideoFileServerMediaSubsession::H264VideoFileServerMediaSubsession(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource)
+	: FileServerMediaSubsession(env, fileName, reuseFirstSource), fAuxSDPLine(NULL), fDoneFlag(0), fDummyRTPSink(NULL)
 {
 }
 
@@ -85,8 +81,7 @@ void H264VideoFileServerMediaSubsession::checkForAuxSDPLine1()
 	{
 		// try again after a brief delay:
 		int uSecsToDelay = 100000; // 100 ms
-		nextTask() = envir().taskScheduler().scheduleDelayedTask(uSecsToDelay,
-				(TaskFunc *)checkForAuxSDPLine, this);
+		nextTask() = envir().taskScheduler().scheduleDelayedTask(uSecsToDelay, (TaskFunc *)checkForAuxSDPLine, this);
 	}
 }
 
@@ -128,10 +123,7 @@ FramedSource *H264VideoFileServerMediaSubsession::createNewStreamSource(unsigned
 	return H264VideoStreamFramer::createNew(envir(), fileSource);
 }
 
-RTPSink *H264VideoFileServerMediaSubsession
-::createNewRTPSink(Groupsock *rtpGroupsock,
-	unsigned char rtpPayloadTypeIfDynamic,
-	FramedSource * /*inputSource*/)
+RTPSink *H264VideoFileServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource * /*inputSource*/)
 {
 	return H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
 }

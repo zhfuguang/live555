@@ -40,18 +40,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class ClientTrickPlayState; // forward
 
-class MPEG2TransportFileServerMediaSubsession: public FileServerMediaSubsession
+class MPEG2TransportFileServerMediaSubsession : public FileServerMediaSubsession
 {
 public:
-	static MPEG2TransportFileServerMediaSubsession *createNew(UsageEnvironment &env,
-		char const *dataFileName, char const *indexFileName,
-		Boolean reuseFirstSource);
+	static MPEG2TransportFileServerMediaSubsession *createNew(UsageEnvironment &env, char const *dataFileName, char const *indexFileName, Boolean reuseFirstSource);
 
 protected:
-	MPEG2TransportFileServerMediaSubsession(UsageEnvironment &env,
-		char const *fileName,
-		MPEG2TransportStreamIndexFile *indexFile,
-		Boolean reuseFirstSource);
+	MPEG2TransportFileServerMediaSubsession(UsageEnvironment &env, char const *fileName, MPEG2TransportStreamIndexFile *indexFile, Boolean reuseFirstSource);
 	// called only by createNew();
 	virtual ~MPEG2TransportFileServerMediaSubsession();
 
@@ -62,24 +57,16 @@ private: // redefined virtual functions
 	// more than just the input source, we reimplement some functions that are
 	// already implemented in "OnDemandServerMediaSubsession", rather than
 	// reimplementing "seekStreamSource()" and "setStreamSourceScale()":
-	virtual void startStream(unsigned clientSessionId, void *streamToken,
-		TaskFunc *rtcpRRHandler,
-		void *rtcpRRHandlerClientData,
-		unsigned short &rtpSeqNum,
-		unsigned &rtpTimestamp,
-		ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler,
-		void *serverRequestAlternativeByteHandlerClientData);
+	virtual void startStream(unsigned clientSessionId, void *streamToken, TaskFunc *rtcpRRHandler, void *rtcpRRHandlerClientData, unsigned short &rtpSeqNum,
+		unsigned &rtpTimestamp, ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler, void *serverRequestAlternativeByteHandlerClientData);
 	virtual void pauseStream(unsigned clientSessionId, void *streamToken);
 	virtual void seekStream(unsigned clientSessionId, void *streamToken, double &seekNPT, double streamDuration, u_int64_t &numBytes);
 	virtual void setStreamScale(unsigned clientSessionId, void *streamToken, float scale);
 	virtual void deleteStream(unsigned clientSessionId, void *&streamToken);
 
 	// The virtual functions that are usually implemented by "ServerMediaSubsession"s:
-	virtual FramedSource *createNewStreamSource(unsigned clientSessionId,
-		unsigned &estBitrate);
-	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock,
-		unsigned char rtpPayloadTypeIfDynamic,
-		FramedSource *inputSource);
+	virtual FramedSource *createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate);
+	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource *inputSource);
 
 	virtual void testScaleFactor(float &scale);
 	virtual float duration() const;

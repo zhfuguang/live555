@@ -27,36 +27,23 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AudioRTPSink.hh"
 #endif
 
-class MPEG4LATMAudioRTPSink: public AudioRTPSink
+class MPEG4LATMAudioRTPSink : public AudioRTPSink
 {
 public:
-	static MPEG4LATMAudioRTPSink *createNew(UsageEnvironment &env,
-		Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		u_int32_t rtpTimestampFrequency,
-		char const *streamMuxConfigString,
-		unsigned numChannels,
-		Boolean allowMultipleFramesPerPacket = False);
+	static MPEG4LATMAudioRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat,
+		u_int32_t rtpTimestampFrequency, char const *streamMuxConfigString, unsigned numChannels, Boolean allowMultipleFramesPerPacket = False);
 
 protected:
-	MPEG4LATMAudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		u_int32_t rtpTimestampFrequency,
-		char const *streamMuxConfigString,
-		unsigned numChannels,
-		Boolean allowMultipleFramesPerPacket);
+	MPEG4LATMAudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat,
+		u_int32_t rtpTimestampFrequency, char const *streamMuxConfigString, unsigned numChannels, Boolean allowMultipleFramesPerPacket);
 	// called only by createNew()
 
 	virtual ~MPEG4LATMAudioRTPSink();
 
 private: // redefined virtual functions:
-	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
-	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart,
-		unsigned numBytesInFrame) const;
+	virtual void doSpecialFrameHandling(unsigned fragmentationOffset, unsigned char *frameStart,
+		unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
+	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart, unsigned numBytesInFrame) const;
 
 	virtual char const *auxSDPLine(); // for the "a=fmtp:" SDP line
 

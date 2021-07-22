@@ -25,17 +25,15 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "H264or5VideoStreamFramer.hh"
 #endif
 
-class H265VideoStreamFramer: public H264or5VideoStreamFramer
+class H265VideoStreamFramer : public H264or5VideoStreamFramer
 {
 public:
-	static H265VideoStreamFramer *createNew(UsageEnvironment &env, FramedSource *inputSource,
-		Boolean includeStartCodeInOutput = False,
-		Boolean insertAccessUnitDelimiters = False);
+	static H265VideoStreamFramer *createNew(UsageEnvironment &env,
+		FramedSource *inputSource, Boolean includeStartCodeInOutput = False, Boolean insertAccessUnitDelimiters = False);
 
 protected:
 	H265VideoStreamFramer(UsageEnvironment &env, FramedSource *inputSource,
-		Boolean createParser,
-		Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
+		Boolean createParser, Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
 	// called only by "createNew()"
 	virtual ~H265VideoStreamFramer();
 

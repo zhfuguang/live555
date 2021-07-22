@@ -28,13 +28,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class BitVector
 {
 public:
-	BitVector(unsigned char *baseBytePtr,
-		unsigned baseBitOffset,
-		unsigned totNumBits);
+	BitVector(unsigned char *baseBytePtr, unsigned baseBitOffset, unsigned totNumBits);
 
-	void setup(unsigned char *baseBytePtr,
-		unsigned baseBitOffset,
-		unsigned totNumBits);
+	void setup(unsigned char *baseBytePtr, unsigned baseBitOffset, unsigned totNumBits);
 
 	void putBits(unsigned from, unsigned numBits); // "numBits" <= 32
 	void put1Bit(unsigned bit);
@@ -73,8 +69,6 @@ private:
 };
 
 // A general bit copy operation:
-void shiftBits(unsigned char *toBasePtr, unsigned toBitOffset,
-	unsigned char const *fromBasePtr, unsigned fromBitOffset,
-	unsigned numBits);
+void shiftBits(unsigned char *toBasePtr, unsigned toBitOffset, unsigned char const *fromBasePtr, unsigned fromBitOffset, unsigned numBits);
 
 #endif

@@ -49,13 +49,11 @@ public:
 	CuePoint(double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster/* 1-based */);
 	virtual ~CuePoint();
 
-	static void addCuePoint(CuePoint *&root, double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster/* 1-based */,
-		Boolean &needToReviseBalanceOfParent);
+	static void addCuePoint(CuePoint *&root, double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster/* 1-based */, Boolean &needToReviseBalanceOfParent);
 	// If "cueTime" == "root.fCueTime", replace the existing data, otherwise add to the left or right subtree.
 	// (Note that this is a static member function because - as a result of tree rotation - "root" might change.)
 
 	Boolean lookup(double &cueTime, u_int64_t &resultClusterOffsetInFile, unsigned &resultBlockNumWithinCluster);
-
 	static void fprintf(FILE *fid, CuePoint *cuePoint); // used for debugging; it's static to allow for "cuePoint == NULL"
 
 private:
@@ -114,20 +112,15 @@ private:
 
 ////////// MatroskaFile implementation //////////
 
-void MatroskaFile
-::createNew(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData,
-	char const *preferredLanguage)
+void MatroskaFile::createNew(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData, char const *preferredLanguage)
 {
 	new MatroskaFile(env, fileName, onCreation, onCreationClientData, preferredLanguage);
 }
 
-MatroskaFile::MatroskaFile(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData,
-	char const *preferredLanguage)
-	: Medium(env),
-	  fFileName(strDup(fileName)), fOnCreation(onCreation), fOnCreationClientData(onCreationClientData),
-	  fPreferredLanguage(strDup(preferredLanguage)),
-	  fTimecodeScale(1000000), fSegmentDuration(0.0), fSegmentDataOffset(0), fClusterOffset(0), fCuesOffset(0), fCuePoints(NULL),
-	  fChosenVideoTrackNumber(0), fChosenAudioTrackNumber(0), fChosenSubtitleTrackNumber(0)
+MatroskaFile::MatroskaFile(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData, char const *preferredLanguage)
+	: Medium(env), fFileName(strDup(fileName)), fOnCreation(onCreation), fOnCreationClientData(onCreationClientData), fPreferredLanguage(strDup(preferredLanguage))
+	, fTimecodeScale(1000000), fSegmentDuration(0.0), fSegmentDataOffset(0), fClusterOffset(0), fCuesOffset(0), fCuePoints(NULL)
+	, fChosenVideoTrackNumber(0), fChosenAudioTrackNumber(0), fChosenSubtitleTrackNumber(0)
 {
 	fTrackTable = new MatroskaTrackTable;
 	fDemuxesTable = HashTable::create(ONE_WORD_HASH_KEYS);
@@ -218,7 +211,6 @@ void MatroskaFile::handleEndOfTrackHeaderParsing()
 				choiceFlags |= 2;
 			}
 			trackChoice[numEnabledTracks].choiceFlags = choiceFlags;
-
 			++numEnabledTracks;
 		}
 
@@ -295,9 +287,7 @@ void MatroskaFile::removeDemux(MatroskaDemux *demux)
 #define CHECK_PTR if (ptr >= limit) break /* H.264/H.265 parsing */
 #define NUM_BYTES_REMAINING (unsigned)(limit - ptr) /* H.264/H.265 parsing */
 
-void MatroskaFile::getH264ConfigData(MatroskaTrack const *track,
-	u_int8_t *&sps, unsigned &spsSize,
-	u_int8_t *&pps, unsigned &ppsSize)
+void MatroskaFile::getH264ConfigData(MatroskaTrack const *track, u_int8_t *&sps, unsigned &spsSize, u_int8_t *&pps, unsigned &ppsSize)
 {
 	sps = pps = NULL;
 	spsSize = ppsSize = 0;
@@ -373,10 +363,7 @@ void MatroskaFile::getH264ConfigData(MatroskaTrack const *track,
 	ppsSize = 0;
 }
 
-void MatroskaFile::getH265ConfigData(MatroskaTrack const *track,
-	u_int8_t *&vps, unsigned &vpsSize,
-	u_int8_t *&sps, unsigned &spsSize,
-	u_int8_t *&pps, unsigned &ppsSize)
+void MatroskaFile::getH265ConfigData(MatroskaTrack const *track, u_int8_t *&vps, unsigned &vpsSize, u_int8_t *&sps, unsigned &spsSize, u_int8_t *&pps, unsigned &ppsSize)
 {
 	vps = sps = pps = NULL;
 	vpsSize = spsSize = ppsSize = 0;
@@ -526,11 +513,8 @@ void MatroskaFile::getH265ConfigData(MatroskaTrack const *track,
 	ppsSize = 0;
 }
 
-void MatroskaFile
-::getVorbisOrTheoraConfigData(MatroskaTrack const *track,
-	u_int8_t *&identificationHeader, unsigned &identificationHeaderSize,
-	u_int8_t *&commentHeader, unsigned &commentHeaderSize,
-	u_int8_t *&setupHeader, unsigned &setupHeaderSize)
+void MatroskaFile::getVorbisOrTheoraConfigData(MatroskaTrack const *track, u_int8_t *&identificationHeader,
+	unsigned &identificationHeaderSize, u_int8_t *&commentHeader, unsigned &commentHeaderSize, u_int8_t *&setupHeader, unsigned &setupHeaderSize)
 {
 	identificationHeader = commentHeader = setupHeader = NULL;
 	identificationHeaderSize = commentHeaderSize = setupHeaderSize = 0;
@@ -669,9 +653,7 @@ float MatroskaFile::fileDuration()
 // The size of the largest key frame that we expect.  This determines our buffer sizes:
 #define MAX_KEY_FRAME_SIZE 300000
 
-FramedSource *MatroskaFile
-::createSourceForStreaming(FramedSource *baseSource, unsigned trackNumber,
-	unsigned &estBitrate, unsigned &numFiltersInFrontOfTrack)
+FramedSource *MatroskaFile::createSourceForStreaming(FramedSource *baseSource, unsigned trackNumber, unsigned &estBitrate, unsigned &numFiltersInFrontOfTrack)
 {
 	if (baseSource == NULL)
 		return NULL;
@@ -752,12 +734,9 @@ char const *MatroskaFile::trackMIMEType(unsigned trackNumber) const
 	return track->mimeType;
 }
 
-RTPSink *MatroskaFile
-::createRTPSinkForTrackNumber(unsigned trackNumber, Groupsock *rtpGroupsock,
-	unsigned char rtpPayloadTypeIfDynamic)
+RTPSink *MatroskaFile::createRTPSinkForTrackNumber(unsigned trackNumber, Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic)
 {
 	RTPSink *result = NULL; // default value, if an error occurs
-
 	do
 	{
 		MatroskaTrack *track = lookup(trackNumber);
@@ -785,23 +764,16 @@ RTPSink *MatroskaFile
 				sprintf(&configStr[2 * i], "%02X", track->codecPrivate[i]);
 			}
 
-			result = MPEG4GenericRTPSink::createNew(envir(), rtpGroupsock,
-					rtpPayloadTypeIfDynamic,
-					track->samplingFrequency,
-					"audio", "AAC-hbr", configStr,
-					track->numChannels);
+			result = MPEG4GenericRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, track->samplingFrequency, "audio", "AAC-hbr", configStr, track->numChannels);
 			delete[] configStr;
 		}
 		else if (strcmp(track->mimeType, "audio/AC3") == 0)
 		{
-			result = AC3AudioRTPSink
-				::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, track->samplingFrequency);
+			result = AC3AudioRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, track->samplingFrequency);
 		}
 		else if (strcmp(track->mimeType, "audio/OPUS") == 0)
 		{
-			result = SimpleRTPSink
-				::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-					48000, "audio", "OPUS", 2, False/*only 1 Opus 'packet' in each RTP packet*/);
+			result = SimpleRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, 48000, "audio", "OPUS", 2, False/*only 1 Opus 'packet' in each RTP packet*/);
 		}
 		else if (strcmp(track->mimeType, "audio/VORBIS") == 0 || strcmp(track->mimeType, "video/THEORA") == 0)
 		{
@@ -811,27 +783,17 @@ RTPSink *MatroskaFile
 			unsigned commentHeaderSize;
 			u_int8_t *setupHeader;
 			unsigned setupHeaderSize;
-			getVorbisOrTheoraConfigData(track,
-				identificationHeader, identificationHeaderSize,
-				commentHeader, commentHeaderSize,
-				setupHeader, setupHeaderSize);
+			getVorbisOrTheoraConfigData(track, identificationHeader, identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize);
 
 			if (strcmp(track->mimeType, "video/THEORA") == 0)
 			{
-				result = TheoraVideoRTPSink
-					::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-						identificationHeader, identificationHeaderSize,
-						commentHeader, commentHeaderSize,
-						setupHeader, setupHeaderSize);
+				result = TheoraVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
+					identificationHeader, identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize);
 			}
 			else     // Vorbis
 			{
-				result = VorbisAudioRTPSink
-					::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-						track->samplingFrequency, track->numChannels,
-						identificationHeader, identificationHeaderSize,
-						commentHeader, commentHeaderSize,
-						setupHeader, setupHeaderSize);
+				result = VorbisAudioRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, track->samplingFrequency,
+					track->numChannels, identificationHeader, identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize);
 			}
 			delete[] identificationHeader;
 			delete[] commentHeader;
@@ -840,7 +802,7 @@ RTPSink *MatroskaFile
 		else if (strcmp(track->mimeType, "video/RAW") == 0)
 		{
 			result = RawVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-					track->pixelWidth, track->pixelHeight, track->bitDepth, track->colorSampling, track->colorimetry);
+				track->pixelWidth, track->pixelHeight, track->bitDepth, track->colorSampling, track->colorimetry);
 		}
 		else if (strcmp(track->mimeType, "video/H264") == 0)
 		{
@@ -850,8 +812,7 @@ RTPSink *MatroskaFile
 			unsigned ppsSize;
 
 			getH264ConfigData(track, sps, spsSize, pps, ppsSize);
-			result = H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-					sps, spsSize, pps, ppsSize);
+			result = H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, sps, spsSize, pps, ppsSize);
 			delete[] sps;
 			delete[] pps;
 		}
@@ -865,8 +826,7 @@ RTPSink *MatroskaFile
 			unsigned ppsSize;
 
 			getH265ConfigData(track, vps, vpsSize, sps, spsSize, pps, ppsSize);
-			result = H265VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-					vps, vpsSize, sps, spsSize, pps, ppsSize);
+			result = H265VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, vps, vpsSize, sps, spsSize, pps, ppsSize);
 			delete[] vps;
 			delete[] sps;
 			delete[] pps;
@@ -913,17 +873,13 @@ FileSink *MatroskaFile::createFileSinkForTrackNumber(unsigned trackNumber, char 
 			delete[] sps;
 			delete[] pps;
 
-			char *sPropParameterSetsStr
-				= new char[(sps_base64 == NULL ? 0 : strlen(sps_base64)) +
-															  (pps_base64 == NULL ? 0 : strlen(pps_base64)) +
-															  10 /*more than enough space*/];
+			char *sPropParameterSetsStr = new char[(sps_base64 == NULL ? 0 :
+				strlen(sps_base64)) + (pps_base64 == NULL ? 0 : strlen(pps_base64)) + 10 /*more than enough space*/];
 			sprintf(sPropParameterSetsStr, "%s,%s", sps_base64, pps_base64);
 			delete[] sps_base64;
 			delete[] pps_base64;
 
-			result = H264VideoFileSink::createNew(envir(), fileName,
-					sPropParameterSetsStr,
-					MAX_KEY_FRAME_SIZE); // extra large buffer size for large key frames
+			result = H264VideoFileSink::createNew(envir(), fileName, sPropParameterSetsStr, MAX_KEY_FRAME_SIZE); // extra large buffer size for large key frames
 			delete[] sPropParameterSetsStr;
 		}
 		else if (strcmp(track->mimeType, "video/H265") == 0)
@@ -944,9 +900,7 @@ FileSink *MatroskaFile::createFileSinkForTrackNumber(unsigned trackNumber, char 
 			delete[] sps;
 			delete[] pps;
 
-			result = H265VideoFileSink::createNew(envir(), fileName,
-					vps_base64, sps_base64, pps_base64,
-					MAX_KEY_FRAME_SIZE); // extra large buffer size for large key frames
+			result = H265VideoFileSink::createNew(envir(), fileName, vps_base64, sps_base64, pps_base64, MAX_KEY_FRAME_SIZE); // extra large buffer size for large key frames
 			delete[] vps_base64;
 			delete[] sps_base64;
 			delete[] pps_base64;
@@ -955,14 +909,12 @@ FileSink *MatroskaFile::createFileSinkForTrackNumber(unsigned trackNumber, char 
 		{
 			createOggFileSink = True;
 		}
-		else if (strcmp(track->mimeType, "audio/AMR") == 0 ||
-			strcmp(track->mimeType, "audio/AMR-WB") == 0)
+		else if (strcmp(track->mimeType, "audio/AMR") == 0 || strcmp(track->mimeType, "audio/AMR-WB") == 0)
 		{
 			// For AMR audio streams, we use a special sink that inserts AMR frame hdrs:
 			result = AMRAudioFileSink::createNew(envir(), fileName);
 		}
-		else if (strcmp(track->mimeType, "audio/VORBIS") == 0 ||
-			strcmp(track->mimeType, "audio/OPUS") == 0)
+		else if (strcmp(track->mimeType, "audio/VORBIS") == 0 || strcmp(track->mimeType, "audio/OPUS") == 0)
 		{
 			createOggFileSink = True;
 		}
@@ -979,15 +931,9 @@ FileSink *MatroskaFile::createFileSinkForTrackNumber(unsigned trackNumber, char 
 				unsigned commentHeaderSize;
 				u_int8_t *setupHeader;
 				unsigned setupHeaderSize;
-				getVorbisOrTheoraConfigData(track,
-					identificationHeader, identificationHeaderSize,
-					commentHeader, commentHeaderSize,
-					setupHeader, setupHeaderSize);
+				getVorbisOrTheoraConfigData(track, identificationHeader, identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize);
 				u_int32_t identField = 0xFACADE; // Can we get a real value from the file somehow?
-				configStr = generateVorbisOrTheoraConfigStr(identificationHeader, identificationHeaderSize,
-						commentHeader, commentHeaderSize,
-						setupHeader, setupHeaderSize,
-						identField);
+				configStr = generateVorbisOrTheoraConfigStr(identificationHeader, identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize, identField);
 				delete[] identificationHeader;
 				delete[] commentHeader;
 				delete[] setupHeader;
@@ -1088,16 +1034,12 @@ MatroskaTrack *MatroskaTrackTable::Iterator::next()
 ////////// MatroskaTrack implementation //////////
 
 MatroskaTrack::MatroskaTrack()
-	: trackNumber(0/*not set*/), trackType(0/*unknown*/),
-	  isEnabled(True), isDefault(True), isForced(False),
-	  defaultDuration(0),
-	  name(NULL), language(NULL), codecID(NULL),
-	  samplingFrequency(0), numChannels(2), mimeType(""),
-	  codecPrivateSize(0), codecPrivate(NULL),
-	  codecPrivateUsesH264FormatForH265(False), codecIsOpus(False),
-	  headerStrippedBytesSize(0), headerStrippedBytes(NULL),
-	  colorSampling(""), colorimetry("BT709-2") /*Matroska default value for Primaries */,
-	  pixelWidth(0), pixelHeight(0), bitDepth(8), subframeSizeSize(0)
+	: trackNumber(0/*not set*/), trackType(0/*unknown*/)
+	, isEnabled(True), isDefault(True), isForced(False), defaultDuration(0)
+	, name(NULL), language(NULL), codecID(NULL), samplingFrequency(0), numChannels(2), mimeType("")
+	, codecPrivateSize(0), codecPrivate(NULL), codecPrivateUsesH264FormatForH265(False), codecIsOpus(False)
+	, headerStrippedBytesSize(0), headerStrippedBytes(NULL), colorSampling(""), colorimetry("BT709-2") /*Matroska default value for Primaries */
+	, pixelWidth(0), pixelHeight(0), bitDepth(8), subframeSizeSize(0)
 {
 }
 
@@ -1114,12 +1056,9 @@ MatroskaTrack::~MatroskaTrack()
 ////////// MatroskaDemux implementation //////////
 
 MatroskaDemux::MatroskaDemux(MatroskaFile &ourFile)
-	: Medium(ourFile.envir()),
-	  fOurFile(ourFile), fDemuxedTracksTable(HashTable::create(ONE_WORD_HASH_KEYS)),
-	  fNextTrackTypeToCheck(0x1)
+	: Medium(ourFile.envir()), fOurFile(ourFile), fDemuxedTracksTable(HashTable::create(ONE_WORD_HASH_KEYS)), fNextTrackTypeToCheck(0x1)
 {
-	fOurParser = new MatroskaFileParser(ourFile, ByteStreamFileSource::createNew(envir(), ourFile.fileName()),
-		handleEndOfFile, this, this);
+	fOurParser = new MatroskaFileParser(ourFile, ByteStreamFileSource::createNew(envir(), ourFile.fileName()), handleEndOfFile, this, this);
 }
 
 MatroskaDemux::~MatroskaDemux()
@@ -1130,7 +1069,6 @@ MatroskaDemux::~MatroskaDemux()
 	// Then delete our table of "MatroskaDemuxedTrack"s
 	// - but not the "MatroskaDemuxedTrack"s themselves; that should have already happened:
 	delete fDemuxedTracksTable;
-
 	delete fOurParser;
 	fOurFile.removeDemux(this);
 }
@@ -1146,8 +1084,7 @@ FramedSource *MatroskaDemux::newDemuxedTrack(unsigned &resultTrackNumber)
 	FramedSource *result;
 	resultTrackNumber = 0;
 
-	for (result = NULL; result == NULL && fNextTrackTypeToCheck != MATROSKA_TRACK_TYPE_OTHER;
-		fNextTrackTypeToCheck <<= 1)
+	for (result = NULL; result == NULL && fNextTrackTypeToCheck != MATROSKA_TRACK_TYPE_OTHER; fNextTrackTypeToCheck <<= 1)
 	{
 		if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_VIDEO)
 			resultTrackNumber = fOurFile.chosenVideoTrackNumber();
@@ -1217,7 +1154,7 @@ void MatroskaDemux::handleEndOfFile()
 	unsigned numTracks = fDemuxedTracksTable->numEntries();
 	if (numTracks == 0)
 		return;
-	MatroskaDemuxedTrack **tracks = new MatroskaDemuxedTrack*[numTracks];
+	MatroskaDemuxedTrack **tracks = new MatroskaDemuxedTrack * [numTracks];
 
 	HashTable::Iterator *iter = HashTable::Iterator::create(*fDemuxedTracksTable);
 	unsigned i;
@@ -1257,8 +1194,7 @@ void MatroskaDemux::resetState()
 ////////// CuePoint implementation //////////
 
 CuePoint::CuePoint(double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster)
-	: fBalance(0),
-	  fCueTime(cueTime), fClusterOffsetInFile(clusterOffsetInFile), fBlockNumWithinCluster(blockNumWithinCluster - 1)
+	: fBalance(0), fCueTime(cueTime), fClusterOffsetInFile(clusterOffsetInFile), fBlockNumWithinCluster(blockNumWithinCluster - 1)
 {
 	fSubTree[0] = fSubTree[1] = NULL;
 }
@@ -1269,8 +1205,7 @@ CuePoint::~CuePoint()
 	delete fSubTree[1];
 }
 
-void CuePoint::addCuePoint(CuePoint *&root, double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster,
-	Boolean &needToReviseBalanceOfParent)
+void CuePoint::addCuePoint(CuePoint *&root, double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster, Boolean &needToReviseBalanceOfParent)
 {
 	needToReviseBalanceOfParent = False; // by default; may get changed below
 

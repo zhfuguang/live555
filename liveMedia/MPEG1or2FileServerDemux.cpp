@@ -22,21 +22,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG1or2DemuxedServerMediaSubsession.hh"
 #include "ByteStreamFileSource.hh"
 
-MPEG1or2FileServerDemux *MPEG1or2FileServerDemux::createNew(UsageEnvironment &env, char const *fileName,
-	Boolean reuseFirstSource)
+MPEG1or2FileServerDemux *MPEG1or2FileServerDemux::createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource)
 {
 	return new MPEG1or2FileServerDemux(env, fileName, reuseFirstSource);
 }
 
-static float MPEG1or2ProgramStreamFileDuration(UsageEnvironment &env,
-	char const *fileName,
-	unsigned &fileSize); // forward
-MPEG1or2FileServerDemux
-::MPEG1or2FileServerDemux(UsageEnvironment &env, char const *fileName,
-	Boolean reuseFirstSource)
-	: Medium(env),
-	  fReuseFirstSource(reuseFirstSource),
-	  fSession0Demux(NULL), fLastCreatedDemux(NULL), fLastClientSessionId(~0)
+static float MPEG1or2ProgramStreamFileDuration(UsageEnvironment &env, char const *fileName, unsigned &fileSize); // forward
+MPEG1or2FileServerDemux::MPEG1or2FileServerDemux(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource)
+	: Medium(env), fReuseFirstSource(reuseFirstSource), fSession0Demux(NULL), fLastCreatedDemux(NULL), fLastClientSessionId(~0)
 {
 	fFileName = strDup(fileName);
 	fFileDuration = MPEG1or2ProgramStreamFileDuration(env, fileName, fFileSize);
@@ -53,11 +46,9 @@ ServerMediaSubsession *MPEG1or2FileServerDemux::newAudioServerMediaSubsession()
 	return MPEG1or2DemuxedServerMediaSubsession::createNew(*this, 0xC0, fReuseFirstSource);
 }
 
-ServerMediaSubsession *MPEG1or2FileServerDemux::newVideoServerMediaSubsession(Boolean iFramesOnly,
-	double vshPeriod)
+ServerMediaSubsession *MPEG1or2FileServerDemux::newVideoServerMediaSubsession(Boolean iFramesOnly, double vshPeriod)
 {
-	return MPEG1or2DemuxedServerMediaSubsession::createNew(*this, 0xE0, fReuseFirstSource,
-			iFramesOnly, vshPeriod);
+	return MPEG1or2DemuxedServerMediaSubsession::createNew(*this, 0xE0, fReuseFirstSource, iFramesOnly, vshPeriod);
 }
 
 ServerMediaSubsession *MPEG1or2FileServerDemux::newAC3AudioServerMediaSubsession()
@@ -66,8 +57,7 @@ ServerMediaSubsession *MPEG1or2FileServerDemux::newAC3AudioServerMediaSubsession
 	// because, in a VOB file, the AC3 audio has stream id 0xBD
 }
 
-MPEG1or2DemuxedElementaryStream *MPEG1or2FileServerDemux::newElementaryStream(unsigned clientSessionId,
-	u_int8_t streamIdTag)
+MPEG1or2DemuxedElementaryStream *MPEG1or2FileServerDemux::newElementaryStream(unsigned clientSessionId, u_int8_t streamIdTag)
 {
 	MPEG1or2Demux *demuxToUse;
 	if (clientSessionId == 0)
@@ -81,8 +71,7 @@ MPEG1or2DemuxedElementaryStream *MPEG1or2FileServerDemux::newElementaryStream(un
 		if (fSession0Demux == NULL)
 		{
 			// Open our input file as a 'byte-stream file source':
-			ByteStreamFileSource *fileSource
-				= ByteStreamFileSource::createNew(envir(), fFileName);
+			ByteStreamFileSource *fileSource = ByteStreamFileSource::createNew(envir(), fFileName);
 			if (fileSource == NULL)
 				return NULL;
 			fSession0Demux = MPEG1or2Demux::createNew(envir(), fileSource, False/*note!*/);
@@ -96,8 +85,7 @@ MPEG1or2DemuxedElementaryStream *MPEG1or2FileServerDemux::newElementaryStream(un
 		if (clientSessionId != fLastClientSessionId)
 		{
 			// Open our input file as a 'byte-stream file source':
-			ByteStreamFileSource *fileSource
-				= ByteStreamFileSource::createNew(envir(), fFileName);
+			ByteStreamFileSource *fileSource = ByteStreamFileSource::createNew(envir(), fFileName);
 			if (fileSource == NULL)
 				return NULL;
 
@@ -119,14 +107,9 @@ MPEG1or2DemuxedElementaryStream *MPEG1or2FileServerDemux::newElementaryStream(un
 }
 
 
-static Boolean getMPEG1or2TimeCode(FramedSource *dataSource,
-	MPEG1or2Demux &parentDemux,
-	Boolean returnFirstSeenCode,
-	float &timeCode); // forward
+static Boolean getMPEG1or2TimeCode(FramedSource *dataSource, MPEG1or2Demux &parentDemux, Boolean returnFirstSeenCode, float &timeCode); // forward
 
-static float MPEG1or2ProgramStreamFileDuration(UsageEnvironment &env,
-	char const *fileName,
-	unsigned &fileSize)
+static float MPEG1or2ProgramStreamFileDuration(UsageEnvironment &env, char const *fileName, unsigned &fileSize)
 {
 	FramedSource *dataSource = NULL;
 	float duration = 0.0; // until we learn otherwise
@@ -162,8 +145,7 @@ static float MPEG1or2ProgramStreamFileDuration(UsageEnvironment &env,
 		//  and seek towards the end of the file, for efficiency.)
 		baseDemux->flushInput();
 		unsigned const startByteFromEnd = 100000;
-		unsigned newFilePosition
-			= fileSize < startByteFromEnd ? 0 : fileSize - startByteFromEnd;
+		unsigned newFilePosition = fileSize < startByteFromEnd ? 0 : fileSize - startByteFromEnd;
 		if (newFilePosition > 0)
 			fileSource->seekToByteAbsolute(newFilePosition);
 
@@ -184,7 +166,7 @@ static float MPEG1or2ProgramStreamFileDuration(UsageEnvironment &env,
 
 #define MFSD_DUMMY_SINK_BUFFER_SIZE (6+65535) /* large enough for a PES packet */
 
-class MFSD_DummySink: public MediaSink
+class MFSD_DummySink : public MediaSink
 {
 public:
 	MFSD_DummySink(MPEG1or2Demux &demux, Boolean returnFirstSeenCode);
@@ -197,10 +179,7 @@ private:
 	virtual Boolean continuePlaying();
 
 private:
-	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+	static void afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 	void afterGettingFrame1();
 
 private:
@@ -212,17 +191,13 @@ private:
 static void afterPlayingMFSD_DummySink(MFSD_DummySink *sink); // forward
 static float computeSCRTimeCode(MPEG1or2Demux::SCR const &scr); // forward
 
-static Boolean getMPEG1or2TimeCode(FramedSource *dataSource,
-	MPEG1or2Demux &parentDemux,
-	Boolean returnFirstSeenCode,
-	float &timeCode)
+static Boolean getMPEG1or2TimeCode(FramedSource *dataSource, MPEG1or2Demux &parentDemux, Boolean returnFirstSeenCode, float &timeCode)
 {
 	// Start reading through "dataSource", until we see a SCR time code:
 	parentDemux.lastSeenSCR().isValid = False;
 	UsageEnvironment &env = dataSource->envir(); // alias
 	MFSD_DummySink sink(parentDemux, returnFirstSeenCode);
-	sink.startPlaying(*dataSource,
-		(MediaSink::afterPlayingFunc *)afterPlayingMFSD_DummySink, &sink);
+	sink.startPlaying(*dataSource, (MediaSink::afterPlayingFunc *)afterPlayingMFSD_DummySink, &sink);
 	env.taskScheduler().doEventLoop(&sink.watchVariable);
 
 	timeCode = computeSCRTimeCode(parentDemux.lastSeenSCR());
@@ -233,8 +208,7 @@ static Boolean getMPEG1or2TimeCode(FramedSource *dataSource,
 ////////// MFSD_DummySink implementation //////////
 
 MFSD_DummySink::MFSD_DummySink(MPEG1or2Demux &demux, Boolean returnFirstSeenCode)
-	: MediaSink(demux.envir()),
-	  watchVariable(0), fOurDemux(demux), fReturnFirstSeenCode(returnFirstSeenCode)
+	: MediaSink(demux.envir()), watchVariable(0), fOurDemux(demux), fReturnFirstSeenCode(returnFirstSeenCode)
 {
 }
 
@@ -247,16 +221,12 @@ Boolean MFSD_DummySink::continuePlaying()
 	if (fSource == NULL)
 		return False; // sanity check
 
-	fSource->getNextFrame(fBuf, sizeof fBuf,
-		afterGettingFrame, this,
-		onSourceClosure, this);
+	fSource->getNextFrame(fBuf, sizeof fBuf, afterGettingFrame, this, onSourceClosure, this);
 	return True;
 }
 
 void MFSD_DummySink::afterGettingFrame(void *clientData, unsigned /*frameSize*/,
-	unsigned /*numTruncatedBytes*/,
-	struct timeval /*presentationTime*/,
-	unsigned /*durationInMicroseconds*/)
+	unsigned /*numTruncatedBytes*/, struct timeval /*presentationTime*/, unsigned /*durationInMicroseconds*/)
 {
 	MFSD_DummySink *sink = (MFSD_DummySink *)clientData;
 	sink->afterGettingFrame1();

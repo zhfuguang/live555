@@ -26,23 +26,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FileServerMediaSubsession.hh"
 #endif
 
-class H263plusVideoFileServerMediaSubsession: public FileServerMediaSubsession
+class H263plusVideoFileServerMediaSubsession : public FileServerMediaSubsession
 {
 public:
 	static H263plusVideoFileServerMediaSubsession *createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource);
 
 private:
-	H263plusVideoFileServerMediaSubsession(UsageEnvironment &env,
-		char const *fileName, Boolean reuseFirstSource);
+	H263plusVideoFileServerMediaSubsession(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource);
 	// called only by createNew();
 	virtual ~H263plusVideoFileServerMediaSubsession();
 
 private: // redefined virtual functions
-	virtual FramedSource *createNewStreamSource(unsigned clientSessionId,
-		unsigned &estBitrate);
-	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock,
-		unsigned char rtpPayloadTypeIfDynamic,
-		FramedSource *inputSource);
+	virtual FramedSource *createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate);
+	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource *inputSource);
 };
 
 #endif

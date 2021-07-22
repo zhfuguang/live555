@@ -22,22 +22,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// RawVideoBufferedPacket and RawVideoBufferedPacketFactory //////////
 
-class RawVideoBufferedPacket: public BufferedPacket
+class RawVideoBufferedPacket : public BufferedPacket
 {
 public:
 	RawVideoBufferedPacket(RawVideoRTPSource *ourSource);
 	virtual ~RawVideoBufferedPacket();
 
 private: // redefined virtual functions
-	virtual void getNextEnclosedFrameParameters(unsigned char *&framePtr,
-		unsigned dataSize,
-		unsigned &frameSize,
-		unsigned &frameDurationInMicroseconds);
+	virtual void getNextEnclosedFrameParameters(unsigned char *&framePtr, unsigned dataSize, unsigned &frameSize, unsigned &frameDurationInMicroseconds);
 private:
 	RawVideoRTPSource *fOurSource;
 };
 
-class RawVideoBufferedPacketFactory: public BufferedPacketFactory
+class RawVideoBufferedPacketFactory : public BufferedPacketFactory
 {
 private: // redefined virtual functions
 	virtual BufferedPacket *createNewPacket(MultiFramedRTPSource *ourSource);
@@ -56,20 +53,14 @@ struct LineHeader
 
 ///////// RawVideoRTPSource implementation (RFC 4175) ////////
 
-RawVideoRTPSource *RawVideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
+RawVideoRTPSource *RawVideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
 {
 	return new RawVideoRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency);
 }
 
-RawVideoRTPSource
-::RawVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
-	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency,
-		  new RawVideoBufferedPacketFactory),
-	  fNumLines(0), fNextLine(0), fLineHeaders(NULL)
+RawVideoRTPSource::RawVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
+	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, new RawVideoBufferedPacketFactory)
+	, fNumLines(0), fNextLine(0), fLineHeaders(NULL)
 {
 }
 
@@ -99,11 +90,8 @@ u_int16_t RawVideoRTPSource::currentOffsetWithinLine() const
 	return fLineHeaders[fNextLine - 1].offsetWithinLine;
 }
 
-Boolean RawVideoRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean RawVideoRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
-
 	unsigned char *headerStart = packet->data();
 	unsigned packetSize = packet->dataSize();
 
@@ -157,8 +145,7 @@ Boolean RawVideoRTPSource
 	}
 
 	// Everything looks good:
-	fCurrentPacketBeginsFrame
-		= (fLineHeaders[0].fieldIdAndLineNumber & 0x7FFF) == 0 && fLineHeaders[0].offsetWithinLine == 0;
+	fCurrentPacketBeginsFrame = (fLineHeaders[0].fieldIdAndLineNumber & 0x7FFF) == 0 && fLineHeaders[0].offsetWithinLine == 0;
 	// Don't set "fCurrentPacketCompletesFrame" until we've processed the last line in the packet
 	resultSpecialHeaderSize = headerStart - packet->data();
 	return True;
@@ -172,8 +159,7 @@ char const *RawVideoRTPSource::MIMEtype() const
 
 ////////// RawVideoBufferedPacket and RawVideoBufferedPacketFactory implementation //////////
 
-RawVideoBufferedPacket
-::RawVideoBufferedPacket(RawVideoRTPSource *ourSource)
+RawVideoBufferedPacket::RawVideoBufferedPacket(RawVideoRTPSource *ourSource)
 	: fOurSource(ourSource)
 {
 }
@@ -182,32 +168,25 @@ RawVideoBufferedPacket::~RawVideoBufferedPacket()
 {
 }
 
-void RawVideoBufferedPacket::getNextEnclosedFrameParameters(unsigned char *& /*framePtr*/,
-	unsigned dataSize,
-	unsigned &frameSize,
-	unsigned &frameDurationInMicroseconds)
+void RawVideoBufferedPacket::getNextEnclosedFrameParameters(
+	unsigned char *& /*framePtr*/, unsigned dataSize, unsigned &frameSize, unsigned &frameDurationInMicroseconds)
 {
 	frameDurationInMicroseconds = 0; // because all lines within the same packet are from the same frame
-
 	if (fOurSource->fNextLine >= fOurSource->fNumLines)
 	{
 		fOurSource->envir() << "RawVideoBufferedPacket::nextEnclosedFrameParameters("
-			<< dataSize << "): data error ("
-			<< fOurSource->fNextLine << " >= " << fOurSource->fNumLines << ")!\n";
+			<< dataSize << "): data error (" << fOurSource->fNextLine << " >= " << fOurSource->fNumLines << ")!\n";
 		frameSize = dataSize;
 		return;
 	}
 
 	// This line ('subframe') completes a frame if it's the last line in the packet,
 	// and the packet's 'M' bit was set:
-	fOurSource->fCurrentPacketCompletesFrame
-		= fOurSource->fCurPacketMarkerBit && fOurSource->fNextLine == fOurSource->fNumLines - 1;
-
+	fOurSource->fCurrentPacketCompletesFrame = fOurSource->fCurPacketMarkerBit && fOurSource->fNextLine == fOurSource->fNumLines - 1;
 	frameSize = fOurSource->fLineHeaders[fOurSource->fNextLine++].length;
 }
 
-BufferedPacket *RawVideoBufferedPacketFactory
-::createNewPacket(MultiFramedRTPSource *ourSource)
+BufferedPacket *RawVideoBufferedPacketFactory::createNewPacket(MultiFramedRTPSource *ourSource)
 {
 	return new RawVideoBufferedPacket((RawVideoRTPSource *)ourSource);
 }

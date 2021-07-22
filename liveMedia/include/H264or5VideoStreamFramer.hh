@@ -25,12 +25,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEGVideoStreamFramer.hh"
 #endif
 
-class H264or5VideoStreamFramer: public MPEGVideoStreamFramer
+class H264or5VideoStreamFramer : public MPEGVideoStreamFramer
 {
 public:
-	void getVPSandSPSandPPS(u_int8_t *&vps, unsigned &vpsSize,
-		u_int8_t *&sps, unsigned &spsSize,
-		u_int8_t *&pps, unsigned &ppsSize) const
+	void getVPSandSPSandPPS(u_int8_t *&vps, unsigned &vpsSize, u_int8_t *&sps, unsigned &spsSize, u_int8_t *&pps, unsigned &ppsSize) const
 	{
 		// Returns pointers to copies of the most recently seen VPS (video parameter set)
 		// SPS (sequence parameter set) and PPS (picture parameter set) NAL units.
@@ -43,9 +41,7 @@ public:
 		ppsSize = fLastSeenPPSSize;
 	}
 
-	void setVPSandSPSandPPS(u_int8_t *vps, unsigned vpsSize,
-		u_int8_t *sps, unsigned spsSize,
-		u_int8_t *pps, unsigned ppsSize)
+	void setVPSandSPSandPPS(u_int8_t *vps, unsigned vpsSize, u_int8_t *sps, unsigned spsSize, u_int8_t *pps, unsigned ppsSize)
 	{
 		// Assigns copies of the VPS, SPS and PPS NAL units.  If this function is not called,
 		// then these NAL units are assigned only if/when they appear in the input stream.
@@ -56,9 +52,7 @@ public:
 
 protected:
 	H264or5VideoStreamFramer(int hNumber, // 264 or 265
-		UsageEnvironment &env, FramedSource *inputSource,
-		Boolean createParser,
-		Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
+		UsageEnvironment &env, FramedSource *inputSource, Boolean createParser, Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
 	// We're an abstract base class.
 	virtual ~H264or5VideoStreamFramer();
 
@@ -91,8 +85,7 @@ protected:
 
 // A general routine for making a copy of a (H.264 or H.265) NAL unit,
 // removing 'emulation' bytes from the copy:
-unsigned removeH264or5EmulationBytes(u_int8_t *to, unsigned toMaxSize,
-	u_int8_t const *from, unsigned fromSize);
+unsigned removeH264or5EmulationBytes(u_int8_t *to, unsigned toMaxSize, u_int8_t const *from, unsigned fromSize);
 // returns the size of the copy; it will be <= min(toMaxSize,fromSize)
 
 #endif

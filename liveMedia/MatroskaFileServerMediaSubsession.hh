@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MatroskaFileServerDemux.hh"
 #endif
 
-class MatroskaFileServerMediaSubsession: public FileServerMediaSubsession
+class MatroskaFileServerMediaSubsession : public FileServerMediaSubsession
 {
 public:
 	static MatroskaFileServerMediaSubsession *createNew(MatroskaFileServerDemux &demux, MatroskaTrack *track);
@@ -42,8 +42,7 @@ protected:
 protected: // redefined virtual functions
 	virtual float duration() const;
 	virtual void seekStreamSource(FramedSource *inputSource, double &seekNPT, double streamDuration, u_int64_t &numBytes);
-	virtual FramedSource *createNewStreamSource(unsigned clientSessionId,
-		unsigned &estBitrate);
+	virtual FramedSource *createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate);
 	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource *inputSource);
 
 protected:

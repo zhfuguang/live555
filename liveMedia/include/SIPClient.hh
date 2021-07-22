@@ -34,17 +34,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Possible states in the "INVITE" transition diagram (RFC 3261, Figure 5)
 enum inviteClientState { Calling, Proceeding, Completed, Terminated };
 
-class SIPClient: public Medium
+class SIPClient : public Medium
 {
 public:
-	static SIPClient *createNew(UsageEnvironment &env,
-		unsigned char desiredAudioRTPPayloadFormat,
-		char const *mimeSubtype = NULL,
-		int verbosityLevel = 0,
-		char const *applicationName = NULL);
+	static SIPClient *createNew(UsageEnvironment &env, unsigned char desiredAudioRTPPayloadFormat,
+		char const *mimeSubtype = NULL, int verbosityLevel = 0, char const *applicationName = NULL);
 
-	void setProxyServer(struct sockaddr_storage const &proxyServerAddress,
-		portNumBits proxyServerPortNum);
+	void setProxyServer(struct sockaddr_storage const &proxyServerAddress, portNumBits proxyServerPortNum);
 
 	void setClientStartPortNum(portNumBits clientStartPortNum)
 	{
@@ -54,8 +50,7 @@ public:
 	char *invite(char const *url, Authenticator *authenticator = NULL);
 	// Issues a SIP "INVITE" command
 	// Returns the session SDP description if this command succeeds
-	char *inviteWithPassword(char const *url,
-		char const *username, char const *password);
+	char *inviteWithPassword(char const *url, char const *username, char const *password);
 	// Uses "invite()" to do an "INVITE" - first
 	// without using "password", then (if we get an Unauthorized
 	// response) with an authentication response computed from "password"
@@ -63,12 +58,9 @@ public:
 	Boolean sendACK(); // on current call
 	Boolean sendBYE(); // on current call
 
-	static Boolean parseSIPURL(UsageEnvironment &env, char const *url,
-		NetAddress &address, portNumBits &portNum);
+	static Boolean parseSIPURL(UsageEnvironment &env, char const *url, NetAddress &address, portNumBits &portNum);
 	// (ignores any "<username>[:<password>]@" in "url")
-	static Boolean parseSIPURLUsernamePassword(char const *url,
-		char *&username,
-		char *&password);
+	static Boolean parseSIPURLUsernamePassword(char const *url, char *&username, char *&password);
 	char const *getInviteSdpReply() const
 	{
 		return fInviteSDPDescriptionReturned;
@@ -81,11 +73,7 @@ protected:
 	virtual ~SIPClient();
 
 private:
-	SIPClient(UsageEnvironment &env,
-		unsigned char desiredAudioRTPPayloadFormat,
-		char const *mimeSubtype,
-		int verbosityLevel,
-		char const *applicationName);
+	SIPClient(UsageEnvironment &env, unsigned char desiredAudioRTPPayloadFormat, char const *mimeSubtype, int verbosityLevel, char const *applicationName);
 	// called only by createNew();
 
 	void reset();
@@ -106,8 +94,7 @@ private:
 	unsigned fTimerACount;
 
 	// Routines used to implement all commands:
-	char *createAuthenticatorString(Authenticator const *authenticator,
-		char const *cmd, char const *url);
+	char *createAuthenticatorString(Authenticator const *authenticator, char const *cmd, char const *url);
 	Boolean sendRequest(char const *requestString, unsigned requestLength);
 	unsigned getResponseCode();
 	unsigned getResponse(char *&responseBuffer, unsigned responseBufferSize);

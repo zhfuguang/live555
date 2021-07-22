@@ -23,23 +23,16 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <ByteStreamFileSource.hh>
 #include <GroupsockHelper.hh> // for "gettimeofday()
 
-MatroskaFileParser::MatroskaFileParser(MatroskaFile &ourFile, FramedSource *inputSource,
-	FramedSource::onCloseFunc *onEndFunc, void *onEndClientData,
-	MatroskaDemux *ourDemux)
-	: StreamParser(inputSource, onEndFunc, onEndClientData, continueParsing, this),
-	  fOurFile(ourFile), fInputSource(inputSource),
-	  fOnEndFunc(onEndFunc), fOnEndClientData(onEndClientData),
-	  fOurDemux(ourDemux),
-	  fCurOffsetInFile(0), fSavedCurOffsetInFile(0), fLimitOffsetInFile(0),
-	  fNumHeaderBytesToSkip(0), fClusterTimecode(0), fBlockTimecode(0),
-	  fFrameSizesWithinBlock(NULL),
-	  fPresentationTimeOffset(0.0)
+MatroskaFileParser::MatroskaFileParser(MatroskaFile &ourFile, FramedSource *inputSource, FramedSource::onCloseFunc *onEndFunc, void *onEndClientData, MatroskaDemux *ourDemux)
+	: StreamParser(inputSource, onEndFunc, onEndClientData, continueParsing, this)
+	, fOurFile(ourFile), fInputSource(inputSource), fOnEndFunc(onEndFunc), fOnEndClientData(onEndClientData)
+	, fOurDemux(ourDemux), fCurOffsetInFile(0), fSavedCurOffsetInFile(0), fLimitOffsetInFile(0)
+	, fNumHeaderBytesToSkip(0), fClusterTimecode(0), fBlockTimecode(0), fFrameSizesWithinBlock(NULL), fPresentationTimeOffset(0.0)
 {
 	if (ourDemux == NULL)
 	{
 		// Initialization
 		fCurrentParseState = PARSING_START_OF_FILE;
-
 		continueParsing();
 	}
 	else
@@ -103,8 +96,7 @@ void MatroskaFileParser::pause()
 	// to ensure that we presentation times continue from 'wall clock' time after we resume
 }
 
-void MatroskaFileParser
-::continueParsing(void *clientData, unsigned char * /*ptr*/, unsigned /*size*/, struct timeval /*presentationTime*/)
+void MatroskaFileParser::continueParsing(void *clientData, unsigned char * /*ptr*/, unsigned /*size*/, struct timeval /*presentationTime*/)
 {
 	((MatroskaFileParser *)clientData)->continueParsing();
 }
@@ -129,7 +121,6 @@ void MatroskaFileParser::continueParsing()
 Boolean MatroskaFileParser::parse()
 {
 	Boolean areDone = False;
-
 	if (fInputSource->isCurrentlyAwaitingData())
 		return False;
 	// Our input source is currently being read. Wait until that read completes
@@ -417,15 +408,14 @@ Boolean MatroskaFileParser::parseTrack()
 				if (parseEBMLVal_unsigned(size, trackType) && track != NULL)
 				{
 					// We convert the Matroska 'track type' code into our own code (which we can use as a bitmap):
-					track->trackType
-						= trackType == 1 ? MATROSKA_TRACK_TYPE_VIDEO : trackType == 2 ? MATROSKA_TRACK_TYPE_AUDIO
-							: trackType == 0x11 ? MATROSKA_TRACK_TYPE_SUBTITLE : MATROSKA_TRACK_TYPE_OTHER;
+					track->trackType = trackType == 1 ? MATROSKA_TRACK_TYPE_VIDEO :
+						trackType == 2 ? MATROSKA_TRACK_TYPE_AUDIO :
+						trackType == 0x11 ? MATROSKA_TRACK_TYPE_SUBTITLE : MATROSKA_TRACK_TYPE_OTHER;
 #ifdef DEBUG
 					fprintf(stderr, "\tTrack Type 0x%02x (%s)\n", trackType,
 						track->trackType == MATROSKA_TRACK_TYPE_VIDEO ? "video" :
 						track->trackType == MATROSKA_TRACK_TYPE_AUDIO ? "audio" :
-						track->trackType == MATROSKA_TRACK_TYPE_SUBTITLE ? "subtitle" :
-						"<other>");
+						track->trackType == MATROSKA_TRACK_TYPE_SUBTITLE ? "subtitle" : "<other>");
 #endif
 				}
 				break;
@@ -1009,7 +999,7 @@ void MatroskaFileParser::lookForNextBlock()
 				}
 				break;
 			}
-				// Attachments are parsed only if we're in DEBUG mode (otherwise we just skip over them):
+			// Attachments are parsed only if we're in DEBUG mode (otherwise we just skip over them):
 #ifdef DEBUG
 			case MATROSKA_ID_ATTACHMENTS:   // 'Attachments': enter this
 			{
@@ -1384,8 +1374,7 @@ Boolean MatroskaFileParser::deliverFrameWithinBlock()
 
 		unsigned frameSize;
 		u_int8_t const *specialFrameSource = NULL;
-		u_int8_t const opusCommentHeader[16]
-			= {'O', 'p', 'u', 's', 'T', 'a', 'g', 's', 0, 0, 0, 0, 0, 0, 0, 0};
+		u_int8_t const opusCommentHeader[16] = { 'O', 'p', 'u', 's', 'T', 'a', 'g', 's', 0, 0, 0, 0, 0, 0, 0, 0 };
 		if (track->codecIsOpus && demuxedTrack->fOpusFrameNumber < 2)
 		{
 			// Special case for Opus audio.  The first frame (the 'configuration' header) comes from
@@ -1430,8 +1419,7 @@ Boolean MatroskaFileParser::deliverFrameWithinBlock()
 		}
 
 		// Compute the presentation time of this frame (from the cluster timecode, the block timecode, and the default duration):
-		double pt = (fClusterTimecode + fBlockTimecode) * (fOurFile.fTimecodeScale / 1000000000.0)
-			+ fNextFrameNumberToDeliver * (track->defaultDuration / 1000000000.0);
+		double pt = (fClusterTimecode + fBlockTimecode) * (fOurFile.fTimecodeScale / 1000000000.0) + fNextFrameNumberToDeliver * (track->defaultDuration / 1000000000.0);
 		if (fPresentationTimeOffset == 0.0)
 		{
 			// This is the first time we've computed a presentation time.
@@ -1469,8 +1457,7 @@ Boolean MatroskaFileParser::deliverFrameWithinBlock()
 			// Adjust the frame duration to keep the sum of frame durations aligned with presentation times.
 			if (demuxedTrack->prevPresentationTime().tv_sec != 0)   // not the first time for this track
 			{
-				demuxedTrack->durationImbalance()
-				+= (presentationTime.tv_sec - demuxedTrack->prevPresentationTime().tv_sec) * 1000000
+				demuxedTrack->durationImbalance() += (presentationTime.tv_sec - demuxedTrack->prevPresentationTime().tv_sec) * 1000000
 					+ (presentationTime.tv_usec - demuxedTrack->prevPresentationTime().tv_usec);
 			}
 			int adjustment = 0;
@@ -1478,14 +1465,12 @@ Boolean MatroskaFileParser::deliverFrameWithinBlock()
 			{
 				// The duration needs to be increased.
 				int const adjustmentThreshold = 100000; // don't increase the duration by more than this amount (in case there's a mistake)
-				adjustment = demuxedTrack->durationImbalance() > adjustmentThreshold
-					? adjustmentThreshold : demuxedTrack->durationImbalance();
+				adjustment = demuxedTrack->durationImbalance() > adjustmentThreshold ? adjustmentThreshold : demuxedTrack->durationImbalance();
 			}
 			else if (demuxedTrack->durationImbalance() < 0)
 			{
 				// The duration needs to be decreased.
-				adjustment = (unsigned)(-demuxedTrack->durationImbalance()) < durationInMicroseconds
-					? demuxedTrack->durationImbalance() : -(int)durationInMicroseconds;
+				adjustment = (unsigned)(-demuxedTrack->durationImbalance()) < durationInMicroseconds ? demuxedTrack->durationImbalance() : -(int)durationInMicroseconds;
 			}
 			durationInMicroseconds += adjustment;
 			demuxedTrack->durationImbalance() -= durationInMicroseconds; // for next time
@@ -1516,7 +1501,9 @@ Boolean MatroskaFileParser::deliverFrameWithinBlock()
 			fprintf(stderr, "\tdelivered special frame: %d bytes", demuxedTrack->frameSize());
 			if (demuxedTrack->numTruncatedBytes() > 0)
 				fprintf(stderr, " (%d bytes truncated)", demuxedTrack->numTruncatedBytes());
-			fprintf(stderr, " @%u.%06u (%.06f from start); duration %u us\n", demuxedTrack->presentationTime().tv_sec, demuxedTrack->presentationTime().tv_usec, demuxedTrack->presentationTime().tv_sec + demuxedTrack->presentationTime().tv_usec / 1000000.0 - fPresentationTimeOffset, demuxedTrack->durationInMicroseconds());
+
+			fprintf(stderr, " @%u.%06u (%.06f from start); duration %u us\n", demuxedTrack->presentationTime().tv_sec, demuxedTrack->presentationTime().tv_usec,
+				demuxedTrack->presentationTime().tv_sec + demuxedTrack->presentationTime().tv_usec / 1000000.0 - fPresentationTimeOffset, demuxedTrack->durationInMicroseconds());
 #endif
 			setParseState();
 			FramedSource::afterGetting(demuxedTrack); // completes delivery
@@ -1575,7 +1562,8 @@ void MatroskaFileParser::deliverFrameBytes()
 			fprintf(stderr, "[offset %d]", fCurOffsetWithinFrame - track->subframeSizeSize - demuxedTrack->frameSize() - demuxedTrack->numTruncatedBytes());
 		if (demuxedTrack->numTruncatedBytes() > 0)
 			fprintf(stderr, " (%d bytes truncated)", demuxedTrack->numTruncatedBytes());
-		fprintf(stderr, " @%u.%06u (%.06f from start); duration %u us\n", demuxedTrack->presentationTime().tv_sec, demuxedTrack->presentationTime().tv_usec, demuxedTrack->presentationTime().tv_sec + demuxedTrack->presentationTime().tv_usec / 1000000.0 - fPresentationTimeOffset, demuxedTrack->durationInMicroseconds());
+		fprintf(stderr, " @%u.%06u (%.06f from start); duration %u us\n", demuxedTrack->presentationTime().tv_sec, demuxedTrack->presentationTime().tv_usec,
+			demuxedTrack->presentationTime().tv_sec + demuxedTrack->presentationTime().tv_usec / 1000000.0 - fPresentationTimeOffset, demuxedTrack->durationInMicroseconds());
 #endif
 
 		if (!track->haveSubframes()
@@ -1607,8 +1595,7 @@ void MatroskaFileParser::deliverFrameBytes()
 	fCurrentParseState = LOOKING_FOR_BLOCK;
 }
 
-void MatroskaFileParser
-::getCommonFrameBytes(MatroskaTrack *track, u_int8_t *to, unsigned numBytesToGet, unsigned numBytesToSkip)
+void MatroskaFileParser::getCommonFrameBytes(MatroskaTrack *track, u_int8_t *to, unsigned numBytesToGet, unsigned numBytesToSkip)
 {
 	if (track->headerStrippedBytesSize > fCurOffsetWithinFrame)
 	{
@@ -1661,18 +1648,20 @@ Boolean MatroskaFileParser::parseEBMLNumber(EBMLNumber &num)
 			++fCurOffsetInFile;
 
 			// If we're looking for an id, skip any leading bytes that don't contain a '1' in the first 4 bits:
-			if (i == 0/*we're a leading byte*/ && !num.stripLeading1/*we're looking for an id*/ && (num.data[i] & 0xF0) == 0)
+			if (i == 0/*we're a leading byte*/
+				&& !num.stripLeading1/*we're looking for an id*/
+				&& (num.data[i] & 0xF0) == 0)
 			{
 				setParseState(); // ensures that we make forward progress if the parsing gets interrupted
 				continue;
 			}
 			break;
 		}
-		if ((num.data[0]&bitmask) != 0)
+		if ((num.data[0] & bitmask) != 0)
 		{
 			// num[i] is the last byte of the id
 			if (num.stripLeading1)
-				num.data[0] &= ~ bitmask;
+				num.data[0] &= ~bitmask;
 			break;
 		}
 		bitmask >>= 1;
@@ -1840,15 +1829,13 @@ void MatroskaFileParser::skipRemainingHeaderBytes(Boolean isContinuation)
 	unsigned const maxBytesToSkip = bankSize();
 	while (fNumHeaderBytesToSkip > 0)
 	{
-		unsigned numBytesToSkipNow
-			= fNumHeaderBytesToSkip < maxBytesToSkip ? (unsigned)fNumHeaderBytesToSkip : maxBytesToSkip;
+		unsigned numBytesToSkipNow = fNumHeaderBytesToSkip < maxBytesToSkip ? (unsigned)fNumHeaderBytesToSkip : maxBytesToSkip;
 		setParseState();
 		skipBytes(numBytesToSkipNow);
 #ifdef DEBUG
 		if (isContinuation || numBytesToSkipNow < fNumHeaderBytesToSkip)
 		{
-			fprintf(stderr, "\t\t(skipped %u bytes; %llu bytes remaining)\n",
-				numBytesToSkipNow, fNumHeaderBytesToSkip - numBytesToSkipNow);
+			fprintf(stderr, "\t\t(skipped %u bytes; %llu bytes remaining)\n", numBytesToSkipNow, fNumHeaderBytesToSkip - numBytesToSkipNow);
 		}
 #endif
 		fCurOffsetInFile += numBytesToSkipNow;

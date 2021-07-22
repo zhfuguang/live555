@@ -38,8 +38,7 @@ int main(int argc, char **argv)
 	FramedSource *inputSource = ByteStreamFileSource::createNew(*env, inputFileName);
 	if (inputSource == NULL)
 	{
-		*env << "Unable to open file \"" << inputFileName
-			<< "\" as a byte-stream file source\n";
+		*env << "Unable to open file \"" << inputFileName << "\" as a byte-stream file source\n";
 		exit(1);
 	}
 
@@ -50,8 +49,7 @@ int main(int argc, char **argv)
 	MPEG1or2DemuxedElementaryStream *pesSource = baseDemultiplexor->newRawPESStream();
 
 	// And, from this, a filter that converts to MPEG-2 Transport Stream frames:
-	FramedSource *tsFrames
-		= MPEG2TransportStreamFromPESSource::createNew(*env, pesSource);
+	FramedSource *tsFrames = MPEG2TransportStreamFromPESSource::createNew(*env, pesSource);
 
 	// Open the output file as a 'file sink':
 	MediaSink *outputSink = FileSink::createNew(*env, outputFileName);
@@ -66,7 +64,6 @@ int main(int argc, char **argv)
 	outputSink->startPlaying(*tsFrames, afterPlaying, NULL);
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 

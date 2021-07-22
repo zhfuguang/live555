@@ -97,8 +97,7 @@ public:
 	void setAVIstate(unsigned subsessionIndex);
 	void setFinalAVIstate();
 
-	void afterGettingFrame(unsigned packetDataSize,
-		struct timeval presentationTime);
+	void afterGettingFrame(unsigned packetDataSize,struct timeval presentationTime);
 	void onSourceClosure();
 
 	UsageEnvironment &envir() const
@@ -173,18 +172,11 @@ private:
 
 ////////// AVIFileSink implementation //////////
 
-AVIFileSink::AVIFileSink(UsageEnvironment &env,
-	MediaSession &inputSession,
-	char const *outputFileName,
-	unsigned bufferSize,
-	unsigned short movieWidth, unsigned short movieHeight,
-	unsigned movieFPS, Boolean packetLossCompensate)
-	: Medium(env), fInputSession(inputSession),
-	  fIndexRecordsHead(NULL), fIndexRecordsTail(NULL), fNumIndexRecords(0),
-	  fBufferSize(bufferSize), fPacketLossCompensate(packetLossCompensate),
-	  fAreCurrentlyBeingPlayed(False), fNumSubsessions(0), fNumBytesWritten(0),
-	  fHaveCompletedOutputFile(False),
-	  fMovieWidth(movieWidth), fMovieHeight(movieHeight), fMovieFPS(movieFPS)
+AVIFileSink::AVIFileSink(UsageEnvironment &env,MediaSession &inputSession,char const *outputFileName,
+	unsigned bufferSize,unsigned short movieWidth, unsigned short movieHeight,unsigned movieFPS, Boolean packetLossCompensate)
+	: Medium(env), fInputSession(inputSession),fIndexRecordsHead(NULL), fIndexRecordsTail(NULL), fNumIndexRecords(0)
+	,fBufferSize(bufferSize), fPacketLossCompensate(packetLossCompensate),fAreCurrentlyBeingPlayed(False), fNumSubsessions(0), fNumBytesWritten(0)
+	,fHaveCompletedOutputFile(False),fMovieWidth(movieWidth), fMovieHeight(movieHeight), fMovieFPS(movieFPS)
 {
 	fOutFid = OpenOutputFile(env, outputFileName);
 	if (fOutFid == NULL)
@@ -215,8 +207,7 @@ AVIFileSink::AVIFileSink(UsageEnvironment &env,
 			fMovieFPS = subsession->videoFPS();
 		}
 
-		AVISubsessionIOState *ioState
-			= new AVISubsessionIOState(*this, *subsession);
+		AVISubsessionIOState *ioState= new AVISubsessionIOState(*this, *subsession);
 		subsession->miscPtr = (void *)ioState;
 
 		// Also set a 'BYE' handler for this subsession's RTCP instance:
@@ -224,7 +215,6 @@ AVIFileSink::AVIFileSink(UsageEnvironment &env,
 		{
 			subsession->rtcpInstance()->setByeHandler(onRTCPBye, ioState);
 		}
-
 		++fNumSubsessions;
 	}
 
@@ -244,8 +234,7 @@ AVIFileSink::~AVIFileSink()
 		if (subsession->readSource() != NULL)
 			subsession->readSource()->stopGettingFrames();
 
-		AVISubsessionIOState *ioState
-			= (AVISubsessionIOState *)(subsession->miscPtr);
+		AVISubsessionIOState *ioState= (AVISubsessionIOState *)(subsession->miscPtr);
 		if (ioState == NULL)
 			continue;
 
@@ -265,27 +254,19 @@ AVIFileSink::~AVIFileSink()
 	CloseOutputFile(fOutFid);
 }
 
-AVIFileSink *AVIFileSink
-::createNew(UsageEnvironment &env, MediaSession &inputSession,
-	char const *outputFileName,
-	unsigned bufferSize,
-	unsigned short movieWidth, unsigned short movieHeight,
-	unsigned movieFPS, Boolean packetLossCompensate)
+AVIFileSink *AVIFileSink::createNew(UsageEnvironment &env, MediaSession &inputSession,char const *outputFileName,
+	unsigned bufferSize,unsigned short movieWidth, unsigned short movieHeight,unsigned movieFPS, Boolean packetLossCompensate)
 {
-	AVIFileSink *newSink =
-		new AVIFileSink(env, inputSession, outputFileName, bufferSize,
-		movieWidth, movieHeight, movieFPS, packetLossCompensate);
+	AVIFileSink *newSink =new AVIFileSink(env, inputSession, outputFileName, bufferSize,movieWidth, movieHeight, movieFPS, packetLossCompensate);
 	if (newSink == NULL || newSink->fOutFid == NULL)
 	{
 		Medium::close(newSink);
 		return NULL;
 	}
-
 	return newSink;
 }
 
-Boolean AVIFileSink::startPlaying(afterPlayingFunc *afterFunc,
-	void *afterClientData)
+Boolean AVIFileSink::startPlaying(afterPlayingFunc *afterFunc,void *afterClientData)
 {
 	// Make sure we're not already being played:
 	if (fAreCurrentlyBeingPlayed)
@@ -317,17 +298,14 @@ Boolean AVIFileSink::continuePlaying()
 		if (subsessionSource->isCurrentlyAwaitingData())
 			continue;
 
-		AVISubsessionIOState *ioState
-			= (AVISubsessionIOState *)(subsession->miscPtr);
+		AVISubsessionIOState *ioState= (AVISubsessionIOState *)(subsession->miscPtr);
 		if (ioState == NULL)
 			continue;
 
 		haveActiveSubsessions = True;
 		unsigned char *toPtr = ioState->fBuffer->dataEnd();
 		unsigned toSize = ioState->fBuffer->bytesAvailable();
-		subsessionSource->getNextFrame(toPtr, toSize,
-			afterGettingFrame, ioState,
-			onSourceClosure, ioState);
+		subsessionSource->getNextFrame(toPtr, toSize,afterGettingFrame, ioState,onSourceClosure, ioState);
 	}
 	if (!haveActiveSubsessions)
 	{
@@ -338,11 +316,8 @@ Boolean AVIFileSink::continuePlaying()
 	return True;
 }
 
-void AVIFileSink
-::afterGettingFrame(void *clientData, unsigned packetDataSize,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned /*durationInMicroseconds*/)
+void AVIFileSink::afterGettingFrame(void *clientData, unsigned packetDataSize,
+	unsigned numTruncatedBytes,struct timeval presentationTime,unsigned /*durationInMicroseconds*/)
 {
 	AVISubsessionIOState *ioState = (AVISubsessionIOState *)clientData;
 	if (numTruncatedBytes > 0)
@@ -368,8 +343,7 @@ void AVIFileSink::onSourceClosure1()
 	MediaSubsession *subsession;
 	while ((subsession = iter.next()) != NULL)
 	{
-		AVISubsessionIOState *ioState
-			= (AVISubsessionIOState *)(subsession->miscPtr);
+		AVISubsessionIOState *ioState= (AVISubsessionIOState *)(subsession->miscPtr);
 		if (ioState == NULL)
 			continue;
 
@@ -392,15 +366,11 @@ void AVIFileSink::onRTCPBye(void *clientData)
 
 	struct timeval timeNow;
 	gettimeofday(&timeNow, NULL);
-	unsigned secsDiff
-		= timeNow.tv_sec - ioState->fOurSink.fStartTime.tv_sec;
+	unsigned secsDiff= timeNow.tv_sec - ioState->fOurSink.fStartTime.tv_sec;
 
 	MediaSubsession &subsession = ioState->fOurSubsession;
 	ioState->envir() << "Received RTCP \"BYE\" on \""
-		<< subsession.mediumName()
-		<< "/" << subsession.codecName()
-		<< "\" subsession (after "
-		<< secsDiff << " seconds)\n";
+		<< subsession.mediumName()<< "/" << subsession.codecName()<< "\" subsession (after "<< secsDiff << " seconds)\n";
 
 	// Handle the reception of a RTCP "BYE" as if the source had closed:
 	ioState->onSourceClosure();
@@ -436,8 +406,7 @@ void AVIFileSink::completeOutputFile()
 	MediaSubsession *subsession;
 	while ((subsession = iter.next()) != NULL)
 	{
-		AVISubsessionIOState *ioState
-			= (AVISubsessionIOState *)(subsession->miscPtr);
+		AVISubsessionIOState *ioState= (AVISubsessionIOState *)(subsession->miscPtr);
 		if (ioState == NULL)
 			continue;
 
@@ -465,8 +434,7 @@ void AVIFileSink::completeOutputFile()
 	setWord(fRIFFSizePosition, fRIFFSizeValue);
 
 	setWord(fAVIHMaxBytesPerSecondPosition, maxBytesPerSecond);
-	setWord(fAVIHFrameCountPosition,
-		numVideoFrames > 0 ? numVideoFrames : numAudioFrames);
+	setWord(fAVIHFrameCountPosition,numVideoFrames > 0 ? numVideoFrames : numAudioFrames);
 
 	fMoviSizeValue += fNumBytesWritten;
 	setWord(fMoviSizePosition, fMoviSizeValue);
@@ -478,14 +446,11 @@ void AVIFileSink::completeOutputFile()
 
 ////////// AVISubsessionIOState implementation ///////////
 
-AVISubsessionIOState::AVISubsessionIOState(AVIFileSink &sink,
-	MediaSubsession &subsession)
-	: fOurSink(sink), fOurSubsession(subsession),
-	  fMaxBytesPerSecond(0), fIsVideo(False), fIsAudio(False), fIsByteSwappedAudio(False), fNumFrames(0)
+AVISubsessionIOState::AVISubsessionIOState(AVIFileSink &sink,MediaSubsession &subsession)
+	: fOurSink(sink), fOurSubsession(subsession),fMaxBytesPerSecond(0), fIsVideo(False), fIsAudio(False), fIsByteSwappedAudio(False), fNumFrames(0)
 {
 	fBuffer = new SubsessionBuffer(fOurSink.fBufferSize);
-	fPrevBuffer = sink.fPacketLossCompensate
-		? new SubsessionBuffer(fOurSink.fBufferSize) : NULL;
+	fPrevBuffer = sink.fPacketLossCompensate? new SubsessionBuffer(fOurSink.fBufferSize) : NULL;
 
 	FramedSource *subsessionSource = subsession.readSource();
 	fOurSourceIsActive = subsessionSource != NULL;
@@ -507,8 +472,7 @@ void AVISubsessionIOState::setAVIstate(unsigned subsessionIndex)
 
 	if (fIsVideo)
 	{
-		fAVISubsessionTag
-			= fourChar('0' + subsessionIndex / 10, '0' + subsessionIndex % 10, 'd', 'c');
+		fAVISubsessionTag= fourChar('0' + subsessionIndex / 10, '0' + subsessionIndex % 10, 'd', 'c');
 		if (strcmp(fOurSubsession.codecName(), "JPEG") == 0)
 		{
 			fAVICodecHandlerType = fourChar('m', 'j', 'p', 'g');
@@ -521,8 +485,7 @@ void AVISubsessionIOState::setAVIstate(unsigned subsessionIndex)
 		{
 			fAVICodecHandlerType = fourChar('m', 'p', 'g', '1'); // what about MPEG-2?
 		}
-		else if (strcmp(fOurSubsession.codecName(), "H263-1998") == 0 ||
-			strcmp(fOurSubsession.codecName(), "H263-2000") == 0)
+		else if (strcmp(fOurSubsession.codecName(), "H263-1998") == 0 ||strcmp(fOurSubsession.codecName(), "H263-2000") == 0)
 		{
 			fAVICodecHandlerType = fourChar('H', '2', '6', '3');
 		}
@@ -541,8 +504,7 @@ void AVISubsessionIOState::setAVIstate(unsigned subsessionIndex)
 	else if (fIsAudio)
 	{
 		fIsByteSwappedAudio = False; // by default
-		fAVISubsessionTag
-			= fourChar('0' + subsessionIndex / 10, '0' + subsessionIndex % 10, 'w', 'b');
+		fAVISubsessionTag= fourChar('0' + subsessionIndex / 10, '0' + subsessionIndex % 10, 'w', 'b');
 		fAVICodecHandlerType = 1; // ??? ####
 		unsigned numChannels = fOurSubsession.numChannels();
 		fAVISamplingFrequency = fOurSubsession.rtpTimestampFrequency(); // default
@@ -586,21 +548,18 @@ void AVISubsessionIOState::setAVIstate(unsigned subsessionIndex)
 	}
 	else     // unknown medium
 	{
-		fAVISubsessionTag
-			= fourChar('0' + subsessionIndex / 10, '0' + subsessionIndex % 10, '?', '?');
+		fAVISubsessionTag= fourChar('0' + subsessionIndex / 10, '0' + subsessionIndex % 10, '?', '?');
 		fAVICodecHandlerType = 0;
 		fAVIScale = fAVISize = 1;
 		fAVIRate = 0; // ??? #####
 	}
 }
 
-void AVISubsessionIOState::afterGettingFrame(unsigned packetDataSize,
-	struct timeval presentationTime)
+void AVISubsessionIOState::afterGettingFrame(unsigned packetDataSize,struct timeval presentationTime)
 {
 	// Begin by checking whether there was a gap in the RTP stream.
 	// If so, try to compensate for this (if desired):
-	unsigned short rtpSeqNum
-		= fOurSubsession.rtpSource()->curPacketRTPSeqNum();
+	unsigned short rtpSeqNum= fOurSubsession.rtpSource()->curPacketRTPSeqNum();
 	if (fOurSink.fPacketLossCompensate && fPrevBuffer->bytesInUse() > 0)
 	{
 		short seqNumGap = rtpSeqNum - fLastPacketRTPSeqNum;
@@ -640,9 +599,7 @@ void AVISubsessionIOState::useFrame(SubsessionBuffer &buffer)
 	struct timeval const &presentationTime = buffer.presentationTime();
 	if (fPrevPresentationTime.tv_usec != 0 || fPrevPresentationTime.tv_sec != 0)
 	{
-		int uSecondsDiff
-			= (presentationTime.tv_sec - fPrevPresentationTime.tv_sec) * 1000000
-				+ (presentationTime.tv_usec - fPrevPresentationTime.tv_usec);
+		int uSecondsDiff= (presentationTime.tv_sec - fPrevPresentationTime.tv_sec) * 1000000+ (presentationTime.tv_usec - fPrevPresentationTime.tv_usec);
 		if (uSecondsDiff > 0)
 		{
 			unsigned bytesPerSecond = (unsigned)((frameSize * 1000000.0) / uSecondsDiff);
@@ -667,8 +624,7 @@ void AVISubsessionIOState::useFrame(SubsessionBuffer &buffer)
 	}
 
 	// Add an index record for this frame:
-	AVIIndexRecord *newIndexRecord
-		= new AVIIndexRecord(fAVISubsessionTag, // chunk id
+	AVIIndexRecord *newIndexRecord= new AVIIndexRecord(fAVISubsessionTag, // chunk id
 		AVIIF_KEYFRAME, // flags
 		4 + fOurSink.fNumBytesWritten, // offset (note: 4 == 'movi')
 		frameSize); // size
@@ -758,8 +714,7 @@ void AVIFileSink::setWord(unsigned filePosn, unsigned size)
 	} while (0);
 
 	// One of the SeekFile64()s failed, probable because we're not a seekable file
-	envir() << "AVIFileSink::setWord(): SeekFile64 failed (err "
-		<< envir().getErrno() << ")\n";
+	envir() << "AVIFileSink::setWord(): SeekFile64 failed (err "<< envir().getErrno() << ")\n";
 }
 
 // Methods for writing particular file headers.  Note the following macros:

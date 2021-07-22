@@ -29,16 +29,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <stdio.h>
 #endif
 
-SRTPCryptographicContext
-::SRTPCryptographicContext(MIKEYState const &mikeyState)
+SRTPCryptographicContext::SRTPCryptographicContext(MIKEYState const &mikeyState)
 #ifndef NO_OPENSSL
-	: fMIKEYState(mikeyState),
-	  fHaveReceivedSRTPPackets(False), fSRTCPIndex(0)
+	: fMIKEYState(mikeyState), fHaveReceivedSRTPPackets(False), fSRTCPIndex(0)
 {
 	// Begin by doing a key derivation, to generate the keying data that we need:
 	performKeyDerivation();
 #else
-{
+	{
 #endif
 }
 
@@ -46,9 +44,7 @@ SRTPCryptographicContext::~SRTPCryptographicContext()
 {
 }
 
-Boolean SRTPCryptographicContext
-::processIncomingSRTPPacket(u_int8_t *buffer, unsigned inPacketSize,
-	unsigned &outPacketSize)
+Boolean SRTPCryptographicContext::processIncomingSRTPPacket(u_int8_t * buffer, unsigned inPacketSize, unsigned &outPacketSize)
 {
 #ifndef NO_OPENSSL
 	do
@@ -61,8 +57,7 @@ Boolean SRTPCryptographicContext
 			break;
 		}
 
-		unsigned const numBytesPastEncryption
-			= SRTP_MKI_LENGTH + (weAuthenticate() ? SRTP_AUTH_TAG_LENGTH : 0);
+		unsigned const numBytesPastEncryption = SRTP_MKI_LENGTH + (weAuthenticate() ? SRTP_AUTH_TAG_LENGTH : 0);
 		if (inPacketSize <= numBytesPastEncryption)
 		{
 #ifdef DEBUG
@@ -126,8 +121,7 @@ Boolean SRTPCryptographicContext
 		if (weAuthenticate())
 		{
 			// Authenticate the packet.
-			unsigned const numBytesToAuthenticate
-				= inPacketSize - (SRTP_MKI_LENGTH + SRTP_AUTH_TAG_LENGTH); // ASSERT: > 0
+			unsigned const numBytesToAuthenticate = inPacketSize - (SRTP_MKI_LENGTH + SRTP_AUTH_TAG_LENGTH); // ASSERT: > 0
 			u_int8_t const *authenticationTag = &buffer[inPacketSize - SRTP_AUTH_TAG_LENGTH];
 
 			if (!verifySRTPAuthenticationTag(buffer, numBytesToAuthenticate, thisPacketsROC, authenticationTag))
@@ -158,7 +152,8 @@ Boolean SRTPCryptographicContext
 				if (inPacketSize < rtpHeaderSize + 4)
 				{
 #ifdef DEBUG
-					fprintf(stderr, "SRTPCryptographicContext::processIncomingSRTPPacket(): Error: Packet size %d is shorter than the minimum specified RTP header size %d!\n", inPacketSize, rtpHeaderSize + 4);
+					fprintf(stderr, "SRTPCryptographicContext::processIncomingSRTPPacket(): Error: Packet size %d is shorter than the minimum specified RTP header size %d!\n",
+						inPacketSize, rtpHeaderSize + 4);
 #endif
 					break;
 				}
@@ -171,7 +166,8 @@ Boolean SRTPCryptographicContext
 			if (offsetToEncryptedBytes > numEncryptedBytes)
 			{
 #ifdef DEBUG
-				fprintf(stderr, "SRTPCryptographicContext::processIncomingSRTPPacket(): Error: RTP header size %d (expected <= %d) is too large!\n", rtpHeaderSize, numEncryptedBytes);
+				fprintf(stderr, "SRTPCryptographicContext::processIncomingSRTPPacket(): Error: RTP header size %d (expected <= %d) is too large!\n",
+					rtpHeaderSize, numEncryptedBytes);
 #endif
 				break;
 			}
@@ -190,9 +186,7 @@ Boolean SRTPCryptographicContext
 	return False;
 }
 
-Boolean SRTPCryptographicContext
-::processIncomingSRTCPPacket(u_int8_t *buffer, unsigned inPacketSize,
-	unsigned &outPacketSize)
+Boolean SRTPCryptographicContext::processIncomingSRTCPPacket(u_int8_t * buffer, unsigned inPacketSize, unsigned &outPacketSize)
 {
 #ifndef NO_OPENSSL
 	do
@@ -207,8 +201,7 @@ Boolean SRTPCryptographicContext
 			break;
 		}
 
-		unsigned const numBytesPastEncryption
-			= 4/*E+SRTCP index*/ + SRTP_MKI_LENGTH + (weAuthenticate() ? SRTP_AUTH_TAG_LENGTH : 0);
+		unsigned const numBytesPastEncryption = 4/*E+SRTCP index*/ + SRTP_MKI_LENGTH + (weAuthenticate() ? SRTP_AUTH_TAG_LENGTH : 0);
 		if (inPacketSize <= numBytesPastEncryption)
 		{
 #ifdef DEBUG
@@ -220,8 +213,7 @@ Boolean SRTPCryptographicContext
 		if (weAuthenticate())
 		{
 			// Authenticate the packet.
-			unsigned const numBytesToAuthenticate
-				= inPacketSize - (SRTP_MKI_LENGTH + SRTP_AUTH_TAG_LENGTH); // ASSERT: > 0
+			unsigned const numBytesToAuthenticate = inPacketSize - (SRTP_MKI_LENGTH + SRTP_AUTH_TAG_LENGTH); // ASSERT: > 0
 			u_int8_t const *authenticationTag = &buffer[inPacketSize - SRTP_AUTH_TAG_LENGTH];
 
 			if (!verifySRTCPAuthenticationTag(buffer, numBytesToAuthenticate, authenticationTag))
@@ -267,9 +259,7 @@ Boolean SRTPCryptographicContext
 	return False;
 }
 
-Boolean SRTPCryptographicContext
-::processOutgoingSRTCPPacket(u_int8_t *buffer, unsigned inPacketSize,
-	unsigned &outPacketSize)
+Boolean SRTPCryptographicContext::processOutgoingSRTCPPacket(u_int8_t * buffer, unsigned inPacketSize, unsigned &outPacketSize)
 {
 #ifndef NO_OPENSSL
 	do
@@ -310,8 +300,7 @@ Boolean SRTPCryptographicContext
 		buffer[outPacketSize++] = MKI();
 
 		// Generate and add an authentication tag over the data built so far (except the MKI)
-		outPacketSize += generateSRTCPAuthenticationTag(buffer, outPacketSize - SRTP_MKI_LENGTH,
-				&buffer[outPacketSize]);
+		outPacketSize += generateSRTCPAuthenticationTag(buffer, outPacketSize - SRTP_MKI_LENGTH, &buffer[outPacketSize]);
 
 		return True;
 	} while (0);
@@ -322,17 +311,14 @@ Boolean SRTPCryptographicContext
 }
 
 #ifndef NO_OPENSSL
-unsigned SRTPCryptographicContext
-::generateSRTCPAuthenticationTag(u_int8_t const *dataToAuthenticate, unsigned numBytesToAuthenticate,
-	u_int8_t *resultAuthenticationTag)
+unsigned SRTPCryptographicContext::generateSRTCPAuthenticationTag(
+	u_int8_t const *dataToAuthenticate, unsigned numBytesToAuthenticate, u_int8_t * resultAuthenticationTag)
 {
-	return generateAuthenticationTag(fDerivedKeys.srtcp, dataToAuthenticate, numBytesToAuthenticate,
-			resultAuthenticationTag);
+	return generateAuthenticationTag(fDerivedKeys.srtcp, dataToAuthenticate, numBytesToAuthenticate, resultAuthenticationTag);
 }
 
-Boolean SRTPCryptographicContext
-::verifySRTPAuthenticationTag(u_int8_t *dataToAuthenticate, unsigned numBytesToAuthenticate,
-	u_int32_t roc, u_int8_t const *authenticationTag)
+Boolean SRTPCryptographicContext::verifySRTPAuthenticationTag(
+	u_int8_t * dataToAuthenticate, unsigned numBytesToAuthenticate, u_int32_t roc, u_int8_t const *authenticationTag)
 {
 	// Append the (4-byte) 'ROC' (roll-over counter) to "dataToAuthenticate" before computing
 	// the authentication tag.  We can do this because we have enough space after
@@ -361,49 +347,36 @@ Boolean SRTPCryptographicContext
 	dataToAuthenticate[numBytesToAuthenticate++] = roc >> 8;
 	dataToAuthenticate[numBytesToAuthenticate++] = roc;
 
-	return verifyAuthenticationTag(fDerivedKeys.srtp,
-			dataToAuthenticate, numBytesToAuthenticate,
-			existingAuthenticationTag);
+	return verifyAuthenticationTag(fDerivedKeys.srtp, dataToAuthenticate, numBytesToAuthenticate, existingAuthenticationTag);
 }
 
-Boolean SRTPCryptographicContext
-::verifySRTCPAuthenticationTag(u_int8_t const *dataToAuthenticate, unsigned numBytesToAuthenticate,
-	u_int8_t const *authenticationTag)
+Boolean SRTPCryptographicContext::verifySRTCPAuthenticationTag(u_int8_t const *dataToAuthenticate, unsigned numBytesToAuthenticate, u_int8_t const *authenticationTag)
 {
-	return verifyAuthenticationTag(fDerivedKeys.srtcp,
-			dataToAuthenticate, numBytesToAuthenticate,
-			authenticationTag);
+	return verifyAuthenticationTag(fDerivedKeys.srtcp, dataToAuthenticate, numBytesToAuthenticate, authenticationTag);
 }
 
-void SRTPCryptographicContext
-::decryptSRTPPacket(u_int64_t index, u_int32_t ssrc, u_int8_t *data, unsigned numDataBytes)
+void SRTPCryptographicContext::decryptSRTPPacket(u_int64_t index, u_int32_t ssrc, u_int8_t * data, unsigned numDataBytes)
 {
 	cryptData(fDerivedKeys.srtp, index, ssrc, data, numDataBytes);
 }
 
-void SRTPCryptographicContext
-::decryptSRTCPPacket(u_int32_t index, u_int32_t ssrc, u_int8_t *data, unsigned numDataBytes)
+void SRTPCryptographicContext::decryptSRTCPPacket(u_int32_t index, u_int32_t ssrc, u_int8_t * data, unsigned numDataBytes)
 {
 	cryptData(fDerivedKeys.srtcp, (u_int64_t)index, ssrc, data, numDataBytes);
 }
 
-void SRTPCryptographicContext
-::encryptSRTCPPacket(u_int32_t index, u_int32_t ssrc, u_int8_t *data, unsigned numDataBytes)
+void SRTPCryptographicContext::encryptSRTCPPacket(u_int32_t index, u_int32_t ssrc, u_int8_t * data, unsigned numDataBytes)
 {
 	cryptData(fDerivedKeys.srtcp, (u_int64_t)index, ssrc, data, numDataBytes);
 }
 
-unsigned SRTPCryptographicContext
-::generateAuthenticationTag(derivedKeys &keysToUse,
-	u_int8_t const *dataToAuthenticate, unsigned numBytesToAuthenticate,
-	u_int8_t *resultAuthenticationTag)
+unsigned SRTPCryptographicContext::generateAuthenticationTag(derivedKeys & keysToUse,
+	u_int8_t const *dataToAuthenticate, unsigned numBytesToAuthenticate, u_int8_t * resultAuthenticationTag)
 {
 	if (SRTP_AUTH_TAG_LENGTH > SHA1_DIGEST_LEN)
 		return 0; // sanity check; shouldn't happen
 	u_int8_t computedAuthTag[SHA1_DIGEST_LEN];
-	HMAC_SHA1(keysToUse.authKey, sizeof keysToUse.authKey,
-		dataToAuthenticate, numBytesToAuthenticate,
-		computedAuthTag);
+	HMAC_SHA1(keysToUse.authKey, sizeof keysToUse.authKey, dataToAuthenticate, numBytesToAuthenticate, computedAuthTag);
 
 	for (unsigned i = 0; i < SRTP_AUTH_TAG_LENGTH; ++i)
 	{
@@ -413,15 +386,11 @@ unsigned SRTPCryptographicContext
 	return SRTP_AUTH_TAG_LENGTH;
 }
 
-Boolean SRTPCryptographicContext
-::verifyAuthenticationTag(derivedKeys &keysToUse,
-	u_int8_t const *dataToAuthenticate, unsigned numBytesToAuthenticate,
-	u_int8_t const *authenticationTag)
+Boolean SRTPCryptographicContext::verifyAuthenticationTag(derivedKeys & keysToUse,
+	u_int8_t const *dataToAuthenticate, unsigned numBytesToAuthenticate, u_int8_t const *authenticationTag)
 {
 	u_int8_t computedAuthTag[SHA1_DIGEST_LEN];
-	HMAC_SHA1(keysToUse.authKey, sizeof keysToUse.authKey,
-		dataToAuthenticate, numBytesToAuthenticate,
-		computedAuthTag);
+	HMAC_SHA1(keysToUse.authKey, sizeof keysToUse.authKey, dataToAuthenticate, numBytesToAuthenticate, computedAuthTag);
 
 	if (SRTP_AUTH_TAG_LENGTH > SHA1_DIGEST_LEN)
 		return False; // sanity check
@@ -433,8 +402,7 @@ Boolean SRTPCryptographicContext
 	return True;
 }
 
-void SRTPCryptographicContext::cryptData(derivedKeys &keys, u_int64_t index, u_int32_t ssrc,
-	u_int8_t *data, unsigned numDataBytes)
+void SRTPCryptographicContext::cryptData(derivedKeys & keys, u_int64_t index, u_int32_t ssrc, u_int8_t * data, unsigned numDataBytes)
 {
 	// Begin by constructing the IV: (salt * 2^16) XOR (ssrc * 2^64) XOR (index * 2^16)
 	u_int8_t iv[SRTP_CIPHER_KEY_LENGTH];
@@ -466,8 +434,7 @@ void SRTPCryptographicContext::cryptData(derivedKeys &keys, u_int64_t index, u_i
 		u_int8_t keyStream[SRTP_CIPHER_KEY_LENGTH];
 		AES_encrypt(iv, keyStream, &key);
 
-		unsigned numBytesToUse
-			= numDataBytes < SRTP_CIPHER_KEY_LENGTH ? numDataBytes : SRTP_CIPHER_KEY_LENGTH;
+		unsigned numBytesToUse = numDataBytes < SRTP_CIPHER_KEY_LENGTH ? numDataBytes : SRTP_CIPHER_KEY_LENGTH;
 		for (unsigned i = 0; i < numBytesToUse; ++i)
 			data[i] ^= keyStream[i];
 		data += numBytesToUse;
@@ -478,7 +445,7 @@ void SRTPCryptographicContext::cryptData(derivedKeys &keys, u_int64_t index, u_i
 		do
 		{
 			--ptr;
-			++*ptr;
+			++ *ptr;
 		} while (*ptr == 0x00);
 	}
 }
@@ -492,9 +459,7 @@ void SRTPCryptographicContext::performKeyDerivation()
 
 #define deriveKey(label, resultKey) deriveSingleKey(masterKey, salt, label, sizeof resultKey, resultKey)
 
-void SRTPCryptographicContext
-::deriveKeysFromMaster(u_int8_t const *masterKey, u_int8_t const *salt,
-	allDerivedKeys &allKeysResult)
+void SRTPCryptographicContext::deriveKeysFromMaster(u_int8_t const *masterKey, u_int8_t const *salt, allDerivedKeys & allKeysResult)
 {
 	// Derive cipher, salt, and auth keys for both SRTP and SRTCP:
 	deriveKey(label_srtp_encryption, allKeysResult.srtp.cipherKey);
@@ -508,10 +473,8 @@ void SRTPCryptographicContext
 
 #define KDF_PRF_CIPHER_BLOCK_LENGTH 16
 
-void SRTPCryptographicContext
-::deriveSingleKey(u_int8_t const *masterKey, u_int8_t const *salt,
-	SRTPKeyDerivationLabel label,
-	unsigned resultKeyLength, u_int8_t *resultKey)
+void SRTPCryptographicContext::deriveSingleKey(u_int8_t const *masterKey,
+	u_int8_t const *salt, SRTPKeyDerivationLabel label, unsigned resultKeyLength, u_int8_t * resultKey)
 {
 	// This looks a little different from the mechanism described in RFC 3711, section 4.3, but
 	// it's what the 'libsrtp' code does, so I hope it's functionally equivalent:
@@ -538,8 +501,7 @@ void SRTPCryptographicContext
 		u_int8_t ciphertext[KDF_PRF_CIPHER_BLOCK_LENGTH];
 		AES_encrypt(plaintext, ciphertext, &key);
 
-		unsigned numBytesToCopy
-			= numBytesRemaining < KDF_PRF_CIPHER_BLOCK_LENGTH ? numBytesRemaining : KDF_PRF_CIPHER_BLOCK_LENGTH;
+		unsigned numBytesToCopy = numBytesRemaining < KDF_PRF_CIPHER_BLOCK_LENGTH ? numBytesRemaining : KDF_PRF_CIPHER_BLOCK_LENGTH;
 		memmove(resultKey, ciphertext, numBytesToCopy);
 		resultKey += numBytesToCopy;
 		numBytesRemaining -= numBytesToCopy;

@@ -22,20 +22,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "SimpleRTPSink.hh"
 
 SimpleRTPSink::SimpleRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency,
-	char const *sdpMediaTypeString,
-	char const *rtpPayloadFormatName,
-	unsigned numChannels,
-	Boolean allowMultipleFramesPerPacket,
-	Boolean doNormalMBitRule)
-	: MultiFramedRTPSink(env, RTPgs, rtpPayloadFormat,
-		  rtpTimestampFrequency, rtpPayloadFormatName,
-		  numChannels),
-	  fAllowMultipleFramesPerPacket(allowMultipleFramesPerPacket), fSetMBitOnNextPacket(False)
+	unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, char const *sdpMediaTypeString,
+	char const *rtpPayloadFormatName, unsigned numChannels, Boolean allowMultipleFramesPerPacket, Boolean doNormalMBitRule)
+	: MultiFramedRTPSink(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, rtpPayloadFormatName, numChannels)
+	, fAllowMultipleFramesPerPacket(allowMultipleFramesPerPacket), fSetMBitOnNextPacket(False)
 {
-	fSDPMediaTypeString
-		= strDup(sdpMediaTypeString == NULL ? "unknown" : sdpMediaTypeString);
+	fSDPMediaTypeString = strDup(sdpMediaTypeString == NULL ? "unknown" : sdpMediaTypeString);
 	fSetMBitOnLastFrames = doNormalMBitRule && strcmp(fSDPMediaTypeString, "audio") != 0;
 }
 
@@ -45,27 +37,15 @@ SimpleRTPSink::~SimpleRTPSink()
 }
 
 SimpleRTPSink *SimpleRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency,
-	char const *sdpMediaTypeString,
-	char const *rtpPayloadFormatName,
-	unsigned numChannels,
-	Boolean allowMultipleFramesPerPacket,
-	Boolean doNormalMBitRule)
+	unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, char const *sdpMediaTypeString,
+	char const *rtpPayloadFormatName, unsigned numChannels, Boolean allowMultipleFramesPerPacket, Boolean doNormalMBitRule)
 {
-	return new SimpleRTPSink(env, RTPgs,
-			rtpPayloadFormat, rtpTimestampFrequency,
-			sdpMediaTypeString, rtpPayloadFormatName,
-			numChannels,
-			allowMultipleFramesPerPacket,
-			doNormalMBitRule);
+	return new SimpleRTPSink(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency,
+		sdpMediaTypeString, rtpPayloadFormatName, numChannels, allowMultipleFramesPerPacket, doNormalMBitRule);
 }
 
 void SimpleRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
-	unsigned char *frameStart,
-	unsigned numBytesInFrame,
-	struct timeval framePresentationTime,
-	unsigned numRemainingBytes)
+	unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes)
 {
 	if (numRemainingBytes == 0)
 	{
@@ -83,15 +63,10 @@ void SimpleRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
 
 	// Important: Also call our base class's doSpecialFrameHandling(),
 	// to set the packet's timestamp:
-	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset,
-		frameStart, numBytesInFrame,
-		framePresentationTime,
-		numRemainingBytes);
+	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset, frameStart, numBytesInFrame, framePresentationTime, numRemainingBytes);
 }
 
-Boolean SimpleRTPSink::
-frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/,
-	unsigned /*numBytesInFrame*/) const
+Boolean SimpleRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/, unsigned /*numBytesInFrame*/) const
 {
 	return fAllowMultipleFramesPerPacket;
 }

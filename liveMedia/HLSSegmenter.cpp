@@ -27,22 +27,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #define TRANSPORT_PACKET_SIZE 188
 #define OUTPUT_FILE_BUFFER_SIZE (TRANSPORT_PACKET_SIZE*100)
 
-HLSSegmenter *HLSSegmenter
-::createNew(UsageEnvironment &env,
-	unsigned segmentationDuration, char const *fileNamePrefix,
-	onEndOfSegmentFunc *onEndOfSegmentFunc, void *onEndOfSegmentClientData)
+HLSSegmenter *HLSSegmenter::createNew(UsageEnvironment &env, unsigned segmentationDuration,
+	char const *fileNamePrefix, onEndOfSegmentFunc *onEndOfSegmentFunc, void *onEndOfSegmentClientData)
 {
-	return new HLSSegmenter(env, segmentationDuration, fileNamePrefix,
-			onEndOfSegmentFunc, onEndOfSegmentClientData);
+	return new HLSSegmenter(env, segmentationDuration, fileNamePrefix, onEndOfSegmentFunc, onEndOfSegmentClientData);
 }
 
-HLSSegmenter::HLSSegmenter(UsageEnvironment &env,
-	unsigned segmentationDuration, char const *fileNamePrefix,
-	onEndOfSegmentFunc *onEndOfSegmentFunc, void *onEndOfSegmentClientData)
-	: MediaSink(env),
-	  fSegmentationDuration(segmentationDuration), fFileNamePrefix(fileNamePrefix),
-	  fOnEndOfSegmentFunc(onEndOfSegmentFunc), fOnEndOfSegmentClientData(onEndOfSegmentClientData),
-	  fHaveConfiguredUpstreamSource(False), fCurrentSegmentCounter(1), fOutFid(NULL)
+HLSSegmenter::HLSSegmenter(UsageEnvironment &env, unsigned segmentationDuration,
+	char const *fileNamePrefix, onEndOfSegmentFunc *onEndOfSegmentFunc, void *onEndOfSegmentClientData)
+	: MediaSink(env), fSegmentationDuration(segmentationDuration), fFileNamePrefix(fileNamePrefix)
+	, fOnEndOfSegmentFunc(onEndOfSegmentFunc), fOnEndOfSegmentClientData(onEndOfSegmentClientData)
+	, fHaveConfiguredUpstreamSource(False), fCurrentSegmentCounter(1), fOutFid(NULL)
 {
 	// Allocate enough space for the segment file name:
 	fOutputSegmentFileName = new char[strlen(fileNamePrefix) + 20/*more than enough*/];
@@ -84,10 +79,7 @@ Boolean HLSSegmenter::openNextOutputSegment()
 	return fOutFid != NULL;
 }
 
-void HLSSegmenter::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned numTruncatedBytes,
-	struct timeval /*presentationTime*/,
-	unsigned /*durationInMicroseconds*/)
+void HLSSegmenter::afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval /*presentationTime*/, unsigned /*durationInMicroseconds*/)
 {
 	((HLSSegmenter *)clientData)->afterGettingFrame(frameSize, numTruncatedBytes);
 }
@@ -145,15 +137,12 @@ Boolean HLSSegmenter::continuePlaying()
 		// Tell our upstream multiplexor to call our 'end of segment handler' at the end of
 		// each timed segment:
 		multiplexorSource->setTimedSegmentation(fSegmentationDuration, ourEndOfSegmentHandler, this);
-
 		fHaveConfiguredUpstreamSource = True; // from now on
 	}
 	if (fOutFid == NULL && !openNextOutputSegment())
 		return False;
 
-	fSource->getNextFrame(fOutputFileBuffer, OUTPUT_FILE_BUFFER_SIZE,
-		afterGettingFrame, this,
-		ourOnSourceClosure, this);
+	fSource->getNextFrame(fOutputFileBuffer, OUTPUT_FILE_BUFFER_SIZE, afterGettingFrame, this, ourOnSourceClosure, this);
 
 	return True;
 }

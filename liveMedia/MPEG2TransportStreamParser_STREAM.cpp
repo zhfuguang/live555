@@ -22,13 +22,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FileSink.hh"
 #include <time.h> // for time_t
 
-Boolean MPEG2TransportStreamParser
-::processStreamPacket(PIDState_STREAM *pidState, Boolean pusi, unsigned numDataBytes)
+Boolean MPEG2TransportStreamParser::processStreamPacket(PIDState_STREAM *pidState, Boolean pusi, unsigned numDataBytes)
 {
 #ifdef DEBUG_CONTENTS
 	extern StreamType StreamTypes[];
-	fprintf(stderr, "\t%s stream (stream_type 0x%02x)\n",
-		StreamTypes[pidState->stream_type].description, pidState->stream_type);
+	fprintf(stderr, "\t%s stream (stream_type 0x%02x)\n", StreamTypes[pidState->stream_type].description, pidState->stream_type);
 #endif
 	do
 	{
@@ -82,8 +80,7 @@ Boolean MPEG2TransportStreamParser
 
 static Boolean isSpecialStreamId[0x100];
 
-unsigned MPEG2TransportStreamParser
-::parsePESHeader(PIDState_STREAM *pidState, unsigned numDataBytes)
+unsigned MPEG2TransportStreamParser::parsePESHeader(PIDState_STREAM *pidState, unsigned numDataBytes)
 {
 	static Boolean haveInitializedIsSpecialStreamId = False;
 	if (!haveInitializedIsSpecialStreamId)
@@ -121,8 +118,7 @@ unsigned MPEG2TransportStreamParser
 		u_int8_t stream_id = startCodePlusStreamId & 0xFF;
 
 #ifdef DEBUG_CONTENTS
-		fprintf(stderr, "\t\t\tstream_id: 0x%02x; PES_packet_length: %d\n",
-			stream_id, get2Bytes());
+		fprintf(stderr, "\t\t\tstream_id: 0x%02x; PES_packet_length: %d\n", stream_id, get2Bytes());
 #else
 		skipBytes(2);
 #endif
@@ -133,8 +129,7 @@ unsigned MPEG2TransportStreamParser
 			if ((flags & 0xC000) != 0x8000)
 			{
 #ifdef DEBUG_ERRORS
-				fprintf(stderr, "MPEG2TransportStreamParser::parsePESHeader(0x%02x, %d): Bad flags: 0x%04x\n",
-					pidState->PID, numDataBytes, flags);
+				fprintf(stderr, "MPEG2TransportStreamParser::parsePESHeader(0x%02x, %d): Bad flags: 0x%04x\n", pidState->PID, numDataBytes, flags);
 #endif
 				break;
 			}
@@ -175,8 +170,7 @@ unsigned MPEG2TransportStreamParser
 				if (ptsLowBit)
 					PTS += 1 / 90000.0;
 #ifdef DEBUG_CONTENTS
-				fprintf(stderr, "\t\t\tPTS: 0x%02x%08x => 0x%08x+%d => %.10f\n",
-					first8PTSBits, last32PTSBits, ptsUpper32, ptsLowBit, PTS);
+				fprintf(stderr, "\t\t\tPTS: 0x%02x%08x => 0x%08x+%d => %.10f\n", first8PTSBits, last32PTSBits, ptsUpper32, ptsLowBit, PTS);
 #endif
 				// Record this PTS:
 				pidState->lastSeenPTS = PTS;
@@ -202,8 +196,7 @@ unsigned MPEG2TransportStreamParser
 				if (dtsLowBit)
 					DTS += 1 / 90000.0;
 #ifdef DEBUG_CONTENTS
-				fprintf(stderr, "\t\t\tDTS: 0x%02x%08x => 0x%08x+%d => %.10f\n",
-					first8DTSBits, last32DTSBits, dtsUpper32, dtsLowBit, DTS);
+				fprintf(stderr, "\t\t\tDTS: 0x%02x%08x => 0x%08x+%d => %.10f\n", first8DTSBits, last32DTSBits, dtsUpper32, dtsLowBit, DTS);
 #endif
 			}
 
@@ -285,8 +278,7 @@ unsigned MPEG2TransportStreamParser
 			{
 #ifdef DEBUG_ERRORS
 				fprintf(stderr, "MPEG2TransportStreamParser::parsePESHeader(0x%02x, %d): Error: Parsed %d PES header bytes; expected %d (based on \"PES_header_data_length\": %d)\n",
-					pidState->PID, numDataBytes, curOffset() - startPos, 9 + PES_header_data_length,
-					PES_header_data_length);
+					pidState->PID, numDataBytes, curOffset() - startPos, 9 + PES_header_data_length, PES_header_data_length);
 #endif
 				break;
 			}
@@ -318,10 +310,8 @@ unsigned MPEG2TransportStreamParser
 
 //########## PIDState_STREAM implementation ##########
 
-PIDState_STREAM::PIDState_STREAM(MPEG2TransportStreamParser &parser,
-	u_int16_t pid, u_int16_t programNumber, u_int8_t streamType)
-	: PIDState(parser, pid, STREAM),
-	  program_number(programNumber), stream_type(streamType), lastSeenPTS(0.0)
+PIDState_STREAM::PIDState_STREAM(MPEG2TransportStreamParser &parser, u_int16_t pid, u_int16_t programNumber, u_int8_t streamType)
+	: PIDState(parser, pid, STREAM), program_number(programNumber), stream_type(streamType), lastSeenPTS(0.0)
 {
 	// Create the 'source' and 'sink' objects for this track, and 'start playing' them:
 	streamSource = new MPEG2TransportStreamDemuxedTrack(parser, pid);
@@ -334,8 +324,7 @@ PIDState_STREAM::PIDState_STREAM(MPEG2TransportStreamParser &parser,
 		st.dataType == StreamType::VIDEO ? "VIDEO" :
 		st.dataType == StreamType::DATA ? "DATA" :
 		st.dataType == StreamType::TEXT ? "TEXT" :
-		"UNKNOWN",
-		program_number, pid, st.filenameSuffix);
+		"UNKNOWN", program_number, pid, st.filenameSuffix);
 	fprintf(stderr, "Creating new output file \"%s\"\n", fileName);
 	streamSink = FileSink::createNew(parser.envir(), fileName);
 	streamSink->startPlaying(*streamSource, NULL, NULL);

@@ -21,8 +21,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "JPEGVideoRTPSink.hh"
 #include "JPEGVideoSource.hh"
 
-JPEGVideoRTPSink
-::JPEGVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs)
+JPEGVideoRTPSink::JPEGVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs)
 	: VideoRTPSink(env, RTPgs, 26, 90000, "JPEG")
 {
 }
@@ -41,20 +40,14 @@ Boolean JPEGVideoRTPSink::sourceIsCompatibleWithUs(MediaSource &source)
 	return source.isJPEGVideoSource();
 }
 
-Boolean JPEGVideoRTPSink
-::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/,
-	unsigned /*numBytesInFrame*/) const
+Boolean JPEGVideoRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/, unsigned /*numBytesInFrame*/) const
 {
 	// A packet can contain only one frame
 	return False;
 }
 
-void JPEGVideoRTPSink
-::doSpecialFrameHandling(unsigned fragmentationOffset,
-	unsigned char * /*frameStart*/,
-	unsigned /*numBytesInFrame*/,
-	struct timeval framePresentationTime,
-	unsigned numRemainingBytes)
+void JPEGVideoRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
+	unsigned char * /*frameStart*/, unsigned /*numBytesInFrame*/, struct timeval framePresentationTime, unsigned numRemainingBytes)
 {
 	// Our source is known to be a JPEGVideoSource
 	JPEGVideoSource *source = (JPEGVideoSource *)fSource;
@@ -86,8 +79,7 @@ void JPEGVideoRTPSink
 		restartMarkerHeader[1] = restartInterval & 0xFF;
 		restartMarkerHeader[2] = restartMarkerHeader[3] = 0xFF; // F=L=1; Restart Count = 0x3FFF
 
-		setSpecialHeaderBytes(restartMarkerHeader, restartMarkerHeaderSize,
-			sizeof mainJPEGHeader/* start position */);
+		setSpecialHeaderBytes(restartMarkerHeader, restartMarkerHeaderSize, sizeof mainJPEGHeader/* start position */);
 	}
 
 	if (fragmentationOffset == 0 && source->qFactor() >= 128)
@@ -95,8 +87,7 @@ void JPEGVideoRTPSink
 		// There is also a Quantization Header:
 		u_int8_t precision;
 		u_int16_t length;
-		u_int8_t const *quantizationTables
-			= source->quantizationTables(precision, length);
+		u_int8_t const *quantizationTables = source->quantizationTables(precision, length);
 
 		unsigned const quantizationHeaderSize = 4 + length;
 		u_int8_t *quantizationHeader = new u_int8_t[quantizationHeaderSize];
@@ -113,8 +104,7 @@ void JPEGVideoRTPSink
 			}
 		}
 
-		setSpecialHeaderBytes(quantizationHeader, quantizationHeaderSize,
-			sizeof mainJPEGHeader + restartMarkerHeaderSize/* start position */);
+		setSpecialHeaderBytes(quantizationHeader, quantizationHeaderSize, sizeof mainJPEGHeader + restartMarkerHeaderSize/* start position */);
 		delete[] quantizationHeader;
 	}
 

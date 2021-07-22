@@ -31,8 +31,7 @@ class RTCPMemberDatabase
 {
 public:
 	RTCPMemberDatabase(RTCPInstance &ourRTCPInstance)
-		: fOurRTCPInstance(ourRTCPInstance), fNumMembers(1 /*ourself*/),
-		  fTable(HashTable::create(ONE_WORD_HASH_KEYS))
+		: fOurRTCPInstance(ourRTCPInstance), fNumMembers(1 /*ourself*/), fTable(HashTable::create(ONE_WORD_HASH_KEYS))
 	{
 	}
 
@@ -49,7 +48,6 @@ public:
 	Boolean noteMembership(u_int32_t ssrc, unsigned curTimeCount)
 	{
 		Boolean isNew = !isMember(ssrc);
-
 		if (isNew)
 		{
 			++fNumMembers;
@@ -57,7 +55,6 @@ public:
 
 		// Record the current time, so we can age stale members
 		fTable->Add((char *)(long)ssrc, (void *)(long)curTimeCount);
-
 		return isNew;
 	}
 
@@ -93,8 +90,7 @@ void RTCPMemberDatabase::reapOldMembers(unsigned threshold)
 	{
 		foundOldMember = False;
 
-		HashTable::Iterator *iter
-			= HashTable::Iterator::create(*fTable);
+		HashTable::Iterator *iter = HashTable::Iterator::create(*fTable);
 		uintptr_t timeCount;
 		char const *key;
 		while ((timeCount = (uintptr_t)(iter->next(key))) != 0)
@@ -135,24 +131,18 @@ static unsigned const maxRTCPPacketSize = 1438;
 // bytes (1500, minus some allowance for IP, UDP headers; SRTCP trailers)
 static unsigned const preferredRTCPPacketSize = 1000; // bytes
 
-RTCPInstance::RTCPInstance(UsageEnvironment &env, Groupsock *RTCPgs,
-	unsigned totSessionBW,
-	unsigned char const *cname,
-	RTPSink *sink, RTPSource *source,
-	Boolean isSSMTransmitter,
-	SRTPCryptographicContext *crypto)
-	: Medium(env), fRTCPInterface(this, RTCPgs), fTotSessionBW(totSessionBW),
-	  fSink(sink), fSource(source), fIsSSMTransmitter(isSSMTransmitter), fCrypto(crypto),
-	  fCNAME(RTCP_SDES_CNAME, cname), fOutgoingReportCount(1),
-	  fAveRTCPSize(0), fIsInitial(1), fPrevNumMembers(0),
-	  fLastSentSize(0), fLastReceivedSize(0), fLastReceivedSSRC(0),
-	  fTypeOfEvent(EVENT_UNKNOWN), fTypeOfPacket(PACKET_UNKNOWN_TYPE),
-	  fHaveJustSentPacket(False), fLastPacketSentSize(0),
-	  fByeHandlerTask(NULL), fByeWithReasonHandlerTask(NULL), fByeHandlerClientData(NULL),
-	  fSRHandlerTask(NULL), fSRHandlerClientData(NULL),
-	  fRRHandlerTask(NULL), fRRHandlerClientData(NULL),
-	  fSpecificRRHandlerTable(NULL),
-	  fAppHandlerTask(NULL), fAppHandlerClientData(NULL)
+RTCPInstance::RTCPInstance(UsageEnvironment &env, Groupsock *RTCPgs, unsigned totSessionBW,
+	unsigned char const *cname, RTPSink *sink, RTPSource *source, Boolean isSSMTransmitter, SRTPCryptographicContext *crypto)
+	: Medium(env), fRTCPInterface(this, RTCPgs), fTotSessionBW(totSessionBW)
+	, fSink(sink), fSource(source), fIsSSMTransmitter(isSSMTransmitter), fCrypto(crypto)
+	, fCNAME(RTCP_SDES_CNAME, cname), fOutgoingReportCount(1)
+	, fAveRTCPSize(0), fIsInitial(1), fPrevNumMembers(0)
+	, fLastSentSize(0), fLastReceivedSize(0), fLastReceivedSSRC(0)
+	, fTypeOfEvent(EVENT_UNKNOWN), fTypeOfPacket(PACKET_UNKNOWN_TYPE)
+	, fHaveJustSentPacket(False), fLastPacketSentSize(0)
+	, fByeHandlerTask(NULL), fByeWithReasonHandlerTask(NULL), fByeHandlerClientData(NULL)
+	, fSRHandlerTask(NULL), fSRHandlerClientData(NULL), fRRHandlerTask(NULL), fRRHandlerClientData(NULL)
+	, fSpecificRRHandlerTable(NULL), fAppHandlerTask(NULL), fAppHandlerClientData(NULL)
 {
 #ifdef DEBUG
 	fprintf(stderr, "RTCPInstance[%p]::RTCPInstance()\n", this);
@@ -188,8 +178,7 @@ RTCPInstance::RTCPInstance(UsageEnvironment &env, Groupsock *RTCPgs,
 	else
 	{
 		// Arrange to handle incoming reports from the network:
-		TaskScheduler::BackgroundHandlerProc *handler
-			= (TaskScheduler::BackgroundHandlerProc *)&incomingReportHandler;
+		TaskScheduler::BackgroundHandlerProc *handler = (TaskScheduler::BackgroundHandlerProc *)&incomingReportHandler;
 		fRTCPInterface.startNetworkReading(handler);
 	}
 
@@ -239,8 +228,7 @@ RTCPInstance::~RTCPInstance()
 	delete[] fInBuf;
 }
 
-void RTCPInstance::noteArrivingRR(struct sockaddr_storage const &fromAddressAndPort,
-	int tcpSocketNum, unsigned char tcpStreamChannelId)
+void RTCPInstance::noteArrivingRR(struct sockaddr_storage const &fromAddressAndPort, int tcpSocketNum, unsigned char tcpStreamChannelId)
 {
 	// If a 'RR handler' was set, call it now:
 
@@ -264,8 +252,7 @@ void RTCPInstance::noteArrivingRR(struct sockaddr_storage const &fromAddressAndP
 			fromPortNum = tcpStreamChannelId;
 		}
 		Port fromPort(fromPortNum);
-		RRHandlerRecord *rrHandler
-			= (RRHandlerRecord *)(fSpecificRRHandlerTable->Lookup(fromAddress, fromPort));
+		RRHandlerRecord *rrHandler = (RRHandlerRecord *)(fSpecificRRHandlerTable->Lookup(fromAddress, fromPort));
 		if (rrHandler != NULL)
 		{
 			if (rrHandler->rrHandlerTask != NULL)
@@ -280,23 +267,15 @@ void RTCPInstance::noteArrivingRR(struct sockaddr_storage const &fromAddressAndP
 		(*fRRHandlerTask)(fRRHandlerClientData);
 }
 
-RTCPInstance *RTCPInstance::createNew(UsageEnvironment &env, Groupsock *RTCPgs,
-	unsigned totSessionBW,
-	unsigned char const *cname,
-	RTPSink *sink, RTPSource *source,
-	Boolean isSSMTransmitter,
-	SRTPCryptographicContext *crypt)
+RTCPInstance *RTCPInstance::createNew(UsageEnvironment &env, Groupsock *RTCPgs, unsigned totSessionBW,
+	unsigned char const *cname, RTPSink *sink, RTPSource *source, Boolean isSSMTransmitter, SRTPCryptographicContext *crypt)
 {
-	return new RTCPInstance(env, RTCPgs, totSessionBW, cname, sink, source,
-			isSSMTransmitter, crypt);
+	return new RTCPInstance(env, RTCPgs, totSessionBW, cname, sink, source, isSSMTransmitter, crypt);
 }
 
-Boolean RTCPInstance::lookupByName(UsageEnvironment &env,
-	char const *instanceName,
-	RTCPInstance *&resultInstance)
+Boolean RTCPInstance::lookupByName(UsageEnvironment &env, char const *instanceName, RTCPInstance *&resultInstance)
 {
 	resultInstance = NULL; // unless we succeed
-
 	Medium *medium;
 	if (!Medium::lookupByName(env, instanceName, medium))
 		return False;
@@ -324,8 +303,7 @@ unsigned RTCPInstance::numMembers() const
 	return fKnownMembers->numMembers();
 }
 
-void RTCPInstance::setByeHandler(TaskFunc *handlerTask, void *clientData,
-	Boolean handleActiveParticipantsOnly)
+void RTCPInstance::setByeHandler(TaskFunc *handlerTask, void *clientData, Boolean handleActiveParticipantsOnly)
 {
 	fByeHandlerTask = handlerTask;
 	fByeWithReasonHandlerTask = NULL;
@@ -333,8 +311,7 @@ void RTCPInstance::setByeHandler(TaskFunc *handlerTask, void *clientData,
 	fByeHandleActiveParticipantsOnly = handleActiveParticipantsOnly;
 }
 
-void RTCPInstance::setByeWithReasonHandler(ByeWithReasonHandlerFunc *handlerTask, void *clientData,
-	Boolean handleActiveParticipantsOnly)
+void RTCPInstance::setByeWithReasonHandler(ByeWithReasonHandlerFunc *handlerTask, void *clientData, Boolean handleActiveParticipantsOnly)
 {
 	fByeHandlerTask = NULL;
 	fByeWithReasonHandlerTask = handlerTask;
@@ -354,9 +331,7 @@ void RTCPInstance::setRRHandler(TaskFunc *handlerTask, void *clientData)
 	fRRHandlerClientData = clientData;
 }
 
-void RTCPInstance
-::setSpecificRRHandler(struct sockaddr_storage const &fromAddress, Port fromPort,
-	TaskFunc *handlerTask, void *clientData)
+void RTCPInstance::setSpecificRRHandler(struct sockaddr_storage const &fromAddress, Port fromPort, TaskFunc *handlerTask, void *clientData)
 {
 	if (handlerTask == NULL && clientData == NULL)
 	{
@@ -371,20 +346,17 @@ void RTCPInstance
 	{
 		fSpecificRRHandlerTable = new AddressPortLookupTable;
 	}
-	RRHandlerRecord *existingRecord
-		= (RRHandlerRecord *)fSpecificRRHandlerTable->Add(fromAddress, fromPort, rrHandler);
+	RRHandlerRecord *existingRecord = (RRHandlerRecord *)fSpecificRRHandlerTable->Add(fromAddress, fromPort, rrHandler);
 	delete existingRecord; // if any
 
 }
 
-void RTCPInstance
-::unsetSpecificRRHandler(struct sockaddr_storage const &fromAddress, Port fromPort)
+void RTCPInstance::unsetSpecificRRHandler(struct sockaddr_storage const &fromAddress, Port fromPort)
 {
 	if (fSpecificRRHandlerTable == NULL)
 		return;
 
-	RRHandlerRecord *rrHandler
-		= (RRHandlerRecord *)(fSpecificRRHandlerTable->Lookup(fromAddress, fromPort));
+	RRHandlerRecord *rrHandler = (RRHandlerRecord *)(fSpecificRRHandlerTable->Lookup(fromAddress, fromPort));
 	if (rrHandler != NULL)
 	{
 		fSpecificRRHandlerTable->Remove(fromAddress, fromPort);
@@ -398,8 +370,7 @@ void RTCPInstance::setAppHandler(RTCPAppHandlerFunc *handlerTask, void *clientDa
 	fAppHandlerClientData = clientData;
 }
 
-void RTCPInstance::sendAppPacket(u_int8_t subtype, char const *name,
-	u_int8_t *appDependentData, unsigned appDependentDataSize)
+void RTCPInstance::sendAppPacket(u_int8_t subtype, char const *name, u_int8_t *appDependentData, unsigned appDependentDataSize)
 {
 	// Set up the first 4 bytes: V,PT,subtype,PT,length:
 	u_int32_t rtcpHdr = 0x80000000; // version 2, no padding
@@ -437,8 +408,7 @@ void RTCPInstance::sendAppPacket(u_int8_t subtype, char const *name,
 	sendBuiltPacket();
 }
 
-void RTCPInstance::setStreamSocket(int sockNum,
-	unsigned char streamChannelId)
+void RTCPInstance::setStreamSocket(int sockNum, unsigned char streamChannelId)
 {
 	// Turn off background read handling:
 	fRTCPInterface.stopNetworkReading();
@@ -447,13 +417,11 @@ void RTCPInstance::setStreamSocket(int sockNum,
 	fRTCPInterface.setStreamSocket(sockNum, streamChannelId);
 
 	// Turn background reading back on:
-	TaskScheduler::BackgroundHandlerProc *handler
-		= (TaskScheduler::BackgroundHandlerProc *)&incomingReportHandler;
+	TaskScheduler::BackgroundHandlerProc *handler = (TaskScheduler::BackgroundHandlerProc *)&incomingReportHandler;
 	fRTCPInterface.startNetworkReading(handler);
 }
 
-void RTCPInstance::addStreamSocket(int sockNum,
-	unsigned char streamChannelId)
+void RTCPInstance::addStreamSocket(int sockNum, unsigned char streamChannelId)
 {
 	// First, turn off background read handling for the default (UDP) socket:
 	envir().taskScheduler().turnOffBackgroundReadHandling(fRTCPInterface.gs()->socketNum());
@@ -462,13 +430,11 @@ void RTCPInstance::addStreamSocket(int sockNum,
 	fRTCPInterface.addStreamSocket(sockNum, streamChannelId);
 
 	// Turn on background reading for this socket (in case it's not on already):
-	TaskScheduler::BackgroundHandlerProc *handler
-		= (TaskScheduler::BackgroundHandlerProc *)&incomingReportHandler;
+	TaskScheduler::BackgroundHandlerProc *handler = (TaskScheduler::BackgroundHandlerProc *)&incomingReportHandler;
 	fRTCPInterface.startNetworkReading(handler);
 }
 
-void RTCPInstance
-::injectReport(u_int8_t const *packet, unsigned packetSize, struct sockaddr_storage const &fromAddress)
+void RTCPInstance::injectReport(u_int8_t const *packet, unsigned packetSize, struct sockaddr_storage const &fromAddress)
 {
 	if (packetSize > maxRTCPPacketSize)
 		packetSize = maxRTCPPacketSize;
@@ -482,8 +448,7 @@ static unsigned const IP_UDP_HDR_SIZE = 28;
 
 #define ADVANCE(n) pkt += (n); packetSize -= (n)
 
-void RTCPInstance::incomingReportHandler(RTCPInstance *instance,
-	int /*mask*/)
+void RTCPInstance::incomingReportHandler(RTCPInstance *instance, int /*mask*/)
 {
 	instance->incomingReportHandler1();
 }
@@ -505,11 +470,8 @@ void RTCPInstance::incomingReportHandler1()
 		int tcpSocketNum;
 		unsigned char tcpStreamChannelId;
 		Boolean packetReadWasIncomplete;
-		Boolean readResult
-			= fRTCPInterface.handleRead(&fInBuf[fNumBytesAlreadyRead], maxRTCPPacketSize - fNumBytesAlreadyRead,
-					numBytesRead, fromAddress,
-					tcpSocketNum, tcpStreamChannelId,
-					packetReadWasIncomplete);
+		Boolean readResult = fRTCPInterface.handleRead(&fInBuf[fNumBytesAlreadyRead],
+				maxRTCPPacketSize - fNumBytesAlreadyRead, numBytesRead, fromAddress, tcpSocketNum, tcpStreamChannelId, packetReadWasIncomplete);
 
 		unsigned packetSize = 0;
 		if (packetReadWasIncomplete)
@@ -572,9 +534,7 @@ void RTCPInstance::incomingReportHandler1()
 	} while (0);
 }
 
-void RTCPInstance
-::processIncomingReport(unsigned packetSize, struct sockaddr_storage const &fromAddressAndPort,
-	int tcpSocketNum, unsigned char tcpStreamChannelId)
+void RTCPInstance::processIncomingReport(unsigned packetSize, struct sockaddr_storage const &fromAddressAndPort, int tcpSocketNum, unsigned char tcpStreamChannelId)
 {
 	do
 	{
@@ -680,10 +640,8 @@ void RTCPInstance
 					ADVANCE(4);
 					if (fSource != NULL)
 					{
-						RTPReceptionStatsDB &receptionStats
-							= fSource->receptionStatsDB();
-						receptionStats.noteIncomingSR(reportSenderSSRC,
-							NTPmsw, NTPlsw, rtpTimestamp);
+						RTPReceptionStatsDB &receptionStats = fSource->receptionStatsDB();
+						receptionStats.noteIncomingSR(reportSenderSSRC, NTPmsw, NTPlsw, rtpTimestamp);
 					}
 					ADVANCE(8); // skip over packet count, octet count
 
@@ -724,10 +682,7 @@ void RTCPInstance
 								ADVANCE(4);
 								unsigned timeSinceLastSR = ntohl(*(u_int32_t *)pkt);
 								ADVANCE(4);
-								transmissionStats.noteIncomingRR(reportSenderSSRC, fromAddressAndPort,
-									lossStats,
-									highestReceived, jitter,
-									timeLastSR, timeSinceLastSR);
+								transmissionStats.noteIncomingRR(reportSenderSSRC, fromAddressAndPort, lossStats, highestReceived, jitter, timeLastSR, timeSinceLastSR);
 							}
 							else
 							{
@@ -784,10 +739,8 @@ void RTCPInstance
 					// (Note: We don't call it immediately, in case it happens to cause "this" to be deleted.)
 					if ((fByeHandlerTask != NULL || fByeWithReasonHandlerTask != NULL)
 						&& (!fByeHandleActiveParticipantsOnly
-							|| (fSource != NULL
-								&& fSource->receptionStatsDB().lookup(reportSenderSSRC) != NULL)
-							|| (fSink != NULL
-								&& fSink->transmissionStatsDB().lookup(reportSenderSSRC) != NULL)))
+							|| (fSource != NULL && fSource->receptionStatsDB().lookup(reportSenderSSRC) != NULL)
+							|| (fSink != NULL && fSink->transmissionStatsDB().lookup(reportSenderSSRC) != NULL)))
 					{
 						callByeHandler = True;
 					}
@@ -1147,8 +1100,7 @@ void RTCPInstance::sendBuiltPacket()
 
 int RTCPInstance::checkNewSSRC()
 {
-	return fKnownMembers->noteMembership(fLastReceivedSSRC,
-			fOutgoingReportCount);
+	return fKnownMembers->noteMembership(fLastReceivedSSRC, fOutgoingReportCount);
 }
 
 void RTCPInstance::removeLastReceivedSSRC()
@@ -1256,8 +1208,7 @@ void RTCPInstance::enqueueCommonReportPrefix(unsigned char packetType,
 	}
 	else
 	{
-		RTPReceptionStatsDB &allReceptionStats
-			= fSource->receptionStatsDB();
+		RTPReceptionStatsDB &allReceptionStats = fSource->receptionStatsDB();
 		numReportingSources = allReceptionStats.numActiveSourcesSinceLastReset();
 		// This must be <32, to fit in 5 bits:
 		if (numReportingSources >= 32)
@@ -1273,7 +1224,6 @@ void RTCPInstance::enqueueCommonReportPrefix(unsigned char packetType,
 	rtcpHdr |= (1 + numExtraWords + 6 * numReportingSources);
 	// each report block is 6 32-bit words long
 	fOutBuf->enqueueWord(rtcpHdr);
-
 	fOutBuf->enqueueWord(SSRC);
 }
 
@@ -1282,8 +1232,7 @@ void RTCPInstance::enqueueCommonReportSuffix()
 	// Output the report blocks for each source:
 	if (fSource != NULL)
 	{
-		RTPReceptionStatsDB &allReceptionStats
-			= fSource->receptionStatsDB();
+		RTPReceptionStatsDB &allReceptionStats = fSource->receptionStatsDB();
 
 		RTPReceptionStatsDB::Iterator iterator(allReceptionStats);
 		while (1)
@@ -1304,8 +1253,7 @@ void RTCPInstance::enqueueReportBlock(RTPReceptionStats *stats)
 
 	unsigned highestExtSeqNumReceived = stats->highestExtSeqNumReceived();
 
-	unsigned totNumExpected
-		= highestExtSeqNumReceived - stats->baseExtSeqNumReceived();
+	unsigned totNumExpected = highestExtSeqNumReceived - stats->baseExtSeqNumReceived();
 	int totNumLost = totNumExpected - stats->totNumPacketsReceived();
 	// 'Clamp' this loss number to a 24-bit signed value:
 	if (totNumLost > 0x007FFFFF)
@@ -1319,10 +1267,8 @@ void RTCPInstance::enqueueReportBlock(RTPReceptionStats *stats)
 		totNumLost &= 0x00FFFFFF;
 	}
 
-	unsigned numExpectedSinceLastReset
-		= highestExtSeqNumReceived - stats->lastResetExtSeqNumReceived();
-	int numLostSinceLastReset
-		= numExpectedSinceLastReset - stats->numPacketsReceivedSinceLastReset();
+	unsigned numExpectedSinceLastReset = highestExtSeqNumReceived - stats->lastResetExtSeqNumReceived();
+	int numLostSinceLastReset = numExpectedSinceLastReset - stats->numPacketsReceivedSinceLastReset();
 	unsigned char lossFraction;
 	if (numExpectedSinceLastReset == 0 || numLostSinceLastReset < 0)
 	{
@@ -1330,8 +1276,7 @@ void RTCPInstance::enqueueReportBlock(RTPReceptionStats *stats)
 	}
 	else
 	{
-		lossFraction = (unsigned char)
-			((numLostSinceLastReset << 8) / numExpectedSinceLastReset);
+		lossFraction = (unsigned char)((numLostSinceLastReset << 8) / numExpectedSinceLastReset);
 	}
 
 	fOutBuf->enqueueWord((lossFraction << 24) | totNumLost);
@@ -1364,8 +1309,7 @@ void RTCPInstance::enqueueReportBlock(RTPReceptionStats *stats)
 	}
 	else
 	{
-		DLSR = (timeSinceLSR.tv_sec << 16)
-			| ((((timeSinceLSR.tv_usec << 11) + 15625) / 31250) & 0xFFFF);
+		DLSR = (timeSinceLSR.tv_sec << 16) | ((((timeSinceLSR.tv_usec << 11) + 15625) / 31250) & 0xFFFF);
 	}
 	fOutBuf->enqueueWord(DLSR);
 }
@@ -1472,7 +1416,6 @@ void RTCPInstance::addBYE(char const *reason)
 void RTCPInstance::schedule(double nextTime)
 {
 	fNextReportTime = nextTime;
-
 	double secondsToDelay = nextTime - dTimeNow();
 	if (secondsToDelay < 0)
 		secondsToDelay = 0;
@@ -1480,8 +1423,7 @@ void RTCPInstance::schedule(double nextTime)
 	fprintf(stderr, "schedule(%f->%f)\n", secondsToDelay, nextTime);
 #endif
 	int64_t usToGo = (int64_t)(secondsToDelay * 1000000);
-	nextTask() = envir().taskScheduler().scheduleDelayedTask(usToGo,
-			(TaskFunc *)RTCPInstance::onExpire, this);
+	nextTask() = envir().taskScheduler().scheduleDelayedTask(usToGo, (TaskFunc *)RTCPInstance::onExpire, this);
 }
 
 void RTCPInstance::reschedule(double nextTime)

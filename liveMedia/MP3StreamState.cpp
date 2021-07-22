@@ -56,7 +56,6 @@ MP3StreamState::~MP3StreamState()
 void MP3StreamState::assignStream(FILE *fid, unsigned fileSize)
 {
 	fFid = fid;
-
 	if (fileSize == (unsigned)(-1))   /*HACK#####*/
 	{
 		fFidIsReallyASocket = 1;
@@ -80,8 +79,7 @@ struct timeval MP3StreamState::currentFramePlayTime() const
 	unsigned const freq = fr().samplingFreq * (1 + fr().isMPEG2);
 
 	// result is numSamples/freq
-	unsigned const uSeconds
-		= ((numSamples * 2 * MILLION) / freq + 1) / 2; // rounds to nearest integer
+	unsigned const uSeconds = ((numSamples * 2 * MILLION) / freq + 1) / 2; // rounds to nearest integer
 
 	struct timeval result;
 	result.tv_sec = uSeconds / MILLION;
@@ -156,26 +154,21 @@ unsigned MP3StreamState::findNextHeader(struct timeval &presentationTime)
 		framePlayTime.tv_usec /= fPresentationTimeScale;
 	}
 	fNextFramePresentationTime.tv_usec += framePlayTime.tv_usec;
-	fNextFramePresentationTime.tv_sec
-	+= framePlayTime.tv_sec + fNextFramePresentationTime.tv_usec / MILLION;
+	fNextFramePresentationTime.tv_sec += framePlayTime.tv_sec + fNextFramePresentationTime.tv_usec / MILLION;
 	fNextFramePresentationTime.tv_usec %= MILLION;
 
 	return fr().hdr;
 }
 
-Boolean MP3StreamState::readFrame(unsigned char *outBuf, unsigned outBufSize,
-	unsigned &resultFrameSize,
-	unsigned &resultDurationInMicroseconds)
+Boolean MP3StreamState::readFrame(unsigned char *outBuf, unsigned outBufSize, unsigned &resultFrameSize, unsigned &resultDurationInMicroseconds)
 {
 	/* We assume that "mp3FindNextHeader()" has already been called */
-
 	resultFrameSize = 4 + fr().frameSize;
 
 	if (outBufSize < resultFrameSize)
 	{
 #ifdef DEBUG_ERRORS
-		fprintf(stderr, "Insufficient buffer size for reading input frame (%d, need %d)\n",
-			outBufSize, resultFrameSize);
+		fprintf(stderr, "Insufficient buffer size for reading input frame (%d, need %d)\n", outBufSize, resultFrameSize);
 #endif
 		if (outBufSize < 4)
 			outBufSize = 0;
@@ -203,18 +196,13 @@ Boolean MP3StreamState::readFrame(unsigned char *outBuf, unsigned outBufSize,
 
 void MP3StreamState::getAttributes(char *buffer, unsigned bufferSize) const
 {
-	char const *formatStr
-		= "bandwidth %d MPEGnumber %d MPEGlayer %d samplingFrequency %d isStereo %d playTime %d isVBR %d";
+	char const *formatStr = "bandwidth %d MPEGnumber %d MPEGlayer %d samplingFrequency %d isStereo %d playTime %d isVBR %d";
 	unsigned fpt = (unsigned)(filePlayTime() + 0.5); // rounds to nearest integer
 #if defined(IRIX) || defined(ALPHA) || defined(_QNX4) || defined(IMN_PIM) || defined(CRIS)
 	/* snprintf() isn't defined, so just use sprintf() - ugh! */
-	sprintf(buffer, formatStr,
-		fr().bitrate, fr().isMPEG2 ? 2 : 1, fr().layer, fr().samplingFreq, fr().isStereo,
-		fpt, fIsVBR);
+	sprintf(buffer, formatStr, fr().bitrate, fr().isMPEG2 ? 2 : 1, fr().layer, fr().samplingFreq, fr().isStereo, fpt, fIsVBR);
 #else
-	snprintf(buffer, bufferSize, formatStr,
-		fr().bitrate, fr().isMPEG2 ? 2 : 1, fr().layer, fr().samplingFreq, fr().isStereo,
-		fpt, fIsVBR);
+	snprintf(buffer, bufferSize, formatStr, fr().bitrate, fr().isMPEG2 ? 2 : 1, fr().layer, fr().samplingFreq, fr().isStereo, fpt, fIsVBR);
 #endif
 }
 
@@ -232,10 +220,7 @@ read_again:
 	if (readFromStream(hbuf, 4) != 4)
 		return False;
 
-	fr().hdr = ((unsigned long) hbuf[0] << 24)
-		| ((unsigned long) hbuf[1] << 16)
-		| ((unsigned long) hbuf[2] << 8)
-		| (unsigned long) hbuf[3];
+	fr().hdr = ((unsigned long)hbuf[0] << 24) | ((unsigned long)hbuf[1] << 16) | ((unsigned long)hbuf[2] << 8) | (unsigned long)hbuf[3];
 
 #ifdef DEBUG_PARSE
 	fprintf(stderr, "fr().hdr: 0x%08x\n", fr().hdr);
@@ -243,7 +228,7 @@ read_again:
 	if (fr().oldHdr != fr().hdr || !fr().oldHdr)
 	{
 		i = 0;
-init_resync:
+	init_resync:
 #ifdef DEBUG_PARSE
 		fprintf(stderr, "init_resync: fr().hdr: 0x%08x\n", fr().hdr);
 #endif
@@ -253,13 +238,13 @@ init_resync:
 			|| (fr().hdr & 0x0000F000) == 0x0000F000 // undefined bitrate index
 			|| (fr().hdr & 0x00000C00) == 0x00000C00 // undefined frequency index
 			|| (fr().hdr & 0x00000003) != 0x00000000 // 'emphasis' field unexpectedly set
-		)
+			)
 		{
 			/* RSF: Do the following test even if we're not at the
 			start of the file, in case we have two or more
 			 separate MP3 files cat'ed together:
-			    */
-			/* Check for RIFF hdr */
+				*/
+				/* Check for RIFF hdr */
 			if (fr().hdr == ('R' << 24) + ('I' << 16) + ('F' << 8) + 'F')
 			{
 				unsigned char buf[70 /*was: 40*/];
@@ -314,8 +299,7 @@ init_resync:
 			return False;
 
 #ifdef DEBUG_ERRORS
-			fprintf(stderr, "Illegal Audio-MPEG-Header 0x%08lx at offset 0x%lx.\n",
-				fr().hdr, tell_stream(str) - 4);
+			fprintf(stderr, "Illegal Audio-MPEG-Header 0x%08lx at offset 0x%lx.\n", fr().hdr, tell_stream(str) - 4);
 #endif
 			/* Read more bytes until we find something that looks
 			reasonably like a valid header.  This is not a
@@ -337,8 +321,7 @@ init_resync:
 				if (!fr().oldHdr)
 					goto init_resync;       /* "considered harmful", eh? */
 
-			} while ((fr().hdr & HDRCMPMASK) != (fr().oldHdr & HDRCMPMASK)
-				&& (fr().hdr & HDRCMPMASK) != (fr().firstHdr & HDRCMPMASK));
+			} while ((fr().hdr & HDRCMPMASK) != (fr().oldHdr & HDRCMPMASK) && (fr().hdr & HDRCMPMASK) != (fr().firstHdr & HDRCMPMASK));
 #ifdef DEBUG_ERRORS
 			fprintf(stderr, "Skipped %d bytes in input.\n", attempt);
 #endif
@@ -372,8 +355,7 @@ init_resync:
 #endif
 	}
 
-	if ((l = readFromStream(fr().frameBytes, fr().frameSize))
-		!= fr().frameSize)
+	if ((l = readFromStream(fr().frameBytes, fr().frameSize)) != fr().frameSize)
 	{
 		if (l == 0)
 			return False;
@@ -409,16 +391,14 @@ static void waitUntilSocketIsReadable(UsageEnvironment &env, int socket)
 	{
 		// Delay a short period of time before checking again.
 		unsigned usecsToDelay = 1000; // 1 ms
-		env.taskScheduler().scheduleDelayedTask(usecsToDelay,
-			(TaskFunc *)checkFunc, (void *)NULL);
+		env.taskScheduler().scheduleDelayedTask(usecsToDelay, (TaskFunc *)checkFunc, (void *)NULL);
 		watchVariable = 0;
 		env.taskScheduler().doEventLoop(&watchVariable);
 		// This allows other tasks to run while we're waiting:
 	}
 }
 
-unsigned MP3StreamState::readFromStream(unsigned char *buf,
-	unsigned numChars)
+unsigned MP3StreamState::readFromStream(unsigned char *buf, unsigned numChars)
 {
 	// Hack for doing socket I/O instead of file I/O (e.g., on Windows)
 	if (fFidIsReallyASocket)
@@ -429,8 +409,7 @@ unsigned MP3StreamState::readFromStream(unsigned char *buf,
 		do
 		{
 			waitUntilSocketIsReadable(fEnv, sock);
-			int bytesRead
-				= recv(sock, &((char *)buf)[totBytesRead], numChars - totBytesRead, 0);
+			int bytesRead = recv(sock, &((char *)buf)[totBytesRead], numChars - totBytesRead, 0);
 			if (bytesRead < 0)
 				return 0;
 

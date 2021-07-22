@@ -29,9 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 ///////////////////////////////////////////////////////////////////////////////
 ////////// H263plusVideoStreamFramer implementation //////////
 //public///////////////////////////////////////////////////////////////////////
-H263plusVideoStreamFramer *H263plusVideoStreamFramer::createNew(
-	UsageEnvironment &env,
-	FramedSource *inputSource)
+H263plusVideoStreamFramer *H263plusVideoStreamFramer::createNew(UsageEnvironment &env, FramedSource *inputSource)
 {
 	// Need to add source type checking here???  #####
 	H263plusVideoStreamFramer *fr;
@@ -41,13 +39,9 @@ H263plusVideoStreamFramer *H263plusVideoStreamFramer::createNew(
 
 
 ///////////////////////////////////////////////////////////////////////////////
-H263plusVideoStreamFramer::H263plusVideoStreamFramer(
-	UsageEnvironment &env,
-	FramedSource *inputSource,
-	Boolean createParser)
-	: FramedFilter(env, inputSource),
-	  fFrameRate(0.0), // until we learn otherwise
-	  fPictureEndMarker(False)
+H263plusVideoStreamFramer::H263plusVideoStreamFramer(UsageEnvironment &env, FramedSource *inputSource, Boolean createParser)
+	: FramedFilter(env, inputSource), fFrameRate(0.0) // until we learn otherwise
+	, fPictureEndMarker(False)
 {
 	// Use the current wallclock time as the base 'presentation time':
 	gettimeofday(&fPresentationTimeBase, NULL);
@@ -57,7 +51,7 @@ H263plusVideoStreamFramer::H263plusVideoStreamFramer(
 ///////////////////////////////////////////////////////////////////////////////
 H263plusVideoStreamFramer::~H263plusVideoStreamFramer()
 {
-	delete   fParser;
+	delete fParser;
 }
 
 
@@ -76,10 +70,7 @@ Boolean H263plusVideoStreamFramer::isH263plusVideoStreamFramer() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void H263plusVideoStreamFramer::continueReadProcessing(
-	void *clientData,
-	unsigned char * /*ptr*/, unsigned /*size*/,
-	struct timeval /*presentationTime*/)
+void H263plusVideoStreamFramer::continueReadProcessing(void *clientData, unsigned char * /*ptr*/, unsigned /*size*/, struct timeval /*presentationTime*/)
 {
 	H263plusVideoStreamFramer *framer = (H263plusVideoStreamFramer *)clientData;
 	framer->continueReadProcessing();
@@ -89,7 +80,6 @@ void H263plusVideoStreamFramer::continueReadProcessing(
 void H263plusVideoStreamFramer::continueReadProcessing()
 {
 	unsigned acquiredFrameSize;
-
 	u_int64_t frameDuration;  // in ms
 
 	acquiredFrameSize = fParser->parse(frameDuration);
@@ -109,7 +99,7 @@ void H263plusVideoStreamFramer::continueReadProcessing()
 		if (acquiredFrameSize == 5) // first frame
 			fPresentationTime = fPresentationTimeBase;
 		else
-			fPresentationTime.tv_usec += (long) frameDuration * 1000;
+			fPresentationTime.tv_usec += (long)frameDuration * 1000;
 
 		while (fPresentationTime.tv_usec >= 1000000)
 		{
@@ -118,7 +108,7 @@ void H263plusVideoStreamFramer::continueReadProcessing()
 		}
 
 		// Compute "fDurationInMicroseconds"
-		fDurationInMicroseconds = (unsigned int) frameDuration * 1000;;
+		fDurationInMicroseconds = (unsigned int)frameDuration * 1000;;
 
 		// Call our own 'after getting' function.  Because we're not a 'leaf'
 		// source, we can call this directly, without risking infinite recursion.

@@ -20,15 +20,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "GroupEId.hh"
 
 
-GroupEId::GroupEId(struct sockaddr_storage const &groupAddr,
-	portNumBits portNum, u_int8_t ttl)
+GroupEId::GroupEId(struct sockaddr_storage const &groupAddr, portNumBits portNum, u_int8_t ttl)
 {
 	init(groupAddr, nullAddress(), portNum, ttl);
 }
 
-GroupEId::GroupEId(struct sockaddr_storage const &groupAddr,
-	struct sockaddr_storage const &sourceFilterAddr,
-	portNumBits portNum)
+GroupEId::GroupEId(struct sockaddr_storage const &groupAddr, struct sockaddr_storage const &sourceFilterAddr, portNumBits portNum)
 {
 	init(groupAddr, sourceFilterAddr, portNum, 255);
 }
@@ -49,10 +46,7 @@ portNumBits GroupEId::portNum() const
 	return ::portNum(fGroupAddress);
 }
 
-void GroupEId::init(struct sockaddr_storage const &groupAddr,
-	struct sockaddr_storage const &sourceFilterAddr,
-	portNumBits portNum,
-	u_int8_t ttl)
+void GroupEId::init(struct sockaddr_storage const &groupAddr, struct sockaddr_storage const &sourceFilterAddr, portNumBits portNum, u_int8_t ttl)
 {
 	fGroupAddress = groupAddr;
 	setPortNum(fGroupAddress, portNum);

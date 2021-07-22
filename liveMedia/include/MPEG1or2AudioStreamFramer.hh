@@ -25,11 +25,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedFilter.hh"
 #endif
 
-class MPEG1or2AudioStreamFramer: public FramedFilter
+class MPEG1or2AudioStreamFramer : public FramedFilter
 {
 public:
-	static MPEG1or2AudioStreamFramer *createNew(UsageEnvironment &env, FramedSource *inputSource,
-		Boolean syncWithInputSource = False);
+	static MPEG1or2AudioStreamFramer *createNew(UsageEnvironment &env, FramedSource *inputSource, Boolean syncWithInputSource = False);
 	// If "syncWithInputSource" is True, the stream's presentation time
 	// will be reset to that of the input source, whenever new data
 	// is read from it.
@@ -37,14 +36,11 @@ public:
 	void flushInput(); // called if there is a discontinuity (seeking) in the input
 
 private:
-	MPEG1or2AudioStreamFramer(UsageEnvironment &env, FramedSource *inputSource,
-		Boolean syncWithInputSource);
+	MPEG1or2AudioStreamFramer(UsageEnvironment &env, FramedSource *inputSource, Boolean syncWithInputSource);
 	// called only by createNew()
 	virtual ~MPEG1or2AudioStreamFramer();
 
-	static void continueReadProcessing(void *clientData,
-		unsigned char *ptr, unsigned size,
-		struct timeval presentationTime);
+	static void continueReadProcessing(void *clientData, unsigned char *ptr, unsigned size, struct timeval presentationTime);
 	void continueReadProcessing();
 
 	void resetPresentationTime(struct timeval newPresentationTime);

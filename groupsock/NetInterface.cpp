@@ -44,8 +44,8 @@ NetInterface::~NetInterface()
 int Socket::DebugLevel = 1; // default value
 
 Socket::Socket(UsageEnvironment &env, Port port, int family)
-	: fEnv(DefaultUsageEnvironment != NULL ? * DefaultUsageEnvironment : env),
-	  fPort(port), fFamily(family)
+	: fEnv(DefaultUsageEnvironment != NULL ? *DefaultUsageEnvironment : env)
+	, fPort(port), fFamily(family)
 {
 	fSocketNum = setupDatagramSocket(fEnv, port, family);
 }
@@ -102,14 +102,13 @@ SocketLookupTable::~SocketLookupTable()
 	delete fTable;
 }
 
-Socket *SocketLookupTable::Fetch(UsageEnvironment &env, Port port,
-	Boolean &isNew)
+Socket *SocketLookupTable::Fetch(UsageEnvironment &env, Port port, Boolean &isNew)
 {
 	isNew = False;
 	Socket *sock;
 	do
 	{
-		sock = (Socket *) fTable->Lookup((char *)(long)(port.num()));
+		sock = (Socket *)fTable->Lookup((char *)(long)(port.num()));
 		if (sock == NULL)   // we need to create one:
 		{
 			sock = CreateNew(env, port);

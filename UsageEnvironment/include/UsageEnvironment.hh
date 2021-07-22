@@ -112,8 +112,7 @@ class TaskScheduler
 public:
 	virtual ~TaskScheduler();
 
-	virtual TaskToken scheduleDelayedTask(int64_t microseconds, TaskFunc *proc,
-		void *clientData) = 0;
+	virtual TaskToken scheduleDelayedTask(int64_t microseconds, TaskFunc *proc, void *clientData) = 0;
 	// Schedules a task to occur (after a delay) when we next
 	// reach a scheduling point.
 	// (Does not delay if "microseconds" <= 0)
@@ -126,9 +125,7 @@ public:
 	// Sets "prevTask" to NULL afterwards.
 	// Note: This MUST NOT be called if the scheduled task has already occurred.
 
-	virtual void rescheduleDelayedTask(TaskToken &task,
-		int64_t microseconds, TaskFunc *proc,
-		void *clientData);
+	virtual void rescheduleDelayedTask(TaskToken &task, int64_t microseconds, TaskFunc *proc, void *clientData);
 	// Combines "unscheduleDelayedTask()" with "scheduleDelayedTask()"
 	// (setting "task" to the new task token).
 	// Note: This MUST NOT be called if the scheduled task has already occurred.

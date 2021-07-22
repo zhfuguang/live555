@@ -32,26 +32,23 @@ EBMLNumber::~EBMLNumber()
 char *EBMLNumber::hexString() const
 {
 	static char printBuf[2 * EBML_NUMBER_MAX_LEN + 1];
-
 	char *to = printBuf;
+
 	for (unsigned i = 0; i < len; ++i)
 	{
 		sprintf(to, "%02X", data[i]);
 		to += 2;
 	}
-
 	return printBuf;
 }
 
 u_int64_t EBMLNumber::val() const
 {
 	u_int64_t result = 0;
-
 	for (unsigned i = 0; i < len; ++i)
 	{
 		result = result * 256 + data[i];
 	}
-
 	return result;
 }
 

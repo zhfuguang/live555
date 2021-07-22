@@ -23,20 +23,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// H264BufferedPacket and H264BufferedPacketFactory //////////
 
-class H264BufferedPacket: public BufferedPacket
+class H264BufferedPacket : public BufferedPacket
 {
 public:
 	H264BufferedPacket(H264VideoRTPSource &ourSource);
 	virtual ~H264BufferedPacket();
 
 private: // redefined virtual functions
-	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr,
-		unsigned dataSize);
+	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize);
 private:
 	H264VideoRTPSource &fOurSource;
 };
 
-class H264BufferedPacketFactory: public BufferedPacketFactory
+class H264BufferedPacketFactory : public BufferedPacketFactory
 {
 private: // redefined virtual functions
 	virtual BufferedPacket *createNewPacket(MultiFramedRTPSource *ourSource);
@@ -45,20 +44,13 @@ private: // redefined virtual functions
 
 ///////// H264VideoRTPSource implementation ////////
 
-H264VideoRTPSource *H264VideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
+H264VideoRTPSource *H264VideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
 {
-	return new H264VideoRTPSource(env, RTPgs, rtpPayloadFormat,
-			rtpTimestampFrequency);
+	return new H264VideoRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency);
 }
 
-H264VideoRTPSource
-::H264VideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
-	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency,
-		  new H264BufferedPacketFactory)
+H264VideoRTPSource::H264VideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
+	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, new H264BufferedPacketFactory)
 {
 }
 
@@ -66,9 +58,7 @@ H264VideoRTPSource::~H264VideoRTPSource()
 {
 }
 
-Boolean H264VideoRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean H264VideoRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	unsigned char *headerStart = packet->data();
 	unsigned packetSize = packet->dataSize();
@@ -184,8 +174,7 @@ H264BufferedPacket::~H264BufferedPacket()
 {
 }
 
-unsigned H264BufferedPacket
-::nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
+unsigned H264BufferedPacket::nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
 {
 	unsigned resultNALUSize = 0; // if an error occurs
 
@@ -229,8 +218,7 @@ unsigned H264BufferedPacket
 	return (resultNALUSize <= dataSize) ? resultNALUSize : dataSize;
 }
 
-BufferedPacket *H264BufferedPacketFactory
-::createNewPacket(MultiFramedRTPSource *ourSource)
+BufferedPacket *H264BufferedPacketFactory::createNewPacket(MultiFramedRTPSource *ourSource)
 {
 	return new H264BufferedPacket((H264VideoRTPSource &)(*ourSource));
 }

@@ -28,22 +28,16 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AC3AudioRTPSink.hh"
 #include "ByteStreamFileSource.hh"
 
-MPEG1or2DemuxedServerMediaSubsession *MPEG1or2DemuxedServerMediaSubsession
-::createNew(MPEG1or2FileServerDemux &demux, u_int8_t streamIdTag,
-	Boolean reuseFirstSource, Boolean iFramesOnly, double vshPeriod)
+MPEG1or2DemuxedServerMediaSubsession *MPEG1or2DemuxedServerMediaSubsession::createNew(
+	MPEG1or2FileServerDemux &demux, u_int8_t streamIdTag, Boolean reuseFirstSource, Boolean iFramesOnly, double vshPeriod)
 {
-	return new MPEG1or2DemuxedServerMediaSubsession(demux, streamIdTag,
-			reuseFirstSource,
-			iFramesOnly, vshPeriod);
+	return new MPEG1or2DemuxedServerMediaSubsession(demux, streamIdTag, reuseFirstSource, iFramesOnly, vshPeriod);
 }
 
-MPEG1or2DemuxedServerMediaSubsession
-::MPEG1or2DemuxedServerMediaSubsession(MPEG1or2FileServerDemux &demux,
-	u_int8_t streamIdTag, Boolean reuseFirstSource,
-	Boolean iFramesOnly, double vshPeriod)
-	: OnDemandServerMediaSubsession(demux.envir(), reuseFirstSource),
-	  fOurDemux(demux), fStreamIdTag(streamIdTag),
-	  fIFramesOnly(iFramesOnly), fVSHPeriod(vshPeriod)
+MPEG1or2DemuxedServerMediaSubsession::MPEG1or2DemuxedServerMediaSubsession(
+	MPEG1or2FileServerDemux &demux, u_int8_t streamIdTag, Boolean reuseFirstSource, Boolean iFramesOnly, double vshPeriod)
+	: OnDemandServerMediaSubsession(demux.envir(), reuseFirstSource)
+	, fOurDemux(demux), fStreamIdTag(streamIdTag), fIFramesOnly(iFramesOnly), fVSHPeriod(vshPeriod)
 {
 }
 
@@ -51,8 +45,7 @@ MPEG1or2DemuxedServerMediaSubsession::~MPEG1or2DemuxedServerMediaSubsession()
 {
 }
 
-FramedSource *MPEG1or2DemuxedServerMediaSubsession
-::createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate)
+FramedSource *MPEG1or2DemuxedServerMediaSubsession::createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate)
 {
 	FramedSource *es = NULL;
 	do
@@ -69,8 +62,7 @@ FramedSource *MPEG1or2DemuxedServerMediaSubsession
 		else if ((fStreamIdTag & 0xF0) == 0xE0 /*video*/)
 		{
 			estBitrate = 500; // kbps, estimate
-			return MPEG1or2VideoStreamFramer::createNew(envir(), es,
-					fIFramesOnly, fVSHPeriod);
+			return MPEG1or2VideoStreamFramer::createNew(envir(), es, fIFramesOnly, fVSHPeriod);
 		}
 		else if (fStreamIdTag == 0xBD /*AC-3 audio*/)
 		{
@@ -88,9 +80,7 @@ FramedSource *MPEG1or2DemuxedServerMediaSubsession
 	return NULL;
 }
 
-RTPSink *MPEG1or2DemuxedServerMediaSubsession
-::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic,
-	FramedSource *inputSource)
+RTPSink *MPEG1or2DemuxedServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource *inputSource)
 {
 	if ((fStreamIdTag & 0xF0) == 0xC0 /*MPEG audio*/)
 	{
@@ -103,10 +93,8 @@ RTPSink *MPEG1or2DemuxedServerMediaSubsession
 	else if (fStreamIdTag == 0xBD /*AC-3 audio*/)
 	{
 		// Get the sampling frequency from the audio source; use it for the RTP frequency:
-		AC3AudioStreamFramer *audioSource
-			= (AC3AudioStreamFramer *)inputSource;
-		return AC3AudioRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-				audioSource->samplingRate());
+		AC3AudioStreamFramer *audioSource = (AC3AudioStreamFramer *)inputSource;
+		return AC3AudioRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, audioSource->samplingRate());
 	}
 	else
 	{
@@ -114,8 +102,7 @@ RTPSink *MPEG1or2DemuxedServerMediaSubsession
 	}
 }
 
-void MPEG1or2DemuxedServerMediaSubsession
-::seekStreamSource(FramedSource *inputSource, double &seekNPT, double /*streamDuration*/, u_int64_t & /*numBytes*/)
+void MPEG1or2DemuxedServerMediaSubsession::seekStreamSource(FramedSource *inputSource, double &seekNPT, double /*streamDuration*/, u_int64_t & /*numBytes*/)
 {
 	float const dur = duration();
 	unsigned const size = fOurDemux.fileSize();
@@ -135,8 +122,7 @@ void MPEG1or2DemuxedServerMediaSubsession
 	}
 
 	// "inputSource" is a filter; its input source is the original elem stream source:
-	MPEG1or2DemuxedElementaryStream *elemStreamSource
-		= (MPEG1or2DemuxedElementaryStream *)(((FramedFilter *)inputSource)->inputSource());
+	MPEG1or2DemuxedElementaryStream *elemStreamSource = (MPEG1or2DemuxedElementaryStream *)(((FramedFilter *)inputSource)->inputSource());
 
 	// Next, get the original source demux:
 	MPEG1or2Demux &sourceDemux = elemStreamSource->sourceDemux();
@@ -145,8 +131,7 @@ void MPEG1or2DemuxedServerMediaSubsession
 	sourceDemux.flushInput();
 
 	// Then, get the original input file stream from the source demux:
-	ByteStreamFileSource *inputFileSource
-		= (ByteStreamFileSource *)(sourceDemux.inputSource());
+	ByteStreamFileSource *inputFileSource = (ByteStreamFileSource *)(sourceDemux.inputSource());
 	// Note: We can make that cast, because we know that the demux was originally
 	// created from a "ByteStreamFileSource".
 

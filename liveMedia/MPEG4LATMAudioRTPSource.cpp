@@ -22,21 +22,20 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// LATMBufferedPacket and LATMBufferedPacketFactory //////////
 
-class LATMBufferedPacket: public BufferedPacket
+class LATMBufferedPacket : public BufferedPacket
 {
 public:
 	LATMBufferedPacket(Boolean includeLATMDataLengthField);
 	virtual ~LATMBufferedPacket();
 
 private: // redefined virtual functions
-	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr,
-		unsigned dataSize);
+	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize);
 
 private:
 	Boolean fIncludeLATMDataLengthField;
 };
 
-class LATMBufferedPacketFactory: public BufferedPacketFactory
+class LATMBufferedPacketFactory : public BufferedPacketFactory
 {
 private: // redefined virtual functions
 	virtual BufferedPacket *createNewPacket(MultiFramedRTPSource *ourSource);
@@ -44,22 +43,13 @@ private: // redefined virtual functions
 
 ///////// MPEG4LATMAudioRTPSource implementation ////////
 
-MPEG4LATMAudioRTPSource *MPEG4LATMAudioRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
+MPEG4LATMAudioRTPSource *MPEG4LATMAudioRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
 {
-	return new MPEG4LATMAudioRTPSource(env, RTPgs, rtpPayloadFormat,
-			rtpTimestampFrequency);
+	return new MPEG4LATMAudioRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency);
 }
 
-MPEG4LATMAudioRTPSource
-::MPEG4LATMAudioRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
-	: MultiFramedRTPSource(env, RTPgs,
-		  rtpPayloadFormat, rtpTimestampFrequency,
-		  new LATMBufferedPacketFactory),
-	  fIncludeLATMDataLengthField(True)
+MPEG4LATMAudioRTPSource::MPEG4LATMAudioRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
+	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, new LATMBufferedPacketFactory), fIncludeLATMDataLengthField(True)
 {
 }
 
@@ -72,9 +62,7 @@ void MPEG4LATMAudioRTPSource::omitLATMDataLengthField()
 	fIncludeLATMDataLengthField = False;
 }
 
-Boolean MPEG4LATMAudioRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean MPEG4LATMAudioRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	fCurrentPacketBeginsFrame = fCurrentPacketCompletesFrame;
 	// whether the *previous* packet ended a frame
@@ -104,8 +92,7 @@ LATMBufferedPacket::~LATMBufferedPacket()
 {
 }
 
-unsigned LATMBufferedPacket
-::nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
+unsigned LATMBufferedPacket::nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
 {
 	// Look at the LATM data length byte(s), to determine the size
 	// of the LATM payload.
@@ -131,8 +118,7 @@ unsigned LATMBufferedPacket
 	return (resultFrameSize <= dataSize) ? resultFrameSize : dataSize;
 }
 
-BufferedPacket *LATMBufferedPacketFactory
-::createNewPacket(MultiFramedRTPSource *ourSource)
+BufferedPacket *LATMBufferedPacketFactory::createNewPacket(MultiFramedRTPSource *ourSource)
 {
 	MPEG4LATMAudioRTPSource *source = (MPEG4LATMAudioRTPSource *)ourSource;
 	return new LATMBufferedPacket(source->returnedFrameIncludesLATMDataLengthField());
@@ -141,8 +127,7 @@ BufferedPacket *LATMBufferedPacketFactory
 
 ////////// parseStreamMuxConfigStr() implementation //////////
 
-static Boolean getNibble(char const *&configStr,
-	unsigned char &resultNibble)
+static Boolean getNibble(char const *&configStr, unsigned char &resultNibble)
 {
 	char c = configStr[0];
 	if (c == '\0')
@@ -263,10 +248,8 @@ unsigned char *parseStreamMuxConfigStr(char const *configStr,
 	unsigned char numSubFrames, numProgram, numLayer;
 	unsigned char *audioSpecificConfig;
 
-	if (!parseStreamMuxConfigStr(configStr,
-			audioMuxVersion, allStreamsSameTimeFraming,
-			numSubFrames, numProgram, numLayer,
-			audioSpecificConfig, audioSpecificConfigSize))
+	if (!parseStreamMuxConfigStr(configStr, audioMuxVersion,
+		allStreamsSameTimeFraming, numSubFrames, numProgram, numLayer, audioSpecificConfig, audioSpecificConfigSize))
 	{
 		audioSpecificConfigSize = 0;
 		return NULL;

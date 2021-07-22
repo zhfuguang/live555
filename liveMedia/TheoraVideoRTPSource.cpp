@@ -22,18 +22,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// TheoraBufferedPacket and TheoraBufferedPacketFactory //////////
 
-class TheoraBufferedPacket: public BufferedPacket
+class TheoraBufferedPacket : public BufferedPacket
 {
 public:
 	TheoraBufferedPacket();
 	virtual ~TheoraBufferedPacket();
 
 private: // redefined virtual functions
-	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr,
-		unsigned dataSize);
+	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize);
 };
 
-class TheoraBufferedPacketFactory: public BufferedPacketFactory
+class TheoraBufferedPacketFactory : public BufferedPacketFactory
 {
 private: // redefined virtual functions
 	virtual BufferedPacket *createNewPacket(MultiFramedRTPSource *ourSource);
@@ -42,18 +41,13 @@ private: // redefined virtual functions
 
 ///////// TheoraVideoRTPSource implementation ////////
 
-TheoraVideoRTPSource *TheoraVideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat)
+TheoraVideoRTPSource *TheoraVideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat)
 {
 	return new TheoraVideoRTPSource(env, RTPgs, rtpPayloadFormat);
 }
 
-TheoraVideoRTPSource
-::TheoraVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat)
-	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, 90000,
-		  new TheoraBufferedPacketFactory),
-	  fCurPacketIdent(0)
+TheoraVideoRTPSource::TheoraVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat)
+	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, 90000, new TheoraBufferedPacketFactory), fCurPacketIdent(0)
 {
 }
 
@@ -61,9 +55,7 @@ TheoraVideoRTPSource::~TheoraVideoRTPSource()
 {
 }
 
-Boolean TheoraVideoRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean TheoraVideoRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	unsigned char *headerStart = packet->data();
 	unsigned packetSize = packet->dataSize();
@@ -103,8 +95,7 @@ TheoraBufferedPacket::~TheoraBufferedPacket()
 {
 }
 
-unsigned TheoraBufferedPacket
-::nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
+unsigned TheoraBufferedPacket::nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
 {
 	if (dataSize < 2)
 	{
@@ -120,8 +111,7 @@ unsigned TheoraBufferedPacket
 	return frameSize;
 }
 
-BufferedPacket *TheoraBufferedPacketFactory
-::createNewPacket(MultiFramedRTPSource * /*ourSource*/)
+BufferedPacket *TheoraBufferedPacketFactory::createNewPacket(MultiFramedRTPSource * /*ourSource*/)
 {
 	return new TheoraBufferedPacket();
 }

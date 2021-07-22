@@ -24,7 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "VideoRTPSink.hh"
 #endif
 
-class JPEG2000VideoRTPSink: public VideoRTPSink
+class JPEG2000VideoRTPSink : public VideoRTPSink
 {
 public:
 	static JPEG2000VideoRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs);
@@ -37,10 +37,7 @@ protected:
 
 private: // redefined virtual functions:
 	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
+		unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
 	virtual unsigned specialHeaderSize() const;
 };
 

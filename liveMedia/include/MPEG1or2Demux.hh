@@ -27,12 +27,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class MPEG1or2DemuxedElementaryStream; // forward
 
-class MPEG1or2Demux: public Medium
+class MPEG1or2Demux : public Medium
 {
 public:
-	static MPEG1or2Demux *createNew(UsageEnvironment &env,
-		FramedSource *inputSource,
-		Boolean reclaimWhenLastESDies = False);
+	static MPEG1or2Demux *createNew(UsageEnvironment &env, FramedSource *inputSource, Boolean reclaimWhenLastESDies = False);
 	// If "reclaimWhenLastESDies" is True, the the demux is deleted when
 	// all "MPEG1or2DemuxedElementaryStream"s that we created get deleted.
 
@@ -45,12 +43,8 @@ public:
 	// A hack for getting raw, undemuxed PES packets from the Program Stream:
 	MPEG1or2DemuxedElementaryStream *newRawPESStream();
 
-	void getNextFrame(u_int8_t streamIdTag,
-		unsigned char *to, unsigned maxSize,
-		FramedSource::afterGettingFunc *afterGettingFunc,
-		void *afterGettingClientData,
-		FramedSource::onCloseFunc *onCloseFunc,
-		void *onCloseClientData);
+	void getNextFrame(u_int8_t streamIdTag, unsigned char *to, unsigned maxSize,
+		FramedSource::afterGettingFunc *afterGettingFunc, void *afterGettingClientData, FramedSource::onCloseFunc *onCloseFunc, void *onCloseClientData);
 	// similar to FramedSource::getNextFrame(), except that it also
 	// takes a stream id tag as parameter.
 
@@ -91,26 +85,16 @@ public:
 	void flushInput(); // should be called before any 'seek' on the underlying source
 
 private:
-	MPEG1or2Demux(UsageEnvironment &env,
-		FramedSource *inputSource, Boolean reclaimWhenLastESDies);
+	MPEG1or2Demux(UsageEnvironment &env, FramedSource *inputSource, Boolean reclaimWhenLastESDies);
 	// called only by createNew()
 	virtual ~MPEG1or2Demux();
 
-	void registerReadInterest(u_int8_t streamIdTag,
-		unsigned char *to, unsigned maxSize,
-		FramedSource::afterGettingFunc *afterGettingFunc,
-		void *afterGettingClientData,
-		FramedSource::onCloseFunc *onCloseFunc,
-		void *onCloseClientData);
+	void registerReadInterest(u_int8_t streamIdTag, unsigned char *to, unsigned maxSize,
+		FramedSource::afterGettingFunc *afterGettingFunc, void *afterGettingClientData, FramedSource::onCloseFunc *onCloseFunc, void *onCloseClientData);
 
-	Boolean useSavedData(u_int8_t streamIdTag,
-		unsigned char *to, unsigned maxSize,
-		FramedSource::afterGettingFunc *afterGettingFunc,
-		void *afterGettingClientData);
+	Boolean useSavedData(u_int8_t streamIdTag, unsigned char *to, unsigned maxSize, FramedSource::afterGettingFunc *afterGettingFunc, void *afterGettingClientData);
 
-	static void continueReadProcessing(void *clientData,
-		unsigned char *ptr, unsigned size,
-		struct timeval presentationTime);
+	static void continueReadProcessing(void *clientData, unsigned char *ptr, unsigned size, struct timeval presentationTime);
 	void continueReadProcessing();
 
 private:

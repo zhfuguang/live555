@@ -20,21 +20,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "H263plusVideoRTPSource.hh"
 
-H263plusVideoRTPSource *H263plusVideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
+H263plusVideoRTPSource *H263plusVideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
 {
-	return new H263plusVideoRTPSource(env, RTPgs, rtpPayloadFormat,
-			rtpTimestampFrequency);
+	return new H263plusVideoRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency);
 }
 
-H263plusVideoRTPSource
-::H263plusVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
-	: MultiFramedRTPSource(env, RTPgs,
-		  rtpPayloadFormat, rtpTimestampFrequency),
-	  fNumSpecialHeaders(0), fSpecialHeaderBytesLength(0)
+H263plusVideoRTPSource::H263plusVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
+	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency), fNumSpecialHeaders(0), fSpecialHeaderBytesLength(0)
 {
 }
 
@@ -42,9 +34,7 @@ H263plusVideoRTPSource::~H263plusVideoRTPSource()
 {
 }
 
-Boolean H263plusVideoRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean H263plusVideoRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	unsigned char *headerStart = packet->data();
 	unsigned packetSize = packet->dataSize();
@@ -85,8 +75,7 @@ Boolean H263plusVideoRTPSource
 
 	// Make a copy of the special header bytes, in case a reader
 	// can use them:
-	unsigned bytesAvailable
-		= SPECIAL_HEADER_BUFFER_SIZE - fSpecialHeaderBytesLength - 1;
+	unsigned bytesAvailable = SPECIAL_HEADER_BUFFER_SIZE - fSpecialHeaderBytesLength - 1;
 	if (expectedHeaderSize <= bytesAvailable)
 	{
 		fSpecialHeaderBytes[fSpecialHeaderBytesLength++] = expectedHeaderSize;
@@ -108,7 +97,6 @@ Boolean H263plusVideoRTPSource
 
 	// The RTP "M" (marker) bit indicates the last fragment of a frame:
 	fCurrentPacketCompletesFrame = packet->rtpMarkerBit();
-
 	resultSpecialHeaderSize = expectedHeaderSize;
 	return True;
 }

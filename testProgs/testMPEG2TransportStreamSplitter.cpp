@@ -46,19 +46,16 @@ int main(int argc, char **argv)
 		usage();
 
 	// Open the input file as a 'byte-stream file source':
-	ByteStreamFileSource *inputSource
-		= ByteStreamFileSource::createNew(*env, inputFileName);
+	ByteStreamFileSource *inputSource = ByteStreamFileSource::createNew(*env, inputFileName);
 	if (inputSource == NULL)
 	{
-		*env << "Unable to open file \"" << inputFileName
-			<< "\" as a byte-stream file source\n";
+		*env << "Unable to open file \"" << inputFileName << "\" as a byte-stream file source\n";
 		exit(1);
 	}
 
 	// Create a demultiplexor that reads from that source, creating new 'demultiplexed tracks'
 	// as they appear:
 	baseDemultiplexor = MPEG2TransportStreamDemux::createNew(*env, inputSource, afterReading, NULL);
-
 	env->taskScheduler().doEventLoop(); // does not return
 
 	return 0; // only to prevent compiler warning

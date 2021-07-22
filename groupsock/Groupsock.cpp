@@ -28,14 +28,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 ///////// OutputSocket //////////
 
 OutputSocket::OutputSocket(UsageEnvironment &env, int family)
-	: Socket(env, 0 /* let kernel choose port */, family),
-	  fSourcePort(0), fLastSentTTL(256/*hack: a deliberately invalid value*/)
+	: Socket(env, 0 /* let kernel choose port */, family), fSourcePort(0), fLastSentTTL(256/*hack: a deliberately invalid value*/)
 {
 }
 
 OutputSocket::OutputSocket(UsageEnvironment &env, Port port, int family)
-	: Socket(env, port, family),
-	  fSourcePort(0), fLastSentTTL(256/*hack: a deliberately invalid value*/)
+	: Socket(env, port, family), fSourcePort(0), fLastSentTTL(256/*hack: a deliberately invalid value*/)
 {
 }
 
@@ -43,8 +41,7 @@ OutputSocket::~OutputSocket()
 {
 }
 
-Boolean OutputSocket::write(struct sockaddr_storage const &addressAndPort, u_int8_t ttl,
-	unsigned char *buffer, unsigned bufferSize)
+Boolean OutputSocket::write(struct sockaddr_storage const &addressAndPort, u_int8_t ttl, unsigned char *buffer, unsigned bufferSize)
 {
 	if ((unsigned)ttl == fLastSentTTL)
 	{
@@ -66,9 +63,7 @@ Boolean OutputSocket::write(struct sockaddr_storage const &addressAndPort, u_int
 		if (!getSourcePort(env(), socketNum(), addressAndPort.ss_family, fSourcePort))
 		{
 			if (DebugLevel >= 1)
-				env() << *this
-					<< ": failed to get source port: "
-					<< env().getResultMsg() << "\n";
+				env() << *this << ": failed to get source port: " << env().getResultMsg() << "\n";
 			return False;
 		}
 	}
@@ -77,9 +72,7 @@ Boolean OutputSocket::write(struct sockaddr_storage const &addressAndPort, u_int
 }
 
 // By default, we don't do reads:
-Boolean OutputSocket
-::handleRead(unsigned char * /*buffer*/, unsigned /*bufferMaxSize*/,
-	unsigned & /*bytesRead*/, struct sockaddr_storage & /*fromAddressAndPort*/)
+Boolean OutputSocket::handleRead(unsigned char * /*buffer*/, unsigned /*bufferMaxSize*/, unsigned & /*bytesRead*/, struct sockaddr_storage & /*fromAddressAndPort*/)
 {
 	return True;
 }
@@ -87,9 +80,7 @@ Boolean OutputSocket
 
 ///////// destRecord //////////
 
-destRecord
-::destRecord(struct sockaddr_storage const &addr, Port const &port, u_int8_t ttl, unsigned sessionId,
-	destRecord *next)
+destRecord::destRecord(struct sockaddr_storage const &addr, Port const &port, u_int8_t ttl, unsigned sessionId, destRecord *next)
 	: fNext(next), fGroupEId(addr, port.num(), ttl), fSessionId(sessionId)
 {
 }
@@ -106,18 +97,14 @@ NetInterfaceTrafficStats Groupsock::statsIncoming;
 NetInterfaceTrafficStats Groupsock::statsOutgoing;
 
 // Constructor for a source-independent multicast group
-Groupsock::Groupsock(UsageEnvironment &env, struct sockaddr_storage const &groupAddr,
-	Port port, u_int8_t ttl)
-	: OutputSocket(env, port, groupAddr.ss_family),
-	  fDests(new destRecord(groupAddr, port, ttl, 0, NULL)),
-	  fIncomingGroupEId(groupAddr, port.num(), ttl)
+Groupsock::Groupsock(UsageEnvironment &env, struct sockaddr_storage const &groupAddr, Port port, u_int8_t ttl)
+	: OutputSocket(env, port, groupAddr.ss_family), fDests(new destRecord(groupAddr, port, ttl, 0, NULL)), fIncomingGroupEId(groupAddr, port.num(), ttl)
 {
 	if (!socketJoinGroup(env, socketNum(), groupAddr))
 	{
 		if (DebugLevel >= 1)
 		{
-			env << *this << ": failed to join group: "
-				<< env.getResultMsg() << "\n";
+			env << *this << ": failed to join group: " << env.getResultMsg() << "\n";
 		}
 	}
 
@@ -126,8 +113,7 @@ Groupsock::Groupsock(UsageEnvironment &env, struct sockaddr_storage const &group
 	{
 		if (DebugLevel >= 0)   // this is a fatal error
 		{
-			env << "Unable to determine our source address: "
-				<< env.getResultMsg() << "\n";
+			env << "Unable to determine our source address: " << env.getResultMsg() << "\n";
 		}
 	}
 
@@ -136,28 +122,22 @@ Groupsock::Groupsock(UsageEnvironment &env, struct sockaddr_storage const &group
 }
 
 // Constructor for a source-specific multicast group
-Groupsock::Groupsock(UsageEnvironment &env, struct sockaddr_storage const &groupAddr,
-	struct sockaddr_storage const &sourceFilterAddr,
-	Port port)
-	: OutputSocket(env, port, groupAddr.ss_family),
-	  fDests(new destRecord(groupAddr, port, 255, 0, NULL)),
-	  fIncomingGroupEId(groupAddr, sourceFilterAddr, port.num())
+Groupsock::Groupsock(UsageEnvironment &env, struct sockaddr_storage const &groupAddr, struct sockaddr_storage const &sourceFilterAddr, Port port)
+	: OutputSocket(env, port, groupAddr.ss_family), fDests(new destRecord(groupAddr, port, 255, 0, NULL)), fIncomingGroupEId(groupAddr, sourceFilterAddr, port.num())
 {
 	// First try a SSM join.  If that fails, try a regular join:
 	if (!socketJoinGroupSSM(env, socketNum(), groupAddr, sourceFilterAddr))
 	{
 		if (DebugLevel >= 3)
 		{
-			env << *this << ": SSM join failed: "
-				<< env.getResultMsg();
+			env << *this << ": SSM join failed: " << env.getResultMsg();
 			env << " - trying regular join instead\n";
 		}
 		if (!socketJoinGroup(env, socketNum(), groupAddr))
 		{
 			if (DebugLevel >= 1)
 			{
-				env << *this << ": failed to join group: "
-					<< env.getResultMsg() << "\n";
+				env << *this << ": failed to join group: " << env.getResultMsg() << "\n";
 			}
 		}
 	}
@@ -186,16 +166,13 @@ Groupsock::~Groupsock()
 		env() << *this << ": deleting\n";
 }
 
-destRecord *Groupsock
-::createNewDestRecord(struct sockaddr_storage const &addr, Port const &port, u_int8_t ttl,
-	unsigned sessionId, destRecord *next)
+destRecord *Groupsock::createNewDestRecord(struct sockaddr_storage const &addr, Port const &port, u_int8_t ttl, unsigned sessionId, destRecord *next)
 {
 	// Default implementation:
 	return new destRecord(addr, port, ttl, sessionId, next);
 }
 
-void Groupsock::changeDestinationParameters(struct sockaddr_storage const &newDestAddr,
-	Port newDestPort, int newDestTTL, unsigned sessionId)
+void Groupsock::changeDestinationParameters(struct sockaddr_storage const &newDestAddr, Port newDestPort, int newDestTTL, unsigned sessionId)
 {
 	destRecord *dest;
 	for (dest = fDests; dest != NULL && dest->fSessionId != sessionId; dest = dest->fNext) {}
@@ -249,8 +226,7 @@ void Groupsock::changeDestinationParameters(struct sockaddr_storage const &newDe
 	removeDestinationFrom(dest->fNext, sessionId);
 }
 
-unsigned Groupsock
-::lookupSessionIdFromDestination(struct sockaddr_storage const &destAddrAndPort) const
+unsigned Groupsock::lookupSessionIdFromDestination(struct sockaddr_storage const &destAddrAndPort) const
 {
 	destRecord *dest = lookupDestRecordFromDestination(destAddrAndPort);
 	if (dest == NULL)
@@ -259,8 +235,7 @@ unsigned Groupsock
 	return dest->fSessionId;
 }
 
-void Groupsock::addDestination(struct sockaddr_storage const &addr, Port const &port,
-	unsigned sessionId)
+void Groupsock::addDestination(struct sockaddr_storage const &addr, Port const &port, unsigned sessionId)
 {
 	// Default implementation:
 	// If there's no existing 'destRecord' with the same "addr", "port", and "sessionId", add a new one:
@@ -337,14 +312,11 @@ Boolean Groupsock::output(UsageEnvironment &env, unsigned char *buffer, unsigned
 	return False;
 }
 
-Boolean Groupsock::handleRead(unsigned char *buffer, unsigned bufferMaxSize,
-	unsigned &bytesRead,
-	struct sockaddr_storage &fromAddressAndPort)
+Boolean Groupsock::handleRead(unsigned char *buffer, unsigned bufferMaxSize, unsigned &bytesRead, struct sockaddr_storage &fromAddressAndPort)
 {
 	bytesRead = 0; // initially
 
-	int numBytes = readSocket(env(), socketNum(),
-			buffer, bufferMaxSize, fromAddressAndPort);
+	int numBytes = readSocket(env(), socketNum(), buffer, bufferMaxSize, fromAddressAndPort);
 	if (numBytes < 0)
 	{
 		if (DebugLevel >= 0)   // this is a fatal error
@@ -376,8 +348,7 @@ Boolean Groupsock::handleRead(unsigned char *buffer, unsigned bufferMaxSize,
 	return True;
 }
 
-Boolean Groupsock::wasLoopedBackFromUs(UsageEnvironment &env,
-	struct sockaddr_storage const &fromAddressAndPort)
+Boolean Groupsock::wasLoopedBackFromUs(UsageEnvironment &env, struct sockaddr_storage const &fromAddressAndPort)
 {
 	if (fromAddressAndPort.ss_family != AF_INET)
 		return False; // later update for IPv6
@@ -401,8 +372,7 @@ Boolean Groupsock::wasLoopedBackFromUs(UsageEnvironment &env,
 	return False;
 }
 
-destRecord *Groupsock
-::lookupDestRecordFromDestination(struct sockaddr_storage const &targetAddrAndPort) const
+destRecord *Groupsock::lookupDestRecordFromDestination(struct sockaddr_storage const &targetAddrAndPort) const
 {
 	for (destRecord *dest = fDests; dest != NULL; dest = dest->fNext)
 	{
@@ -438,14 +408,10 @@ void Groupsock::removeDestinationFrom(destRecord *&dests, unsigned sessionId)
 
 UsageEnvironment &operator<<(UsageEnvironment &s, const Groupsock &g)
 {
-	UsageEnvironment &s1 = s << timestampString() << " Groupsock("
-		<< g.socketNum() << ": "
-		<< AddressString(g.groupAddress()).val()
-		<< ", " << g.port() << ", ";
+	UsageEnvironment &s1 = s << timestampString() << " Groupsock(" << g.socketNum() << ": " << AddressString(g.groupAddress()).val() << ", " << g.port() << ", ";
 	if (g.isSSM())
 	{
-		return s1 << "SSM source: "
-			<<  AddressString(g.sourceFilterAddress()).val() << ")";
+		return s1 << "SSM source: " << AddressString(g.sourceFilterAddress()).val() << ")";
 	}
 	else
 	{
@@ -482,7 +448,6 @@ static Boolean unsetGroupsockBySocket(Groupsock const *groupsock)
 			break;
 
 		HashTable *&sockets = getSocketTable(groupsock->env());
-
 		Groupsock *gs = (Groupsock *)sockets->Lookup((char *)(long)sock);
 		if (gs == NULL || gs != groupsock)
 			break;
@@ -502,8 +467,7 @@ static Boolean unsetGroupsockBySocket(Groupsock const *groupsock)
 	return False;
 }
 
-static Boolean setGroupsockBySocket(UsageEnvironment &env, int sock,
-	Groupsock *groupsock)
+static Boolean setGroupsockBySocket(UsageEnvironment &env, int sock, Groupsock *groupsock)
 {
 	do
 	{
@@ -519,8 +483,7 @@ static Boolean setGroupsockBySocket(UsageEnvironment &env, int sock,
 		HashTable *sockets = getSocketTable(env);
 
 		// Make sure we're not replacing an existing Groupsock (although that shouldn't happen)
-		Boolean alreadyExists
-			= (sockets->Lookup((char *)(long)sock) != 0);
+		Boolean alreadyExists = (sockets->Lookup((char *)(long)sock) != 0);
 		if (alreadyExists)
 		{
 			char buf[100];
@@ -551,16 +514,13 @@ static Groupsock *getGroupsockBySocket(UsageEnvironment &env, int sock)
 	return NULL;
 }
 
-Groupsock *GroupsockLookupTable::Fetch(UsageEnvironment &env,
-	struct sockaddr_storage const &groupAddress,
-	Port port, u_int8_t ttl,
-	Boolean &isNew)
+Groupsock *GroupsockLookupTable::Fetch(UsageEnvironment &env, struct sockaddr_storage const &groupAddress, Port port, u_int8_t ttl, Boolean &isNew)
 {
 	isNew = False;
 	Groupsock *groupsock;
 	do
 	{
-		groupsock = (Groupsock *) fTable.Lookup(groupAddress, port);
+		groupsock = (Groupsock *)fTable.Lookup(groupAddress, port);
 		if (groupsock == NULL)   // we need to create one:
 		{
 			groupsock = AddNew(env, groupAddress, nullAddress(), port, ttl);
@@ -573,17 +533,13 @@ Groupsock *GroupsockLookupTable::Fetch(UsageEnvironment &env,
 	return groupsock;
 }
 
-Groupsock *GroupsockLookupTable::Fetch(UsageEnvironment &env,
-	struct sockaddr_storage const &groupAddress,
-	struct sockaddr_storage const &sourceFilterAddr, Port port,
-	Boolean &isNew)
+Groupsock *GroupsockLookupTable::Fetch(UsageEnvironment &env, struct sockaddr_storage const &groupAddress, struct sockaddr_storage const &sourceFilterAddr, Port port, Boolean &isNew)
 {
 	isNew = False;
 	Groupsock *groupsock;
 	do
 	{
-		groupsock
-			= (Groupsock *) fTable.Lookup(groupAddress, sourceFilterAddr, port);
+		groupsock = (Groupsock *)fTable.Lookup(groupAddress, sourceFilterAddr, port);
 		if (groupsock == NULL)   // we need to create one:
 		{
 			groupsock = AddNew(env, groupAddress, sourceFilterAddr, port, 0);
@@ -598,13 +554,12 @@ Groupsock *GroupsockLookupTable::Fetch(UsageEnvironment &env,
 
 Groupsock *GroupsockLookupTable::Lookup(struct sockaddr_storage const &groupAddress, Port port)
 {
-	return (Groupsock *) fTable.Lookup(groupAddress, port);
+	return (Groupsock *)fTable.Lookup(groupAddress, port);
 }
 
-Groupsock *GroupsockLookupTable::Lookup(struct sockaddr_storage const &groupAddress,
-	struct sockaddr_storage const &sourceFilterAddr, Port port)
+Groupsock *GroupsockLookupTable::Lookup(struct sockaddr_storage const &groupAddress, struct sockaddr_storage const &sourceFilterAddr, Port port)
 {
-	return (Groupsock *) fTable.Lookup(groupAddress, sourceFilterAddr, port);
+	return (Groupsock *)fTable.Lookup(groupAddress, sourceFilterAddr, port);
 }
 
 Groupsock *GroupsockLookupTable::Lookup(UsageEnvironment &env, int sock)
@@ -619,10 +574,7 @@ Boolean GroupsockLookupTable::Remove(Groupsock const *groupsock)
 	return fTable.Remove(groupsock->groupAddress(), groupsock->sourceFilterAddress(), groupsock->port());
 }
 
-Groupsock *GroupsockLookupTable::AddNew(UsageEnvironment &env,
-	struct sockaddr_storage const &groupAddress,
-	struct sockaddr_storage const &sourceFilterAddress,
-	Port port, u_int8_t ttl)
+Groupsock *GroupsockLookupTable::AddNew(UsageEnvironment &env, struct sockaddr_storage const &groupAddress, struct sockaddr_storage const &sourceFilterAddress, Port port, u_int8_t ttl)
 {
 	Groupsock *groupsock;
 	do
@@ -657,5 +609,5 @@ GroupsockLookupTable::Iterator::Iterator(GroupsockLookupTable &groupsocks)
 
 Groupsock *GroupsockLookupTable::Iterator::next()
 {
-	return (Groupsock *) fIter.next();
+	return (Groupsock *)fIter.next();
 };

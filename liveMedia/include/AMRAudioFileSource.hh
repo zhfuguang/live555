@@ -25,15 +25,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AMRAudioSource.hh"
 #endif
 
-class AMRAudioFileSource: public AMRAudioSource
+class AMRAudioFileSource : public AMRAudioSource
 {
 public:
-	static AMRAudioFileSource *createNew(UsageEnvironment &env,
-		char const *fileName);
+	static AMRAudioFileSource *createNew(UsageEnvironment &env, char const *fileName);
 
 private:
-	AMRAudioFileSource(UsageEnvironment &env, FILE *fid,
-		Boolean isWideband, unsigned numChannels);
+	AMRAudioFileSource(UsageEnvironment &env, FILE *fid, Boolean isWideband, unsigned numChannels);
 	// called only by createNew()
 
 	virtual ~AMRAudioFileSource();

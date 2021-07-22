@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "VideoRTPSink.hh"
 #endif
 
-class VP8VideoRTPSink: public VideoRTPSink
+class VP8VideoRTPSink : public VideoRTPSink
 {
 public:
 	static VP8VideoRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat);
@@ -38,13 +38,9 @@ protected:
 
 private: // redefined virtual functions:
 	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
+		unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
 	virtual
-	Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart,
-		unsigned numBytesInFrame) const;
+		Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart, unsigned numBytesInFrame) const;
 	virtual unsigned specialHeaderSize() const;
 };
 

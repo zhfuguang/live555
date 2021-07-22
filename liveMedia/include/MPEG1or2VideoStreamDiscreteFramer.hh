@@ -30,7 +30,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define VSH_MAX_SIZE 1000
 
-class MPEG1or2VideoStreamDiscreteFramer: public MPEG1or2VideoStreamFramer
+class MPEG1or2VideoStreamDiscreteFramer : public MPEG1or2VideoStreamFramer
 {
 public:
 	static MPEG1or2VideoStreamDiscreteFramer *createNew(UsageEnvironment &env, FramedSource *inputSource,
@@ -39,8 +39,7 @@ public:
 		Boolean leavePresentationTimesUnmodified = False);
 
 protected:
-	MPEG1or2VideoStreamDiscreteFramer(UsageEnvironment &env,
-		FramedSource *inputSource,
+	MPEG1or2VideoStreamDiscreteFramer(UsageEnvironment &env, FramedSource *inputSource,
 		Boolean iFramesOnly, double vshPeriod, Boolean leavePresentationTimesUnmodified);
 	// called only by createNew()
 	virtual ~MPEG1or2VideoStreamDiscreteFramer();
@@ -51,13 +50,8 @@ protected:
 
 protected:
 	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
-	void afterGettingFrame1(unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+		unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
+	void afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 
 protected:
 	Boolean fLeavePresentationTimesUnmodified;

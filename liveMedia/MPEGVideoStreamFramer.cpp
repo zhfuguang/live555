@@ -41,11 +41,8 @@ int TimeCode::operator==(TimeCode const &arg2)
 
 ////////// MPEGVideoStreamFramer implementation //////////
 
-MPEGVideoStreamFramer::MPEGVideoStreamFramer(UsageEnvironment &env,
-	FramedSource *inputSource)
-	: FramedFilter(env, inputSource),
-	  fFrameRate(0.0) /* until we learn otherwise */,
-	  fParser(NULL)
+MPEGVideoStreamFramer::MPEGVideoStreamFramer(UsageEnvironment &env, FramedSource *inputSource)
+	: FramedFilter(env, inputSource), fFrameRate(0.0) /* until we learn otherwise */, fParser(NULL)
 {
 	reset();
 }
@@ -80,17 +77,14 @@ void MPEGVideoStreamFramer::reset()
 #ifdef DEBUG
 static struct timeval firstPT;
 #endif
-void MPEGVideoStreamFramer
-::computePresentationTime(unsigned numAdditionalPictures)
+void MPEGVideoStreamFramer::computePresentationTime(unsigned numAdditionalPictures)
 {
 	// Computes "fPresentationTime" from the most recent GOP's
 	// time_code, along with the "numAdditionalPictures" parameter:
 	TimeCode &tc = fCurGOPTimeCode;
 
-	unsigned tcSecs
-		= (((tc.days * 24) + tc.hours) * 60 + tc.minutes) * 60 + tc.seconds - fTcSecsBase;
-	double pictureTime = fFrameRate == 0.0 ? 0.0
-		: (tc.pictures + fPicturesAdjustment + numAdditionalPictures) / fFrameRate;
+	unsigned tcSecs = (((tc.days * 24) + tc.hours) * 60 + tc.minutes) * 60 + tc.seconds - fTcSecsBase;
+	double pictureTime = fFrameRate == 0.0 ? 0.0 : (tc.pictures + fPicturesAdjustment + numAdditionalPictures) / fFrameRate;
 	while (pictureTime < fPictureTimeBase)   // "if" should be enough, but just in case
 	{
 		if (tcSecs > 0)
@@ -122,13 +116,12 @@ void MPEGVideoStreamFramer
 		--diffPT.tv_sec;
 		diffPT.tv_usec += 1000000;
 	}
-	fprintf(stderr, "MPEGVideoStreamFramer::computePresentationTime(%d) -> %lu.%06ld [%lu.%06ld]\n", numAdditionalPictures, fPresentationTime.tv_sec, fPresentationTime.tv_usec, diffPT.tv_sec, diffPT.tv_usec);
+	fprintf(stderr, "MPEGVideoStreamFramer::computePresentationTime(%d) -> %lu.%06ld [%lu.%06ld]\n",
+		numAdditionalPictures, fPresentationTime.tv_sec, fPresentationTime.tv_usec, diffPT.tv_sec, diffPT.tv_usec);
 #endif
 }
 
-void MPEGVideoStreamFramer
-::setTimeCode(unsigned hours, unsigned minutes, unsigned seconds,
-	unsigned pictures, unsigned picturesSinceLastGOP)
+void MPEGVideoStreamFramer::setTimeCode(unsigned hours, unsigned minutes, unsigned seconds, unsigned pictures, unsigned picturesSinceLastGOP)
 {
 	TimeCode &tc = fCurGOPTimeCode; // abbrev
 	unsigned days = tc.days;
@@ -173,10 +166,7 @@ void MPEGVideoStreamFramer::doStopGettingFrames()
 	FramedFilter::doStopGettingFrames();
 }
 
-void MPEGVideoStreamFramer
-::continueReadProcessing(void *clientData,
-	unsigned char * /*ptr*/, unsigned /*size*/,
-	struct timeval /*presentationTime*/)
+void MPEGVideoStreamFramer::continueReadProcessing(void *clientData, unsigned char * /*ptr*/, unsigned /*size*/, struct timeval /*presentationTime*/)
 {
 	MPEGVideoStreamFramer *framer = (MPEGVideoStreamFramer *)clientData;
 	framer->continueReadProcessing();
@@ -195,11 +185,10 @@ void MPEGVideoStreamFramer::continueReadProcessing()
 		// "fPresentationTime" should have already been computed.
 
 		// Compute "fDurationInMicroseconds" now:
-		fDurationInMicroseconds
-			= (fFrameRate == 0.0 || ((int)fPictureCount) < 0) ? 0
-				: (unsigned)((fPictureCount * 1000000) / fFrameRate);
+		fDurationInMicroseconds = (fFrameRate == 0.0 || ((int)fPictureCount) < 0) ? 0 : (unsigned)((fPictureCount * 1000000) / fFrameRate);
 #ifdef DEBUG
-		fprintf(stderr, "%d bytes @%u.%06d, fDurationInMicroseconds: %d ((%d*1000000)/%f)\n", acquiredFrameSize, fPresentationTime.tv_sec, fPresentationTime.tv_usec, fDurationInMicroseconds, fPictureCount, fFrameRate);
+		fprintf(stderr, "%d bytes @%u.%06d, fDurationInMicroseconds: %d ((%d*1000000)/%f)\n",
+			acquiredFrameSize, fPresentationTime.tv_sec, fPresentationTime.tv_usec, fDurationInMicroseconds, fPictureCount, fFrameRate);
 #endif
 		fPictureCount = 0;
 

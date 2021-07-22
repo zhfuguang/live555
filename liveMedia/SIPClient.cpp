@@ -29,14 +29,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// SIPClient //////////
 
-SIPClient *SIPClient
-::createNew(UsageEnvironment &env,
-	unsigned char desiredAudioRTPPayloadFormat,
-	char const *mimeSubtype,
-	int verbosityLevel, char const *applicationName)
+SIPClient *SIPClient::createNew(UsageEnvironment &env,
+	unsigned char desiredAudioRTPPayloadFormat, char const *mimeSubtype, int verbosityLevel, char const *applicationName)
 {
-	return new SIPClient(env, desiredAudioRTPPayloadFormat, mimeSubtype,
-			verbosityLevel, applicationName);
+	return new SIPClient(env, desiredAudioRTPPayloadFormat, mimeSubtype, verbosityLevel, applicationName);
 }
 
 void SIPClient::setUserAgentString(char const *userAgentName)
@@ -53,20 +49,10 @@ void SIPClient::setUserAgentString(char const *userAgentName)
 	fUserAgentHeaderStrLen = strlen(fUserAgentHeaderStr);
 }
 
-SIPClient::SIPClient(UsageEnvironment &env,
-	unsigned char desiredAudioRTPPayloadFormat,
-	char const *mimeSubtype,
-	int verbosityLevel, char const *applicationName)
-	: Medium(env),
-	  fT1(500000 /* 500 ms */),
-	  fDesiredAudioRTPPayloadFormat(desiredAudioRTPPayloadFormat),
-	  fVerbosityLevel(verbosityLevel), fCSeq(0),
-	  fUserAgentHeaderStr(NULL), fUserAgentHeaderStrLen(0),
-	  fURL(NULL), fURLSize(0),
-	  fToTagStr(NULL), fToTagStrSize(0),
-	  fUserName(NULL), fUserNameSize(0),
-	  fInviteSDPDescription(NULL), fInviteSDPDescriptionReturned(NULL),
-	  fInviteCmd(NULL), fInviteCmdSize(0)
+SIPClient::SIPClient(UsageEnvironment &env, unsigned char desiredAudioRTPPayloadFormat, char const *mimeSubtype, int verbosityLevel, char const *applicationName)
+	: Medium(env), fT1(500000 /* 500 ms */), fDesiredAudioRTPPayloadFormat(desiredAudioRTPPayloadFormat), fVerbosityLevel(verbosityLevel), fCSeq(0)
+	, fUserAgentHeaderStr(NULL), fUserAgentHeaderStrLen(0), fURL(NULL), fURLSize(0), fToTagStr(NULL), fToTagStrSize(0), fUserName(NULL), fUserNameSize(0)
+	, fInviteSDPDescription(NULL), fInviteSDPDescriptionReturned(NULL), fInviteCmd(NULL), fInviteCmdSize(0)
 {
 	if (mimeSubtype == NULL)
 		mimeSubtype = "";
@@ -87,9 +73,7 @@ SIPClient::SIPClient(UsageEnvironment &env,
 	fOurSocket = new Groupsock(env, ourAddress, 0, 255);
 	if (fOurSocket == NULL)
 	{
-		env << "ERROR: Failed to create socket for addr "
-			<< fOurAddressStr << ": "
-			<< env.getResultMsg() << "\n";
+		env << "ERROR: Failed to create socket for addr " << fOurAddressStr << ": " << env.getResultMsg() << "\n";
 	}
 
 	// Now, find out our source port number.  Hack: Do this by first trying to
@@ -109,10 +93,7 @@ SIPClient::SIPClient(UsageEnvironment &env,
 		fOurSocket = new Groupsock(env, ourAddress, fOurPortNum, 255);
 		if (fOurSocket == NULL)
 		{
-			env << "ERROR: Failed to create socket for addr "
-				<< fOurAddressStr << ", port "
-				<< fOurPortNum << ": "
-				<< env.getResultMsg() << "\n";
+			env << "ERROR: Failed to create socket for addr " << fOurAddressStr << ", port " << fOurPortNum << ": " << env.getResultMsg() << "\n";
 		}
 	}
 
@@ -130,11 +111,9 @@ SIPClient::SIPClient(UsageEnvironment &env,
 		libPrefix = " (";
 		libSuffix = ")";
 	}
-	unsigned userAgentNameSize
-		= fApplicationNameSize + strlen(libPrefix) + strlen(libName) + strlen(libVersionStr) + strlen(libSuffix) + 1;
+	unsigned userAgentNameSize = fApplicationNameSize + strlen(libPrefix) + strlen(libName) + strlen(libVersionStr) + strlen(libSuffix) + 1;
 	char *userAgentName = new char[userAgentNameSize];
-	sprintf(userAgentName, "%s%s%s%s%s",
-		applicationName, libPrefix, libName, libVersionStr, libSuffix);
+	sprintf(userAgentName, "%s%s%s%s%s", applicationName, libPrefix, libName, libVersionStr, libSuffix);
 	setUserAgentString(userAgentName);
 	delete[] userAgentName;
 
@@ -177,8 +156,7 @@ void SIPClient::reset()
 	fURLSize = 0;
 }
 
-void SIPClient::setProxyServer(struct sockaddr_storage const &proxyServerAddress,
-	portNumBits proxyServerPortNum)
+void SIPClient::setProxyServer(struct sockaddr_storage const &proxyServerAddress, portNumBits proxyServerPortNum)
 {
 	fServerAddress = proxyServerAddress;
 	fServerAddressIsSet = True;
@@ -214,8 +192,7 @@ char *SIPClient::invite(char const *url, Authenticator *authenticator)
 	// First, check whether "url" contains a username:password to be used:
 	char *username;
 	char *password;
-	if (authenticator == NULL
-		&& parseSIPURLUsernamePassword(url, username, password))
+	if (authenticator == NULL && parseSIPURLUsernamePassword(url, username, password))
 	{
 		char *result = inviteWithPassword(url, username, password);
 		delete[] username;
@@ -241,25 +218,21 @@ char *SIPClient::invite1(Authenticator *authenticator)
 	do
 	{
 		// Send the INVITE command:
-
 		// First, construct an authenticator string:
 		fValidAuthenticator.reset();
 		fWorkingAuthenticator = authenticator;
-		char *authenticatorStr
-			= createAuthenticatorString(fWorkingAuthenticator, "INVITE", fURL);
+		char *authenticatorStr = createAuthenticatorString(fWorkingAuthenticator, "INVITE", fURL);
 
 		// Then, construct the SDP description to be sent in the INVITE:
 		char *rtpmapLine;
 		unsigned rtpmapLineSize;
 		if (fMIMESubtypeSize > 0)
 		{
-			char const *const rtpmapFmt =
-				"a=rtpmap:%u %s/8000\r\n";
+			char const *const rtpmapFmt = "a=rtpmap:%u %s/8000\r\n";
 			unsigned rtpmapFmtSize = strlen(rtpmapFmt)
 				+ 3 /* max char len */ + fMIMESubtypeSize;
 			rtpmapLine = new char[rtpmapFmtSize];
-			sprintf(rtpmapLine, rtpmapFmt,
-				fDesiredAudioRTPPayloadFormat, fMIMESubtype);
+			sprintf(rtpmapLine, rtpmapFmt, fDesiredAudioRTPPayloadFormat, fMIMESubtype);
 			rtpmapLineSize = strlen(rtpmapLine);
 		}
 		else
@@ -284,6 +257,7 @@ char *SIPClient::invite1(Authenticator *authenticator)
 			+ fOurAddressStrSize
 			+ 5 /* max short len */ + 3 /* max char len */
 			+ rtpmapLineSize;
+
 		delete[] fInviteSDPDescription;
 		fInviteSDPDescription = new char[inviteSDPFmtSize];
 		sprintf(fInviteSDPDescription, inviteSDPFmt,
@@ -343,8 +317,7 @@ char *SIPClient::invite1(Authenticator *authenticator)
 		fInviteClientState = Calling;
 		fEventLoopStopFlag = 0;
 		TaskScheduler &sched = envir().taskScheduler(); // abbrev.
-		sched.turnOnBackgroundReadHandling(fOurSocket->socketNum(),
-			&inviteResponseHandler, this);
+		sched.turnOnBackgroundReadHandling(fOurSocket->socketNum(), &inviteResponseHandler, this);
 		fTimerALen = 1 * fT1; // initially
 		fTimerACount = 0; // initially
 		fTimerA = sched.scheduleDelayedTask(fTimerALen, timerAHandler, this);
@@ -395,8 +368,7 @@ void SIPClient::timerAHandler(void *clientData)
 	if (client->fVerbosityLevel >= 1)
 	{
 		client->envir() << "RETRANSMISSION " << ++client->fTimerACount
-			<< ", after " << client->fTimerALen / 1000000.0
-			<< " additional seconds\n";
+			<< ", after " << client->fTimerALen / 1000000.0 << " additional seconds\n";
 	}
 	client->doInviteStateMachine(timerAFires);
 }
@@ -407,8 +379,7 @@ void SIPClient::timerBHandler(void *clientData)
 	client->fTimerB = NULL;
 	if (client->fVerbosityLevel >= 1)
 	{
-		client->envir() << "RETRANSMISSION TIMEOUT, after "
-			<< 64 * client->fT1 / 1000000.0 << " seconds\n";
+		client->envir() << "RETRANSMISSION TIMEOUT, after " << 64 * client->fT1 / 1000000.0 << " seconds\n";
 		fflush(stderr);
 	}
 	client->doInviteStateMachine(timerBFires);
@@ -437,8 +408,7 @@ void SIPClient::doInviteStateMachine(unsigned responseCode)
 			{
 				// Restart timer A (with double the timeout interval):
 				fTimerALen *= 2;
-				fTimerA
-					= sched.scheduleDelayedTask(fTimerALen, timerAHandler, this);
+				fTimerA = sched.scheduleDelayedTask(fTimerALen, timerAHandler, this);
 
 				fInviteClientState = Calling;
 				if (!sendINVITE())
@@ -471,8 +441,7 @@ void SIPClient::doInviteStateMachine(unsigned responseCode)
 				else if (responseCode >= 300 && responseCode <= 699)
 				{
 					fInviteClientState = Completed;
-					fTimerD
-						= sched.scheduleDelayedTask(32000000, timerDHandler, this);
+					fTimerD = sched.scheduleDelayedTask(32000000, timerDHandler, this);
 					if (!sendACK())
 						doInviteStateTerminated(0);
 				}
@@ -610,13 +579,10 @@ unsigned SIPClient::getResponseCode()
 					Boolean foundAuthenticateHeader = False;
 					if (
 						// Asterisk #####
-						sscanf(lineStart, "Proxy-Authenticate: Digest realm=\"%[^\"]\", nonce=\"%[^\"]\"",
-							realm, nonce) == 2 ||
-						sscanf(lineStart, "WWW-Authenticate: Digest realm=\"%[^\"]\", nonce=\"%[^\"]\"",
-							realm, nonce) == 2 ||
+						sscanf(lineStart, "Proxy-Authenticate: Digest realm=\"%[^\"]\", nonce=\"%[^\"]\"", realm, nonce) == 2 ||
+						sscanf(lineStart, "WWW-Authenticate: Digest realm=\"%[^\"]\", nonce=\"%[^\"]\"", realm, nonce) == 2 ||
 						// Cisco ATA #####
-						sscanf(lineStart, "Proxy-Authenticate: Digest algorithm=MD5,domain=\"%*[^\"]\",nonce=\"%[^\"]\", realm=\"%[^\"]\"",
-							nonce, realm) == 2)
+						sscanf(lineStart, "Proxy-Authenticate: Digest algorithm=MD5,domain=\"%*[^\"]\",nonce=\"%[^\"]\", realm=\"%[^\"]\"", nonce, realm) == 2)
 					{
 						fWorkingAuthenticator->setRealmAndNonce(realm, nonce);
 						foundAuthenticateHeader = True;
@@ -662,8 +628,7 @@ unsigned SIPClient::getResponseCode()
 			{
 				if (contentLength < 0)
 				{
-					envir().setResultMsg("Bad \"Content-Length:\" header: \"",
-						lineStart, "\"");
+					envir().setResultMsg("Bad \"Content-Length:\" header: \"", lineStart, "\"");
 					break;
 				}
 			}
@@ -691,14 +656,12 @@ unsigned SIPClient::getResponseCode()
 				unsigned numExtraBytesNeeded = contentLength - numBodyBytes;
 #ifdef USING_TCP
 				// THIS CODE WORKS ONLY FOR TCP: #####
-				unsigned remainingBufferSize
-					= readBufSize - (bytesRead + (readBuf - readBuffer));
+				unsigned remainingBufferSize = readBufSize - (bytesRead + (readBuf - readBuffer));
 				if (numExtraBytesNeeded > remainingBufferSize)
 				{
 					char tmpBuf[200];
 					sprintf(tmpBuf, "Read buffer size (%d) is too small for \"Content-Length:\" %d (need a buffer size of >= %d bytes\n",
-						readBufSize, contentLength,
-						readBufSize + numExtraBytesNeeded - remainingBufferSize);
+						readBufSize, contentLength, readBufSize + numExtraBytesNeeded - remainingBufferSize);
 					envir().setResultMsg(tmpBuf);
 					break;
 				}
@@ -706,25 +669,20 @@ unsigned SIPClient::getResponseCode()
 				// Keep reading more data until we have enough:
 				if (fVerbosityLevel >= 1)
 				{
-					envir() << "Need to read " << numExtraBytesNeeded
-						<< " extra bytes\n";
+					envir() << "Need to read " << numExtraBytesNeeded << " extra bytes\n";
 				}
 				while (numExtraBytesNeeded > 0)
 				{
 					char *ptr = &readBuf[bytesRead];
 					unsigned bytesRead2;
 					struct sockaddr_storage fromAddr;
-					Boolean readSuccess
-						= fOurSocket->handleRead((unsigned char *)ptr,
-								numExtraBytesNeeded,
-								bytesRead2, fromAddr);
+					Boolean readSuccess = fOurSocket->handleRead((unsigned char *)ptr, numExtraBytesNeeded, bytesRead2, fromAddr);
 					if (!readSuccess)
 						break;
 					ptr[bytesRead2] = '\0';
 					if (fVerbosityLevel >= 1)
 					{
-						envir() << "Read " << bytesRead2
-							<< " extra bytes: " << ptr << "\n";
+						envir() << "Read " << bytesRead2 << " extra bytes: " << ptr << "\n";
 					}
 
 					bytesRead += bytesRead2;
@@ -744,8 +702,7 @@ unsigned SIPClient::getResponseCode()
 	return responseCode;
 }
 
-char *SIPClient::inviteWithPassword(char const *url, char const *username,
-	char const *password)
+char *SIPClient::inviteWithPassword(char const *url, char const *username, char const *password)
 {
 	delete[](char *)fUserName;
 	fUserName = strDup(username);
@@ -791,6 +748,7 @@ Boolean SIPClient::sendACK()
 			"Call-ID: %u@%s\r\n"
 			"CSeq: %d ACK\r\n"
 			"Content-Length: 0\r\n\r\n";
+
 		unsigned cmdSize = strlen(cmdFmt)
 			+ fURLSize
 			+ 2 * fUserNameSize + fOurAddressStrSize + 20 /* max int len */
@@ -799,6 +757,7 @@ Boolean SIPClient::sendACK()
 			+ 20 + fOurAddressStrSize
 			+ 20;
 		cmd = new char[cmdSize];
+
 		sprintf(cmd, cmdFmt,
 			fURL,
 			fUserName, fUserName, fOurAddressStr, fFromTag,
@@ -836,6 +795,7 @@ Boolean SIPClient::sendBYE()
 			"Call-ID: %u@%s\r\n"
 			"CSeq: %d BYE\r\n"
 			"Content-Length: 0\r\n\r\n";
+
 		unsigned cmdSize = strlen(cmdFmt)
 			+ fURLSize
 			+ 2 * fUserNameSize + fOurAddressStrSize + 20 /* max int len */
@@ -844,6 +804,7 @@ Boolean SIPClient::sendBYE()
 			+ 20 + fOurAddressStrSize
 			+ 20;
 		cmd = new char[cmdSize];
+
 		sprintf(cmd, cmdFmt,
 			fURL,
 			fUserName, fUserName, fOurAddressStr, fFromTag,
@@ -892,9 +853,7 @@ Boolean SIPClient::processURL(char const *url)
 	return False;
 }
 
-Boolean SIPClient::parseSIPURL(UsageEnvironment &env, char const *url,
-	NetAddress &address,
-	portNumBits &portNum)
+Boolean SIPClient::parseSIPURL(UsageEnvironment &env, char const *url, NetAddress &address, portNumBits &portNum)
 {
 	do
 	{
@@ -912,8 +871,7 @@ Boolean SIPClient::parseSIPURL(UsageEnvironment &env, char const *url,
 		unsigned const parseBufferSize = 100;
 		char parseBuffer[parseBufferSize];
 		unsigned addressStartIndex = prefixLength;
-		while (url[addressStartIndex] != '\0'
-			&& url[addressStartIndex++] != '@') {}
+		while (url[addressStartIndex] != '\0' && url[addressStartIndex++] != '@') {}
 		char const *from = &url[addressStartIndex];
 
 		// Skip over any "<username>[:<password>]@"
@@ -941,8 +899,7 @@ Boolean SIPClient::parseSIPURL(UsageEnvironment &env, char const *url,
 		{
 			if (*from == '\0' ||
 				(*from == ':' && !isInSquareBrackets) ||
-				*from == '/' ||
-				(*from == ']' && isInSquareBrackets))
+				*from == '/' || (*from == ']' && isInSquareBrackets))
 			{
 				// We've completed parsing the address
 				*to = '\0';
@@ -961,8 +918,7 @@ Boolean SIPClient::parseSIPURL(UsageEnvironment &env, char const *url,
 		NetAddressList addresses(parseBuffer);
 		if (addresses.numAddresses() == 0)
 		{
-			env.setResultMsg("Failed to find network address for \"",
-				parseBuffer, "\"");
+			env.setResultMsg("Failed to find network address for \"", parseBuffer, "\"");
 			break;
 		}
 		address = *(addresses.firstAddress());
@@ -991,9 +947,7 @@ Boolean SIPClient::parseSIPURL(UsageEnvironment &env, char const *url,
 	return False;
 }
 
-Boolean SIPClient::parseSIPURLUsernamePassword(char const *url,
-	char *&username,
-	char *&password)
+Boolean SIPClient::parseSIPURLUsernamePassword(char const *url, char *&username, char *&password)
 {
 	username = password = NULL; // by default
 	do
@@ -1042,24 +996,19 @@ Boolean SIPClient::parseSIPURLUsernamePassword(char const *url,
 	return False;
 }
 
-char *SIPClient::createAuthenticatorString(Authenticator const *authenticator,
-	char const *cmd, char const *url)
+char *SIPClient::createAuthenticatorString(Authenticator const *authenticator, char const *cmd, char const *url)
 {
 	if (authenticator != NULL && authenticator->realm() != NULL
 		&& authenticator->nonce() != NULL && authenticator->username() != NULL
 		&& authenticator->password() != NULL)
 	{
 		// We've been provided a filled-in authenticator, so use it:
-		char const *const authFmt
-			= "Authorization: Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", response=\"%s\", uri=\"%s\"\r\n";
+		char const *const authFmt = "Authorization: Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", response=\"%s\", uri=\"%s\"\r\n";
 		char const *response = authenticator->computeDigestResponse(cmd, url);
-		unsigned authBufSize = strlen(authFmt)
-			+ strlen(authenticator->username()) + strlen(authenticator->realm())
-			+ strlen(authenticator->nonce()) + strlen(url) + strlen(response);
+		unsigned authBufSize = strlen(authFmt) + strlen(authenticator->username()) +
+			strlen(authenticator->realm()) + strlen(authenticator->nonce()) + strlen(url) + strlen(response);
 		char *authenticatorStr = new char[authBufSize];
-		sprintf(authenticatorStr, authFmt,
-			authenticator->username(), authenticator->realm(),
-			authenticator->nonce(), response, url);
+		sprintf(authenticatorStr, authFmt, authenticator->username(), authenticator->realm(), authenticator->nonce(), response, url);
 		authenticator->reclaimDigestResponse(response);
 
 		return authenticatorStr;
@@ -1068,8 +1017,7 @@ char *SIPClient::createAuthenticatorString(Authenticator const *authenticator,
 	return strDup("");
 }
 
-Boolean SIPClient::sendRequest(char const *requestString,
-	unsigned requestLength)
+Boolean SIPClient::sendRequest(char const *requestString, unsigned requestLength)
 {
 	if (fVerbosityLevel >= 1)
 	{
@@ -1080,8 +1028,7 @@ Boolean SIPClient::sendRequest(char const *requestString,
 	return fOurSocket->output(envir(), (unsigned char *)requestString, requestLength);
 }
 
-unsigned SIPClient::getResponse(char *&responseBuffer,
-	unsigned responseBufferSize)
+unsigned SIPClient::getResponse(char *&responseBuffer, unsigned responseBufferSize)
 {
 	if (responseBufferSize == 0)
 		return 0; // just in case...
@@ -1098,9 +1045,7 @@ unsigned SIPClient::getResponse(char *&responseBuffer,
 		unsigned bytesReadNow;
 		struct sockaddr_storage fromAddr;
 		unsigned char *toPosn = (unsigned char *)(responseBuffer + bytesRead);
-		Boolean readSuccess
-			= fOurSocket->handleRead(toPosn, responseBufferSize - bytesRead,
-					bytesReadNow, fromAddr);
+		Boolean readSuccess = fOurSocket->handleRead(toPosn, responseBufferSize - bytesRead, bytesReadNow, fromAddr);
 		if (!readSuccess || bytesReadNow == 0)
 		{
 			envir().setResultMsg("SIP response was truncated");
@@ -1143,8 +1088,7 @@ unsigned SIPClient::getResponse(char *&responseBuffer,
 	return 0;
 }
 
-Boolean SIPClient::parseResponseCode(char const *line,
-	unsigned &responseCode)
+Boolean SIPClient::parseResponseCode(char const *line, unsigned &responseCode)
 {
 	if (sscanf(line, "%*s%u", &responseCode) != 1)
 	{

@@ -20,18 +20,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "VP8VideoRTPSource.hh"
 
-VP8VideoRTPSource *VP8VideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
+VP8VideoRTPSource *VP8VideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
 {
-	return new VP8VideoRTPSource(env, RTPgs, rtpPayloadFormat,
-			rtpTimestampFrequency);
+	return new VP8VideoRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency);
 }
 
-VP8VideoRTPSource
-::VP8VideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
+VP8VideoRTPSource::VP8VideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
 	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency)
 {
 }
@@ -42,9 +36,7 @@ VP8VideoRTPSource::~VP8VideoRTPSource()
 
 #define incrHeader do { ++resultSpecialHeaderSize; ++headerStart; if (--packetSize == 0) return False; } while (0)
 
-Boolean VP8VideoRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean VP8VideoRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	unsigned char *headerStart = packet->data();
 	unsigned packetSize = packet->dataSize();

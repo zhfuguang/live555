@@ -28,15 +28,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "H264or5VideoStreamDiscreteFramer.hh"
 #endif
 
-class H265VideoStreamDiscreteFramer: public H264or5VideoStreamDiscreteFramer
+class H265VideoStreamDiscreteFramer : public H264or5VideoStreamDiscreteFramer
 {
 public:
-	static H265VideoStreamDiscreteFramer *createNew(UsageEnvironment &env, FramedSource *inputSource,
-		Boolean includeStartCodeInOutput = False, Boolean insertAccessUnitDelimiters = False);
+	static H265VideoStreamDiscreteFramer *createNew(UsageEnvironment &env,
+		FramedSource *inputSource, Boolean includeStartCodeInOutput = False, Boolean insertAccessUnitDelimiters = False);
 
 protected:
-	H265VideoStreamDiscreteFramer(UsageEnvironment &env, FramedSource *inputSource,
-		Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
+	H265VideoStreamDiscreteFramer(UsageEnvironment &env, FramedSource *inputSource, Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
 	// called only by createNew()
 	virtual ~H265VideoStreamDiscreteFramer();
 

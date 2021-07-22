@@ -23,23 +23,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "VorbisAudioRTPSource.hh" // for parseVorbisOrTheoraConfigStr()
 #include "VorbisAudioRTPSink.hh" // for generateVorbisOrTheoraConfigStr()
 
-TheoraVideoRTPSink *TheoraVideoRTPSink
-::createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
+TheoraVideoRTPSink *TheoraVideoRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
 	u_int8_t *identificationHeader, unsigned identificationHeaderSize,
 	u_int8_t *commentHeader, unsigned commentHeaderSize,
 	u_int8_t *setupHeader, unsigned setupHeaderSize,
 	u_int32_t identField)
 {
-	return new TheoraVideoRTPSink(env, RTPgs,
-			rtpPayloadFormat,
-			identificationHeader, identificationHeaderSize,
-			commentHeader, commentHeaderSize,
-			setupHeader, setupHeaderSize, identField);
+	return new TheoraVideoRTPSink(env, RTPgs, rtpPayloadFormat, identificationHeader,
+		identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize, identField);
 }
 
-TheoraVideoRTPSink *TheoraVideoRTPSink
-::createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
-	char const *configStr)
+TheoraVideoRTPSink *TheoraVideoRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat, char const *configStr)
 {
 	// Begin by decoding and unpacking the configuration string:
 	u_int8_t *identificationHeader;
@@ -50,18 +44,11 @@ TheoraVideoRTPSink *TheoraVideoRTPSink
 	unsigned setupHeaderSize;
 	u_int32_t identField;
 
-	parseVorbisOrTheoraConfigStr(configStr,
-		identificationHeader, identificationHeaderSize,
-		commentHeader, commentHeaderSize,
-		setupHeader, setupHeaderSize,
-		identField);
+	parseVorbisOrTheoraConfigStr(configStr, identificationHeader,
+		identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize, identField);
 
-	TheoraVideoRTPSink *resultSink
-		= new TheoraVideoRTPSink(env, RTPgs, rtpPayloadFormat,
-		identificationHeader, identificationHeaderSize,
-		commentHeader, commentHeaderSize,
-		setupHeader, setupHeaderSize,
-		identField);
+	TheoraVideoRTPSink *resultSink = new TheoraVideoRTPSink(env, RTPgs, rtpPayloadFormat,
+		identificationHeader, identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize, identField);
 	delete[] identificationHeader;
 	delete[] commentHeader;
 	delete[] setupHeader;
@@ -69,14 +56,12 @@ TheoraVideoRTPSink *TheoraVideoRTPSink
 	return resultSink;
 }
 
-TheoraVideoRTPSink
-::TheoraVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
+TheoraVideoRTPSink::TheoraVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
 	u_int8_t *identificationHeader, unsigned identificationHeaderSize,
 	u_int8_t *commentHeader, unsigned commentHeaderSize,
 	u_int8_t *setupHeader, unsigned setupHeaderSize,
 	u_int32_t identField)
-	: VideoRTPSink(env, RTPgs, rtpPayloadFormat, 90000, "THEORA"),
-	  fIdent(identField), fFmtpSDPLine(NULL)
+	: VideoRTPSink(env, RTPgs, rtpPayloadFormat, 90000, "THEORA"), fIdent(identField), fFmtpSDPLine(NULL)
 {
 	static const char *pf_to_str[] =
 	{
@@ -103,18 +88,16 @@ TheoraVideoRTPSink
 	}
 
 	// Generate a 'config' string from the supplied configuration headers:
-	char *base64PackedHeaders
-		= generateVorbisOrTheoraConfigStr(identificationHeader, identificationHeaderSize,
-				commentHeader, commentHeaderSize,
-				setupHeader, setupHeaderSize,
-				identField);
+	char *base64PackedHeaders = generateVorbisOrTheoraConfigStr(identificationHeader,
+		identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize, identField);
 	if (base64PackedHeaders == NULL)
 		return;
 
 	// Then use this 'config' string to construct our "a=fmtp:" SDP line:
 	unsigned fmtpSDPLineMaxSize = 200 + strlen(base64PackedHeaders);// 200 => more than enough space
 	fFmtpSDPLine = new char[fmtpSDPLineMaxSize];
-	sprintf(fFmtpSDPLine, "a=fmtp:%d sampling=%s;width=%u;height=%u;delivery-method=out_band/rtsp;configuration=%s\r\n", rtpPayloadType(), pf_to_str[pf], width, height, base64PackedHeaders);
+	sprintf(fFmtpSDPLine, "a=fmtp:%d sampling=%s;width=%u;height=%u;delivery-method=out_band/rtsp;configuration=%s\r\n",
+		rtpPayloadType(), pf_to_str[pf], width, height, base64PackedHeaders);
 	delete[] base64PackedHeaders;
 }
 
@@ -128,12 +111,8 @@ char const *TheoraVideoRTPSink::auxSDPLine()
 	return fFmtpSDPLine;
 }
 
-void TheoraVideoRTPSink
-::doSpecialFrameHandling(unsigned fragmentationOffset,
-	unsigned char *frameStart,
-	unsigned numBytesInFrame,
-	struct timeval framePresentationTime,
-	unsigned numRemainingBytes)
+void TheoraVideoRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
+	unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes)
 {
 	// Set the 4-byte "payload header", as defined in http://svn.xiph.org/trunk/theora/doc/draft-ietf-avt-rtp-theora-00.txt
 	u_int8_t header[6];
@@ -186,14 +165,10 @@ void TheoraVideoRTPSink
 
 	// Important: Also call our base class's doSpecialFrameHandling(),
 	// to set the packet's timestamp:
-	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset,
-		frameStart, numBytesInFrame,
-		framePresentationTime,
-		numRemainingBytes);
+	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset, frameStart, numBytesInFrame, framePresentationTime, numRemainingBytes);
 }
 
-Boolean TheoraVideoRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/,
-	unsigned /*numBytesInFrame*/) const
+Boolean TheoraVideoRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/, unsigned /*numBytesInFrame*/) const
 {
 	// Only one frame per packet:
 	return False;

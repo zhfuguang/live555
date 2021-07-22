@@ -24,26 +24,18 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG1or2VideoStreamDiscreteFramer.hh"
 
 MPEG1or2VideoStreamDiscreteFramer *MPEG1or2VideoStreamDiscreteFramer::createNew(UsageEnvironment &env,
-	FramedSource *inputSource,
-	Boolean iFramesOnly,
-	double vshPeriod,
-	Boolean leavePresentationTimesUnmodified)
+	FramedSource *inputSource, Boolean iFramesOnly, double vshPeriod, Boolean leavePresentationTimesUnmodified)
 {
 	// Need to add source type checking here???  #####
-	return new MPEG1or2VideoStreamDiscreteFramer(env, inputSource,
-			iFramesOnly, vshPeriod, leavePresentationTimesUnmodified);
+	return new MPEG1or2VideoStreamDiscreteFramer(env, inputSource, iFramesOnly, vshPeriod, leavePresentationTimesUnmodified);
 }
 
-MPEG1or2VideoStreamDiscreteFramer
-::MPEG1or2VideoStreamDiscreteFramer(UsageEnvironment &env,
-	FramedSource *inputSource,
-	Boolean iFramesOnly, double vshPeriod, Boolean leavePresentationTimesUnmodified)
-	: MPEG1or2VideoStreamFramer(env, inputSource, iFramesOnly, vshPeriod,
-		  False/*don't create a parser*/),
-	  fLeavePresentationTimesUnmodified(leavePresentationTimesUnmodified),
-	  fLastNonBFrameTemporal_reference(0),
-	  fSavedVSHSize(0), fSavedVSHTimestamp(0.0),
-	  fIFramesOnly(iFramesOnly), fVSHPeriod(vshPeriod)
+MPEG1or2VideoStreamDiscreteFramer::MPEG1or2VideoStreamDiscreteFramer(UsageEnvironment &env,
+	FramedSource *inputSource, Boolean iFramesOnly, double vshPeriod, Boolean leavePresentationTimesUnmodified)
+	: MPEG1or2VideoStreamFramer(env, inputSource, iFramesOnly, vshPeriod, False/*don't create a parser*/)
+	, fLeavePresentationTimesUnmodified(leavePresentationTimesUnmodified)
+	, fLastNonBFrameTemporal_reference(0), fSavedVSHSize(0), fSavedVSHTimestamp(0.0)
+	, fIFramesOnly(iFramesOnly), fVSHPeriod(vshPeriod)
 {
 	fLastNonBFramePresentationTime.tv_sec = 0;
 	fLastNonBFramePresentationTime.tv_usec = 0;
@@ -58,21 +50,14 @@ void MPEG1or2VideoStreamDiscreteFramer::doGetNextFrame()
 	// Arrange to read data (which should be a complete MPEG-1 or 2 video frame)
 	// from our data source, directly into the client's input buffer.
 	// After reading this, we'll do some parsing on the frame.
-	fInputSource->getNextFrame(fTo, fMaxSize,
-		afterGettingFrame, this,
-		FramedSource::handleClosure, this);
+	fInputSource->getNextFrame(fTo, fMaxSize, afterGettingFrame, this, FramedSource::handleClosure, this);
 }
 
-void MPEG1or2VideoStreamDiscreteFramer
-::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void MPEG1or2VideoStreamDiscreteFramer::afterGettingFrame(void *clientData,
+	unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
-	MPEG1or2VideoStreamDiscreteFramer *source
-		= (MPEG1or2VideoStreamDiscreteFramer *)clientData;
-	source->afterGettingFrame1(frameSize, numTruncatedBytes,
-		presentationTime, durationInMicroseconds);
+	MPEG1or2VideoStreamDiscreteFramer *source = (MPEG1or2VideoStreamDiscreteFramer *)clientData;
+	source->afterGettingFrame1(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
 }
 
 static double const frameRateFromCode[] =
@@ -97,10 +82,7 @@ static double const frameRateFromCode[] =
 
 #define MILLION 1000000
 
-void MPEG1or2VideoStreamDiscreteFramer
-::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void MPEG1or2VideoStreamDiscreteFramer::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	// Check that the first 4 bytes are a system code:
 	if (frameSize >= 4 && fTo[0] == 0 && fTo[1] == 0 && fTo[2] == 1)
@@ -132,8 +114,7 @@ void MPEG1or2VideoStreamDiscreteFramer
 			{
 				memmove(fSavedVSHBuffer, fTo, vshSize);
 				fSavedVSHSize = vshSize;
-				fSavedVSHTimestamp
-					= presentationTime.tv_sec + presentationTime.tv_usec / (double)MILLION;
+				fSavedVSHTimestamp = presentationTime.tv_sec + presentationTime.tv_usec / (double)MILLION;
 			}
 		}
 		else if (nextCode == 0xB8)     // GROUP_START_CODE
@@ -183,16 +164,13 @@ void MPEG1or2VideoStreamDiscreteFramer
 
 			// If this is a "B" frame, then we have to tweak "presentationTime":
 			if (!fLeavePresentationTimesUnmodified && picture_coding_type == 3/*B*/
-				&& (fLastNonBFramePresentationTime.tv_usec > 0 ||
-					fLastNonBFramePresentationTime.tv_sec > 0))
+				&& (fLastNonBFramePresentationTime.tv_usec > 0 || fLastNonBFramePresentationTime.tv_sec > 0))
 			{
-				int trIncrement
-					= fLastNonBFrameTemporal_reference - temporal_reference;
+				int trIncrement = fLastNonBFrameTemporal_reference - temporal_reference;
 				if (trIncrement < 0)
 					trIncrement += 1024; // field is 10 bits in size
 
-				unsigned usIncrement = fFrameRate == 0.0 ? 0
-					: (unsigned)((trIncrement * MILLION) / fFrameRate);
+				unsigned usIncrement = fFrameRate == 0.0 ? 0 : (unsigned)((trIncrement * MILLION) / fFrameRate);
 				unsigned secondsToSubtract = usIncrement / MILLION;
 				unsigned uSecondsToSubtract = usIncrement % MILLION;
 

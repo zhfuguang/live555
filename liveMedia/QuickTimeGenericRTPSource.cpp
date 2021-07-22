@@ -26,20 +26,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // A subclass of BufferedPacket, used to separate out
 // individual frames (when PCK == 2)
 
-class QTGenericBufferedPacket: public BufferedPacket
+class QTGenericBufferedPacket : public BufferedPacket
 {
 public:
 	QTGenericBufferedPacket(QuickTimeGenericRTPSource &ourSource);
 	virtual ~QTGenericBufferedPacket();
 
 private: // redefined virtual functions
-	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr,
-		unsigned dataSize);
+	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize);
 private:
 	QuickTimeGenericRTPSource &fOurSource;
 };
 
-class QTGenericBufferedPacketFactory: public BufferedPacketFactory
+class QTGenericBufferedPacketFactory : public BufferedPacketFactory
 {
 private: // redefined virtual functions
 	virtual BufferedPacket *createNewPacket(MultiFramedRTPSource *ourSource);
@@ -49,25 +48,14 @@ private: // redefined virtual functions
 ////////// QuickTimeGenericRTPSource //////////
 
 QuickTimeGenericRTPSource *QuickTimeGenericRTPSource::createNew(UsageEnvironment &env,
-	Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency,
-	char const *mimeTypeString)
+	Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, char const *mimeTypeString)
 {
-	return new QuickTimeGenericRTPSource(env, RTPgs, rtpPayloadFormat,
-			rtpTimestampFrequency,
-			mimeTypeString);
+	return new QuickTimeGenericRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, mimeTypeString);
 }
 
-QuickTimeGenericRTPSource
-::QuickTimeGenericRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency,
-	char const *mimeTypeString)
-	: MultiFramedRTPSource(env, RTPgs,
-		  rtpPayloadFormat, rtpTimestampFrequency,
-		  new QTGenericBufferedPacketFactory),
-	  fMIMEtypeString(strDup(mimeTypeString))
+QuickTimeGenericRTPSource::QuickTimeGenericRTPSource(UsageEnvironment &env,
+	Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, char const *mimeTypeString)
+	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, new QTGenericBufferedPacketFactory), fMIMEtypeString(strDup(mimeTypeString))
 {
 	qtState.PCK = 0;
 	qtState.timescale = 0;
@@ -81,9 +69,7 @@ QuickTimeGenericRTPSource::~QuickTimeGenericRTPSource()
 	delete[](char *)fMIMEtypeString;
 }
 
-Boolean QuickTimeGenericRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean QuickTimeGenericRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	unsigned char *headerStart = packet->data();
 	unsigned packetSize = packet->dataSize();
@@ -145,16 +131,15 @@ Boolean QuickTimeGenericRTPSource
 		unsigned char padding = expectedHeaderSize - nonPaddedSize;
 
 #ifdef DEBUG
-		unsigned mediaType = (headerStart[0] << 24) | (headerStart[1] << 16)
-			| (headerStart[2] << 8) | headerStart[3];
+		unsigned mediaType = (headerStart[0] << 24) | (headerStart[1] << 16) | (headerStart[2] << 8) | headerStart[3];
 #endif
-		qtState.timescale = (headerStart[4] << 24) | (headerStart[5] << 16)
-			| (headerStart[6] << 8) | headerStart[7];
+		qtState.timescale = (headerStart[4] << 24) | (headerStart[5] << 16) | (headerStart[6] << 8) | headerStart[7];
 		headerStart += 8;
 
 		payloadDescriptionLength -= 12;
 #ifdef DEBUG
-		fprintf(stderr, "\tmediaType: '%c%c%c%c', timescale: %d, %d bytes of TLVs left\n", mediaType >> 24, (mediaType & 0xFF0000) >> 16, (mediaType & 0xFF00) >> 8, mediaType & 0xFF, qtState.timescale, payloadDescriptionLength);
+		fprintf(stderr, "\tmediaType: '%c%c%c%c', timescale: %d, %d bytes of TLVs left\n",
+			mediaType >> 24, (mediaType & 0xFF0000) >> 16, (mediaType & 0xFF00) >> 8, mediaType & 0xFF, qtState.timescale, payloadDescriptionLength);
 #endif
 
 		while (payloadDescriptionLength > 3)
@@ -166,7 +151,8 @@ Boolean QuickTimeGenericRTPSource
 				return False; // bad TLV
 			headerStart += 4;
 #ifdef DEBUG
-			fprintf(stderr, "\t\tTLV '%c%c', length %d, leaving %d remaining bytes\n", tlvType >> 8, tlvType & 0xFF, tlvLength, payloadDescriptionLength - tlvLength);
+			fprintf(stderr, "\t\tTLV '%c%c', length %d, leaving %d remaining bytes\n",
+				tlvType >> 8, tlvType & 0xFF, tlvLength, payloadDescriptionLength - tlvLength);
 			for (int i = 0; i < tlvLength; ++i)
 				fprintf(stderr, "%02x:", headerStart[i]);
 			fprintf(stderr, "\n");
@@ -175,11 +161,10 @@ Boolean QuickTimeGenericRTPSource
 			// Check for 'TLV's that we can use for our 'qtState'
 			switch (tlvType)
 			{
-				case ('s'<<8|'d'):   // session description atom
+				case ('s' << 8 | 'd'):   // session description atom
 				{
 					// Sanity check: the first 4 bytes of this must equal "tlvLength":
-					unsigned atomLength  = (headerStart[0] << 24) | (headerStart[1] << 16)
-						| (headerStart[2] << 8) | (headerStart[3]);
+					unsigned atomLength = (headerStart[0] << 24) | (headerStart[1] << 16) | (headerStart[2] << 8) | (headerStart[3]);
 					if (atomLength != (unsigned)tlvLength)
 						break;
 
@@ -189,12 +174,12 @@ Boolean QuickTimeGenericRTPSource
 					qtState.sdAtomSize = tlvLength;
 					break;
 				}
-				case ('t'<<8|'w'):   // track width
+				case ('t' << 8 | 'w'):   // track width
 				{
 					qtState.width = (headerStart[0] << 8) | headerStart[1];
 					break;
 				}
-				case ('t'<<8|'h'):   // track height
+				case ('t' << 8 | 'h'):   // track height
 				{
 					qtState.height = (headerStart[0] << 8) | headerStart[1];
 					break;
@@ -278,8 +263,7 @@ char const *QuickTimeGenericRTPSource::MIMEtype() const
 
 ////////// QTGenericBufferedPacket and QTGenericBufferedPacketFactory impl
 
-QTGenericBufferedPacket
-::QTGenericBufferedPacket(QuickTimeGenericRTPSource &ourSource)
+QTGenericBufferedPacket::QTGenericBufferedPacket(QuickTimeGenericRTPSource &ourSource)
 	: fOurSource(ourSource)
 {
 }
@@ -288,8 +272,7 @@ QTGenericBufferedPacket::~QTGenericBufferedPacket()
 {
 }
 
-unsigned QTGenericBufferedPacket::
-nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
+unsigned QTGenericBufferedPacket::nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
 {
 	// We use the entire packet for a frame, unless "PCK" == 2
 	if (fOurSource.qtState.PCK != 2)
@@ -306,8 +289,7 @@ nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
 	return sampleLength < dataSize ? sampleLength : dataSize;
 }
 
-BufferedPacket *QTGenericBufferedPacketFactory
-::createNewPacket(MultiFramedRTPSource *ourSource)
+BufferedPacket *QTGenericBufferedPacketFactory::createNewPacket(MultiFramedRTPSource *ourSource)
 {
 	return new QTGenericBufferedPacket((QuickTimeGenericRTPSource &)(*ourSource));
 }

@@ -35,14 +35,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class IndexRecord; // forward
 
-class MPEG2IFrameIndexFromTransportStream: public FramedFilter
+class MPEG2IFrameIndexFromTransportStream : public FramedFilter
 {
 public:
 	static MPEG2IFrameIndexFromTransportStream *createNew(UsageEnvironment &env, FramedSource *inputSource);
 
 protected:
-	MPEG2IFrameIndexFromTransportStream(UsageEnvironment &env,
-		FramedSource *inputSource);
+	MPEG2IFrameIndexFromTransportStream(UsageEnvironment &env, FramedSource *inputSource);
 	// called only by createNew()
 	virtual ~MPEG2IFrameIndexFromTransportStream();
 
@@ -51,14 +50,8 @@ private:
 	virtual void doGetNextFrame();
 
 private:
-	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
-	void afterGettingFrame1(unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+	static void afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
+	void afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 
 	static void handleInputClosure(void *clientData);
 	void handleInputClosure1();

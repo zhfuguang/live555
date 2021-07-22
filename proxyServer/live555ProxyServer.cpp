@@ -265,10 +265,8 @@ int main(int argc, char **argv)
 		{
 			sprintf(streamName, "proxyStream-%d", i); // there's more than one stream; distinguish them by name
 		}
-		ServerMediaSession *sms
-			= ProxyServerMediaSession::createNew(*env, rtspServer,
-					proxiedStreamURL, streamName,
-					username, password, tunnelOverHTTPPortNum, verbosityLevel);
+		ServerMediaSession *sms = ProxyServerMediaSession::createNew(*env, rtspServer,
+			proxiedStreamURL, streamName, username, password, tunnelOverHTTPPortNum, verbosityLevel);
 		rtspServer->addServerMediaSession(sms);
 
 		char *proxyStreamURL = rtspServer->rtspURL(sms);
@@ -297,6 +295,5 @@ int main(int argc, char **argv)
 
 	// Now, enter the event loop:
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }

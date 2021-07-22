@@ -103,10 +103,8 @@ int main(int argc, char **argv)
 	const Port rtpPort(rtpPortNum);
 	const Port rtcpPort(rtcpPortNum);
 
-	sessionState.rtpGroupsock
-		= new Groupsock(*env, destinationAddress, rtpPort, ttl);
-	sessionState.rtcpGroupsock
-		= new Groupsock(*env, destinationAddress, rtcpPort, ttl);
+	sessionState.rtpGroupsock = new Groupsock(*env, destinationAddress, rtpPort, ttl);
+	sessionState.rtcpGroupsock = new Groupsock(*env, destinationAddress, rtcpPort, ttl);
 #ifdef USE_SSM
 	sessionState.rtpGroupsock->multicastSendOnly();
 	sessionState.rtcpGroupsock->multicastSendOnly();
@@ -115,12 +113,9 @@ int main(int argc, char **argv)
 	// Create a 'MP3 RTP' sink from the RTP 'groupsock':
 #ifdef STREAM_USING_ADUS
 	unsigned char rtpPayloadFormat = 96; // A dynamic payload format code
-	sessionState.sink
-		= MP3ADURTPSink::createNew(*env, sessionState.rtpGroupsock,
-				rtpPayloadFormat);
+	sessionState.sink = MP3ADURTPSink::createNew(*env, sessionState.rtpGroupsock, rtpPayloadFormat);
 #else
-	sessionState.sink
-		= MPEG1or2AudioRTPSink::createNew(*env, sessionState.rtpGroupsock);
+	sessionState.sink = MPEG1or2AudioRTPSink::createNew(*env, sessionState.rtpGroupsock);
 #endif
 
 	// Create (and start) a 'RTCP instance' for this RTP sink:
@@ -129,11 +124,8 @@ int main(int argc, char **argv)
 	unsigned char CNAME[maxCNAMElen + 1];
 	gethostname((char *)CNAME, maxCNAMElen);
 	CNAME[maxCNAMElen] = '\0'; // just in case
-	sessionState.rtcpInstance
-		= RTCPInstance::createNew(*env, sessionState.rtcpGroupsock,
-				estimatedSessionBandwidth, CNAME,
-				sessionState.sink, NULL /* we're a server */,
-				isSSM);
+	sessionState.rtcpInstance = RTCPInstance::createNew(*env, sessionState.rtcpGroupsock,
+		estimatedSessionBandwidth, CNAME, sessionState.sink, NULL /* we're a server */, isSSM);
 	// Note: This starts RTCP running automatically
 
 #ifdef IMPLEMENT_RTSP_SERVER
@@ -143,16 +135,13 @@ int main(int argc, char **argv)
 		*env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
 		exit(1);
 	}
-	ServerMediaSession *sms
-		= ServerMediaSession::createNew(*env, "testStream", inputFileName,
-				"Session streamed by \"testMP3Streamer\"", isSSM);
+	ServerMediaSession *sms = ServerMediaSession::createNew(*env, "testStream", inputFileName, "Session streamed by \"testMP3Streamer\"", isSSM);
 	sms->addSubsession(PassiveServerMediaSubsession::createNew(*sessionState.sink, sessionState.rtcpInstance));
 	rtspServer->addServerMediaSession(sms);
 	announceURL(rtspServer, sms);
 #endif
 
 	play();
-
 	env->taskScheduler().doEventLoop(); // does not return
 	return 0; // only to prevent compiler warning
 }
@@ -165,15 +154,13 @@ void play()
 	sessionState.source = MP3FileSource::createNew(*env, inputFileName);
 	if (sessionState.source == NULL)
 	{
-		*env << "Unable to open file \"" << inputFileName
-			<< "\" as a MP3 file source\n";
+		*env << "Unable to open file \"" << inputFileName << "\" as a MP3 file source\n";
 		exit(1);
 	}
 
 #ifdef STREAM_USING_ADUS
 	// Add a filter that converts the source MP3s to ADUs:
-	sessionState.source
-		= ADUFromMP3Source::createNew(*env, sessionState.source);
+	sessionState.source = ADUFromMP3Source::createNew(*env, sessionState.source);
 	if (sessionState.source == NULL)
 	{
 		*env << "Unable to create a MP3->ADU filter for the source\n";
@@ -182,12 +169,10 @@ void play()
 
 #ifdef INTERLEAVE_ADUS
 	// Add another filter that interleaves the ADUs before packetizing them:
-	unsigned char interleaveCycle[] = {0, 2, 1, 3}; // or choose your own order...
-	unsigned const interleaveCycleSize
-		= (sizeof interleaveCycle) / (sizeof(unsigned char));
+	unsigned char interleaveCycle[] = { 0, 2, 1, 3 }; // or choose your own order...
+	unsigned const interleaveCycleSize = (sizeof interleaveCycle) / (sizeof(unsigned char));
 	Interleaving interleaving(interleaveCycleSize, interleaveCycle);
-	sessionState.source
-		= MP3ADUinterleaver::createNew(*env, interleaving, sessionState.source);
+	sessionState.source = MP3ADUinterleaver::createNew(*env, interleaving, sessionState.source);
 	if (sessionState.source == NULL)
 	{
 		*env << "Unable to create an ADU interleaving filter for the source\n";

@@ -54,9 +54,7 @@ class PIDStatus
 {
 public:
 	PIDStatus(double _firstClock, double _firstRealTime)
-		: firstClock(_firstClock), lastClock(_firstClock),
-		  firstRealTime(_firstRealTime), lastRealTime(_firstRealTime),
-		  lastPacketNum(0)
+		: firstClock(_firstClock), lastClock(_firstClock), firstRealTime(_firstRealTime), lastRealTime(_firstRealTime), lastPacketNum(0)
 	{
 	}
 
@@ -67,18 +65,16 @@ public:
 
 ////////// MPEG2TransportStreamFramer //////////
 
-MPEG2TransportStreamFramer *MPEG2TransportStreamFramer
-::createNew(UsageEnvironment &env, FramedSource *inputSource)
+MPEG2TransportStreamFramer *MPEG2TransportStreamFramer::createNew(UsageEnvironment &env, FramedSource *inputSource)
 {
 	return new MPEG2TransportStreamFramer(env, inputSource);
 }
 
-MPEG2TransportStreamFramer
-::MPEG2TransportStreamFramer(UsageEnvironment &env, FramedSource *inputSource)
-	: FramedFilter(env, inputSource),
-	  fTSPacketCount(0), fTSPacketDurationEstimate(0.0), fTSPCRCount(0),
-	  fLimitNumTSPacketsToStream(False), fNumTSPacketsToStream(0),
-	  fLimitTSPacketsToStreamByPCR(False), fPCRLimit(0.0)
+MPEG2TransportStreamFramer::MPEG2TransportStreamFramer(UsageEnvironment &env, FramedSource *inputSource)
+	: FramedFilter(env, inputSource)
+	, fTSPacketCount(0), fTSPacketDurationEstimate(0.0), fTSPCRCount(0)
+	, fLimitNumTSPacketsToStream(False), fNumTSPacketsToStream(0)
+	, fLimitTSPacketsToStreamByPCR(False), fPCRLimit(0.0)
 {
 	fPIDStatusTable = HashTable::create(ONE_WORD_HASH_KEYS);
 }
@@ -127,9 +123,7 @@ void MPEG2TransportStreamFramer::doGetNextFrame()
 
 	// Read directly from our input source into our client's buffer:
 	fFrameSize = 0;
-	fInputSource->getNextFrame(fTo, fMaxSize,
-		afterGettingFrame, this,
-		FramedSource::handleClosure, this);
+	fInputSource->getNextFrame(fTo, fMaxSize, afterGettingFrame, this, FramedSource::handleClosure, this);
 }
 
 void MPEG2TransportStreamFramer::doStopGettingFrames()
@@ -141,11 +135,8 @@ void MPEG2TransportStreamFramer::doStopGettingFrames()
 	clearPIDStatusTable();
 }
 
-void MPEG2TransportStreamFramer
-::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned /*numTruncatedBytes*/,
-	struct timeval presentationTime,
-	unsigned /*durationInMicroseconds*/)
+void MPEG2TransportStreamFramer::afterGettingFrame(void *clientData,
+	unsigned frameSize, unsigned /*numTruncatedBytes*/, struct timeval presentationTime, unsigned /*durationInMicroseconds*/)
 {
 	MPEG2TransportStreamFramer *framer = (MPEG2TransportStreamFramer *)clientData;
 	framer->afterGettingFrame1(frameSize, presentationTime);
@@ -153,8 +144,7 @@ void MPEG2TransportStreamFramer
 
 #define TRANSPORT_SYNC_BYTE 0x47
 
-void MPEG2TransportStreamFramer::afterGettingFrame1(unsigned frameSize,
-	struct timeval presentationTime)
+void MPEG2TransportStreamFramer::afterGettingFrame1(unsigned frameSize, struct timeval presentationTime)
 {
 	fFrameSize += frameSize;
 	unsigned const numTSPackets = fFrameSize / TRANSPORT_PACKET_SIZE;
@@ -186,9 +176,7 @@ void MPEG2TransportStreamFramer::afterGettingFrame1(unsigned frameSize,
 		// to the start of the buffer, then read more to fill it up again:
 		memmove(fTo, &fTo[syncBytePosition], fFrameSize - syncBytePosition);
 		fFrameSize -= syncBytePosition;
-		fInputSource->getNextFrame(&fTo[fFrameSize], syncBytePosition,
-			afterGettingFrame, this,
-			FramedSource::handleClosure, this);
+		fInputSource->getNextFrame(&fTo[fFrameSize], syncBytePosition, afterGettingFrame, this, FramedSource::handleClosure, this);
 		return;
 	} // else normal case: the data begins with a sync byte
 
@@ -209,8 +197,7 @@ void MPEG2TransportStreamFramer::afterGettingFrame1(unsigned frameSize,
 		}
 	}
 
-	fDurationInMicroseconds
-		= numTSPackets * (unsigned)(fTSPacketDurationEstimate * 1000000);
+	fDurationInMicroseconds = numTSPackets * (unsigned)(fTSPacketDurationEstimate * 1000000);
 
 	// Complete the delivery to our client:
 	afterGetting(this);
@@ -298,9 +285,7 @@ Boolean MPEG2TransportStreamFramer::updateTSPacketDurationEstimate(unsigned char
 		}
 		else if (discontinuity_indicator == 0 && durationPerPacket >= 0.0)
 		{
-			fTSPacketDurationEstimate
-				= durationPerPacket * NEW_DURATION_WEIGHT
-					+ fTSPacketDurationEstimate * (1 - NEW_DURATION_WEIGHT);
+			fTSPacketDurationEstimate = durationPerPacket * NEW_DURATION_WEIGHT + fTSPacketDurationEstimate * (1 - NEW_DURATION_WEIGHT);
 
 			// Also adjust the duration estimate to try to ensure that the transmission
 			// rate matches the playout rate:
@@ -332,4 +317,4 @@ Boolean MPEG2TransportStreamFramer::updateTSPacketDurationEstimate(unsigned char
 	pidStatus->lastPacketNum = fTSPacketCount;
 
 	return True;
-}
+	}

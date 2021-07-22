@@ -25,14 +25,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedSource.hh"
 #endif
 
-class ByteStreamMemoryBufferSource: public FramedSource
+class ByteStreamMemoryBufferSource : public FramedSource
 {
 public:
-	static ByteStreamMemoryBufferSource *createNew(UsageEnvironment &env,
-		u_int8_t *buffer, u_int64_t bufferSize,
-		Boolean deleteBufferOnClose = True,
-		unsigned preferredFrameSize = 0,
-		unsigned playTimePerFrame = 0);
+	static ByteStreamMemoryBufferSource *createNew(UsageEnvironment &env, u_int8_t *buffer,
+		u_int64_t bufferSize, Boolean deleteBufferOnClose = True, unsigned preferredFrameSize = 0, unsigned playTimePerFrame = 0);
 	// "preferredFrameSize" == 0 means 'no preference'
 	// "playTimePerFrame" is in microseconds
 
@@ -46,11 +43,8 @@ public:
 	void seekToByteRelative(int64_t offset, u_int64_t numBytesToStream = 0);
 
 protected:
-	ByteStreamMemoryBufferSource(UsageEnvironment &env,
-		u_int8_t *buffer, u_int64_t bufferSize,
-		Boolean deleteBufferOnClose,
-		unsigned preferredFrameSize,
-		unsigned playTimePerFrame);
+	ByteStreamMemoryBufferSource(UsageEnvironment &env, u_int8_t *buffer,
+		u_int64_t bufferSize, Boolean deleteBufferOnClose, unsigned preferredFrameSize, unsigned playTimePerFrame);
 	// called only by createNew()
 
 	virtual ~ByteStreamMemoryBufferSource();

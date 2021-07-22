@@ -65,7 +65,7 @@ u_int64_t GetFileSize(char const *fileName, FILE *fid)
 			if (fid != NULL && SeekFile64(fid, 0, SEEK_END) >= 0)
 			{
 				fileSize = (u_int64_t)TellFile64(fid);
-				if (fileSize == (u_int64_t) -1)
+				if (fileSize == (u_int64_t)-1)
 					fileSize = 0; // TellFile64() failed
 				SeekFile64(fid, 0, SEEK_SET);
 			}
@@ -93,7 +93,7 @@ int64_t SeekFile64(FILE *fid, int64_t offset, int whence)
 	clearerr(fid);
 	fflush(fid);
 #if (defined(__WIN32__) || defined(_WIN32)) && !defined(_WIN32_WCE)
-	return _lseeki64(_fileno(fid), offset, whence) == (int64_t) -1 ? -1 : 0;
+	return _lseeki64(_fileno(fid), offset, whence) == (int64_t)-1 ? -1 : 0;
 #else
 #if defined(_WIN32_WCE)
 	return fseek(fid, (long)(offset), whence);

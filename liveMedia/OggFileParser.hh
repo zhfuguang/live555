@@ -49,12 +49,10 @@ public:
 	Boolean lastPacketIsIncomplete; // iff the last segment's 'lacing' was 255
 };
 
-class OggFileParser: public StreamParser
+class OggFileParser : public StreamParser
 {
 public:
-	OggFileParser(OggFile &ourFile, FramedSource *inputSource,
-		FramedSource::onCloseFunc *onEndFunc, void *onEndClientData,
-		OggDemux *ourDemux = NULL);
+	OggFileParser(OggFile &ourFile, FramedSource *inputSource, FramedSource::onCloseFunc *onEndFunc, void *onEndClientData, OggDemux *ourDemux = NULL);
 	virtual ~OggFileParser();
 
 	// StreamParser 'client continue' function:

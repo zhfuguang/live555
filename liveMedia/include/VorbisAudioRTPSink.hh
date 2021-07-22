@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AudioRTPSink.hh"
 #endif
 
-class VorbisAudioRTPSink: public AudioRTPSink
+class VorbisAudioRTPSink : public AudioRTPSink
 {
 public:
 	static VorbisAudioRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
@@ -36,9 +36,8 @@ public:
 		u_int8_t *setupHeader, unsigned setupHeaderSize,
 		u_int32_t identField = 0xFACADE);
 
-	static VorbisAudioRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
-		u_int32_t rtpTimestampFrequency, unsigned numChannels,
-		char const *configStr);
+	static VorbisAudioRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs,
+		u_int8_t rtpPayloadFormat, u_int32_t rtpTimestampFrequency, unsigned numChannels, char const *configStr);
 	// an optional variant of "createNew()" that takes a Base-64-encoded 'configuration' string,
 	// rather than the raw configuration headers as parameter.
 
@@ -57,12 +56,8 @@ private: // redefined virtual functions:
 	virtual char const *auxSDPLine(); // for the "a=fmtp:" SDP line
 
 	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
-	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart,
-		unsigned numBytesInFrame) const;
+		unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
+	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart, unsigned numBytesInFrame) const;
 	virtual unsigned specialHeaderSize() const;
 	virtual unsigned frameSpecificHeaderSize() const;
 

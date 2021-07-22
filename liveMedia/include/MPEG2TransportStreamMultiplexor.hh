@@ -31,13 +31,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define PID_TABLE_SIZE 0x2000 // 2^13
 
-class MPEG2TransportStreamMultiplexor: public FramedSource
+class MPEG2TransportStreamMultiplexor : public FramedSource
 {
 public:
 	typedef void (onEndOfSegmentFunc)(void *clientData, double segmentDuration);
-	void setTimedSegmentation(unsigned segmentationDuration,
-		onEndOfSegmentFunc *onEndOfSegmentFunc = NULL,
-		void *onEndOfSegmentClientData = NULL);
+	void setTimedSegmentation(unsigned segmentationDuration, onEndOfSegmentFunc *onEndOfSegmentFunc = NULL, void *onEndOfSegmentClientData = NULL);
 	// Specifies that PAT and PMT packets should be output every "segmentationDuration" seconds.
 	// (If "segmentationDuration" is 0 (the default value), then PAT and PMT packets are output
 	// at a preset frequency.)
@@ -62,8 +60,7 @@ protected:
 	virtual void awaitNewBuffer(unsigned char *oldBuffer) = 0;
 	// implemented by subclasses
 
-	void handleNewBuffer(unsigned char *buffer, unsigned bufferSize,
-		int mpegVersion, MPEG1or2Demux::SCR scr, int16_t PID = -1);
+	void handleNewBuffer(unsigned char *buffer, unsigned bufferSize, int mpegVersion, MPEG1or2Demux::SCR scr, int16_t PID = -1);
 	// called by "awaitNewBuffer()"
 	// Note: For MPEG-4 video, set "mpegVersion" to 4; for H.264 video, set "mpegVersion" to 5;
 	//     for H.265 video, set "mpegVersion" to 6.
@@ -78,8 +75,7 @@ private:
 	virtual void doGetNextFrame();
 
 private:
-	void deliverDataToClient(u_int16_t pid, unsigned char *buffer, unsigned bufferSize,
-		unsigned &startPositionInBuffer);
+	void deliverDataToClient(u_int16_t pid, unsigned char *buffer, unsigned bufferSize, unsigned &startPositionInBuffer);
 
 	void deliverPATPacket();
 	void deliverPMTPacket(Boolean hasChanged);

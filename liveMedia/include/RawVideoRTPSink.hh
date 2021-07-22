@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RawVideoFrameParameters.hh"
 #endif
 
-class RawVideoRTPSink: public VideoRTPSink
+class RawVideoRTPSink : public VideoRTPSink
 {
 public:
 	static RawVideoRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
@@ -37,10 +37,8 @@ public:
 		char const *sampling, char const *colorimetry);
 
 protected:
-	RawVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
-		u_int8_t rtpPayloadFormat,
-		unsigned width, unsigned height, unsigned depth,
-		char const *sampling, char const *colorimetry);
+	RawVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
+		unsigned width, unsigned height, unsigned depth, char const *sampling, char const *colorimetry);
 	// called only by createNew()
 
 	virtual ~RawVideoRTPSink();
@@ -49,12 +47,8 @@ private: // redefined virtual functions:
 	virtual char const *auxSDPLine(); // for the "a=fmtp:" SDP line
 
 	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
-	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart,
-		unsigned numBytesInFrame) const;
+		unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
+	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart, unsigned numBytesInFrame) const;
 	virtual unsigned specialHeaderSize() const;
 	virtual unsigned computeOverflowForNewFrame(unsigned newFrameSize) const;
 

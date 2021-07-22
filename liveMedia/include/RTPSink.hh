@@ -30,11 +30,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class RTPTransmissionStatsDB; // forward
 
-class RTPSink: public MediaSink
+class RTPSink : public MediaSink
 {
 public:
-	static Boolean lookupByName(UsageEnvironment &env, char const *sinkName,
-		RTPSink *&resultSink);
+	static Boolean lookupByName(UsageEnvironment &env, char const *sinkName, RTPSink *&resultSink);
 
 	// used by RTSP servers:
 	Groupsock const &groupsockBeingUsed() const
@@ -138,11 +137,8 @@ public:
 	// later need a means of changing the SSRC if there's a collision #####
 
 protected:
-	RTPSink(UsageEnvironment &env,
-		Groupsock *rtpGS, unsigned char rtpPayloadType,
-		u_int32_t rtpTimestampFrequency,
-		char const *rtpPayloadFormatName,
-		unsigned numChannels);
+	RTPSink(UsageEnvironment &env, Groupsock *rtpGS,
+		unsigned char rtpPayloadType, u_int32_t rtpTimestampFrequency, char const *rtpPayloadFormatName, unsigned numChannels);
 	// abstract base class
 
 	virtual ~RTPSink();
@@ -211,8 +207,7 @@ public:
 
 	// The following is called whenever a RTCP RR packet is received:
 	void noteIncomingRR(u_int32_t SSRC, struct sockaddr_storage const &lastFromAddress,
-		unsigned lossStats, unsigned lastPacketNumReceived,
-		unsigned jitter, unsigned lastSRTime, unsigned diffSR_RRTime);
+		unsigned lossStats, unsigned lastPacketNumReceived, unsigned jitter, unsigned lastSRTime, unsigned diffSR_RRTime);
 
 	// The following is called when a RTCP BYE packet is received:
 	void removeRecord(u_int32_t SSRC);
@@ -299,9 +294,7 @@ private:
 	virtual ~RTPTransmissionStats();
 
 	void noteIncomingRR(struct sockaddr_storage const &lastFromAddress,
-		unsigned lossStats, unsigned lastPacketNumReceived,
-		unsigned jitter,
-		unsigned lastSRTime, unsigned diffSR_RRTime);
+		unsigned lossStats, unsigned lastPacketNumReceived, unsigned jitter, unsigned lastSRTime, unsigned diffSR_RRTime);
 
 private:
 	RTPSink &fOurRTPSink;

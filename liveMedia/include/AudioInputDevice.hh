@@ -34,7 +34,7 @@ public:
 	char **portName;
 };
 
-class AudioInputDevice: public FramedSource
+class AudioInputDevice : public FramedSource
 {
 public:
 	unsigned char bitsPerSample() const
@@ -54,8 +54,7 @@ public:
 	virtual double getAverageLevel() const = 0;
 
 	static AudioInputDevice *createNew(UsageEnvironment &env, int inputPortNumber,
-		unsigned char bitsPerSample, unsigned char numChannels,
-		unsigned samplingFrequency, unsigned granularityInMS = 20);
+		unsigned char bitsPerSample, unsigned char numChannels, unsigned samplingFrequency, unsigned granularityInMS = 20);
 	static AudioPortNames *getPortNames();
 
 	static char **allowedDeviceNames;
@@ -63,11 +62,7 @@ public:
 	// of device names that we are allowed to access.
 
 protected:
-	AudioInputDevice(UsageEnvironment &env,
-		unsigned char bitsPerSample,
-		unsigned char numChannels,
-		unsigned samplingFrequency,
-		unsigned granularityInMS);
+	AudioInputDevice(UsageEnvironment &env, unsigned char bitsPerSample, unsigned char numChannels, unsigned samplingFrequency, unsigned granularityInMS);
 	// we're an abstract base class
 
 	virtual ~AudioInputDevice();

@@ -26,17 +26,15 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FileServerMediaSubsession.hh"
 #endif
 
-class WAVAudioFileServerMediaSubsession: public FileServerMediaSubsession
+class WAVAudioFileServerMediaSubsession : public FileServerMediaSubsession
 {
 public:
-	static WAVAudioFileServerMediaSubsession *createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource,
-		Boolean convertToULaw = False);
+	static WAVAudioFileServerMediaSubsession *createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource, Boolean convertToULaw = False);
 	// If "convertToULaw" is True, 16-bit audio streams are converted to
 	// 8-bit u-law audio prior to streaming.
 
 protected:
-	WAVAudioFileServerMediaSubsession(UsageEnvironment &env, char const *fileName,
-		Boolean reuseFirstSource, Boolean convertToULaw);
+	WAVAudioFileServerMediaSubsession(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource, Boolean convertToULaw);
 	// called only by createNew();
 	virtual ~WAVAudioFileServerMediaSubsession();
 
@@ -45,11 +43,8 @@ protected: // redefined virtual functions
 	virtual void setStreamSourceScale(FramedSource *inputSource, float scale);
 	virtual void setStreamSourceDuration(FramedSource *inputSource, double streamDuration, u_int64_t &numBytes);
 
-	virtual FramedSource *createNewStreamSource(unsigned clientSessionId,
-		unsigned &estBitrate);
-	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock,
-		unsigned char rtpPayloadTypeIfDynamic,
-		FramedSource *inputSource);
+	virtual FramedSource *createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate);
+	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource *inputSource);
 	virtual void testScaleFactor(float &scale);
 	virtual float duration() const;
 

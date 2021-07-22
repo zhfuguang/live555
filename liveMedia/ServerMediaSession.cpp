@@ -30,18 +30,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// ServerMediaSession //////////
 
-ServerMediaSession *ServerMediaSession
-::createNew(UsageEnvironment &env,
-	char const *streamName, char const *info,
-	char const *description, Boolean isSSM, char const *miscSDPLines)
+ServerMediaSession *ServerMediaSession::createNew(UsageEnvironment &env,
+	char const *streamName, char const *info, char const *description, Boolean isSSM, char const *miscSDPLines)
 {
-	return new ServerMediaSession(env, streamName, info, description,
-			isSSM, miscSDPLines);
+	return new ServerMediaSession(env, streamName, info, description, isSSM, miscSDPLines);
 }
 
-Boolean ServerMediaSession
-::lookupByName(UsageEnvironment &env, char const *mediumName,
-	ServerMediaSession *&resultSession)
+Boolean ServerMediaSession::lookupByName(UsageEnvironment &env, char const *mediumName, ServerMediaSession *&resultSession)
 {
 	resultSession = NULL; // unless we succeed
 
@@ -63,13 +58,9 @@ static char const *const libNameStr = "LIVE555 Streaming Media v";
 char const *const libVersionStr = LIVEMEDIA_LIBRARY_VERSION_STRING;
 
 ServerMediaSession::ServerMediaSession(UsageEnvironment &env,
-	char const *streamName,
-	char const *info,
-	char const *description,
-	Boolean isSSM, char const *miscSDPLines)
-	: Medium(env), fIsSSM(isSSM), fSubsessionsHead(NULL),
-	  fSubsessionsTail(NULL), fSubsessionCounter(0),
-	  fReferenceCount(0), fDeleteWhenUnreferenced(False)
+	char const *streamName, char const *info, char const *description, Boolean isSSM, char const *miscSDPLines)
+	: Medium(env), fIsSSM(isSSM), fSubsessionsHead(NULL), fSubsessionsTail(NULL)
+	, fSubsessionCounter(0), fReferenceCount(0), fDeleteWhenUnreferenced(False)
 {
 	fStreamName = strDup(streamName == NULL ? "" : streamName);
 
@@ -84,7 +75,6 @@ ServerMediaSession::ServerMediaSession(UsageEnvironment &env,
 	delete[] libNamePlusVersionStr;
 
 	fMiscSDPLines = strDup(miscSDPLines == NULL ? "" : miscSDPLines);
-
 	gettimeofday(&fCreationTime, NULL);
 }
 
@@ -128,8 +118,7 @@ void ServerMediaSession::testScaleFactor(float &scale)
 	float bestSSScale = 1.0;
 	float bestDistanceTo1 = 0.0;
 	ServerMediaSubsession *subsession;
-	for (subsession = fSubsessionsHead; subsession != NULL;
-		subsession = subsession->fNext)
+	for (subsession = fSubsessionsHead; subsession != NULL; subsession = subsession->fNext)
 	{
 		float ssscale = scale;
 		subsession->testScaleFactor(ssscale);
@@ -166,8 +155,7 @@ void ServerMediaSession::testScaleFactor(float &scale)
 
 	// The scales for each subsession differ.  Try to set each one to the value
 	// that's closest to 1:
-	for (subsession = fSubsessionsHead; subsession != NULL;
-		subsession = subsession->fNext)
+	for (subsession = fSubsessionsHead; subsession != NULL; subsession = subsession->fNext)
 	{
 		float ssscale = bestSSScale;
 		subsession->testScaleFactor(ssscale);
@@ -195,8 +183,7 @@ float ServerMediaSession::duration() const
 {
 	float minSubsessionDuration = 0.0;
 	float maxSubsessionDuration = 0.0;
-	for (ServerMediaSubsession *subsession = fSubsessionsHead; subsession != NULL;
-		subsession = subsession->fNext)
+	for (ServerMediaSubsession *subsession = fSubsessionsHead; subsession != NULL; subsession = subsession->fNext)
 	{
 		// Hack: If any subsession supports seeking by 'absolute' time, then return a negative value, to indicate that only subsessions
 		// will have a "a=range:" attribute:
@@ -275,13 +262,10 @@ char *ServerMediaSession::generateSDPDescription(int addressFamily)
 		char const *const sourceFilterFmt =
 			"a=source-filter: incl IN %s * %s\r\n"
 			"a=rtcp-unicast: reflection\r\n";
-		unsigned const sourceFilterFmtSize
-			= strlen(sourceFilterFmt) + 3/*IP4 or IP6*/ + ipAddressStrSize + 1;
 
+		unsigned const sourceFilterFmtSize = strlen(sourceFilterFmt) + 3/*IP4 or IP6*/ + ipAddressStrSize + 1;
 		sourceFilterLine = new char[sourceFilterFmtSize];
-		sprintf(sourceFilterLine, sourceFilterFmt,
-			addressFamily == AF_INET ? "IP4" : "IP6",
-			ipAddressStr.val());
+		sprintf(sourceFilterLine, sourceFilterFmt, addressFamily == AF_INET ? "IP4" : "IP6", ipAddressStr.val());
 	}
 	else
 	{
@@ -298,8 +282,7 @@ char *ServerMediaSession::generateSDPDescription(int addressFamily)
 		// causes correct subsession 'duration()'s to be calculated later.)
 		unsigned sdpLength = 0;
 		ServerMediaSubsession *subsession;
-		for (subsession = fSubsessionsHead; subsession != NULL;
-			subsession = subsession->fNext)
+		for (subsession = fSubsessionsHead; subsession != NULL; subsession = subsession->fNext)
 		{
 			char const *sdpLines = subsession->sdpLines(addressFamily);
 			if (sdpLines == NULL)
@@ -372,8 +355,7 @@ char *ServerMediaSession::generateSDPDescription(int addressFamily)
 
 		// Then, add the (media-level) lines for each subsession:
 		char *mediaSDP = sdp;
-		for (subsession = fSubsessionsHead; subsession != NULL;
-			subsession = subsession->fNext)
+		for (subsession = fSubsessionsHead; subsession != NULL; subsession = subsession->fNext)
 		{
 			unsigned mediaSDPLength = strlen(mediaSDP);
 			mediaSDP += mediaSDPLength;
@@ -395,8 +377,7 @@ char *ServerMediaSession::generateSDPDescription(int addressFamily)
 
 ////////// ServerMediaSubsessionIterator //////////
 
-ServerMediaSubsessionIterator
-::ServerMediaSubsessionIterator(ServerMediaSession &session)
+ServerMediaSubsessionIterator::ServerMediaSubsessionIterator(ServerMediaSession &session)
 	: fOurSession(session)
 {
 	reset();
@@ -425,8 +406,7 @@ void ServerMediaSubsessionIterator::reset()
 ////////// ServerMediaSubsession //////////
 
 ServerMediaSubsession::ServerMediaSubsession(UsageEnvironment &env)
-	: Medium(env),
-	  fParentSession(NULL), fNext(NULL), fTrackNumber(0), fTrackId(NULL)
+	: Medium(env), fParentSession(NULL), fNext(NULL), fTrackNumber(0), fTrackId(NULL)
 {
 }
 
@@ -450,8 +430,7 @@ char const *ServerMediaSubsession::trackId()
 	return fTrackId;
 }
 
-void ServerMediaSubsession::pauseStream(unsigned /*clientSessionId*/,
-	void * /*streamToken*/)
+void ServerMediaSubsession::pauseStream(unsigned /*clientSessionId*/, void * /*streamToken*/)
 {
 	// default implementation: do nothing
 }
@@ -461,8 +440,7 @@ void ServerMediaSubsession::seekStream(unsigned /*clientSessionId*/,
 	// default implementation: do nothing
 	numBytes = 0;
 }
-void ServerMediaSubsession::seekStream(unsigned /*clientSessionId*/,
-	void * /*streamToken*/, char *&absStart, char *&absEnd)
+void ServerMediaSubsession::seekStream(unsigned /*clientSessionId*/, void * /*streamToken*/, char *&absStart, char *&absEnd)
 {
 	// default implementation: do nothing (but delete[] and assign "absStart" and "absEnd" to NULL, to show that we don't handle this)
 	delete[] absStart;
@@ -470,14 +448,12 @@ void ServerMediaSubsession::seekStream(unsigned /*clientSessionId*/,
 	delete[] absEnd;
 	absEnd = NULL;
 }
-void ServerMediaSubsession::nullSeekStream(unsigned /*clientSessionId*/, void * /*streamToken*/,
-	double streamEndTime, u_int64_t &numBytes)
+void ServerMediaSubsession::nullSeekStream(unsigned /*clientSessionId*/, void * /*streamToken*/, double streamEndTime, u_int64_t &numBytes)
 {
 	// default implementation: do nothing
 	numBytes = 0;
 }
-void ServerMediaSubsession::setStreamScale(unsigned /*clientSessionId*/,
-	void * /*streamToken*/, float /*scale*/)
+void ServerMediaSubsession::setStreamScale(unsigned /*clientSessionId*/, void * /*streamToken*/, float /*scale*/)
 {
 	// default implementation: do nothing
 }
@@ -491,8 +467,7 @@ FramedSource *ServerMediaSubsession::getStreamSource(void * /*streamToken*/)
 	// default implementation: return NULL
 	return NULL;
 }
-void ServerMediaSubsession::deleteStream(unsigned /*clientSessionId*/,
-	void *& /*streamToken*/)
+void ServerMediaSubsession::deleteStream(unsigned /*clientSessionId*/, void *& /*streamToken*/)
 {
 	// default implementation: do nothing
 }

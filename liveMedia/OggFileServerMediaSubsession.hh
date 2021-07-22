@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "OggFileServerDemux.hh"
 #endif
 
-class OggFileServerMediaSubsession: public FileServerMediaSubsession
+class OggFileServerMediaSubsession : public FileServerMediaSubsession
 {
 public:
 	static OggFileServerMediaSubsession *createNew(OggFileServerDemux &demux, OggTrack *track);
@@ -40,8 +40,7 @@ protected:
 	virtual ~OggFileServerMediaSubsession();
 
 protected: // redefined virtual functions
-	virtual FramedSource *createNewStreamSource(unsigned clientSessionId,
-		unsigned &estBitrate);
+	virtual FramedSource *createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate);
 	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource *inputSource);
 
 protected:

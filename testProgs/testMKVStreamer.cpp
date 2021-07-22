@@ -63,16 +63,13 @@ int main(int argc, char **argv)
 		*env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
 		exit(1);
 	}
-	sms = ServerMediaSession::createNew(*env, "testStream", inputFileName,
-			"Session streamed by \"testMKVStreamer\"",
-			True /*SSM*/);
+	sms = ServerMediaSession::createNew(*env, "testStream", inputFileName, "Session streamed by \"testMKVStreamer\"", True /*SSM*/);
 
 	// Arrange to create a "MatroskaFile" object for the specified file.
 	// (Note that this object is not created immediately, but instead via a callback.)
 	MatroskaFile::createNew(*env, inputFileName, onMatroskaFileCreation, NULL);
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 
@@ -101,8 +98,7 @@ void onMatroskaFileCreation(MatroskaFile *newFile, void * /*clientData*/)
 		trackState[i].trackNumber = trackNumber;
 
 		unsigned estBitrate, numFiltersInFrontOfTrack;
-		trackState[i].source = matroskaFile
-			->createSourceForStreaming(baseSource, trackNumber, estBitrate, numFiltersInFrontOfTrack);
+		trackState[i].source = matroskaFile->createSourceForStreaming(baseSource, trackNumber, estBitrate, numFiltersInFrontOfTrack);
 		trackState[i].sink = NULL; // by default; may get changed below
 		trackState[i].rtcp = NULL; // ditto
 
@@ -112,18 +108,14 @@ void onMatroskaFileCreation(MatroskaFile *newFile, void * /*clientData*/)
 			Groupsock *rtcpGroupsock = new Groupsock(*env, destinationAddress, rtpPortNum + 1, ttl);
 			rtpPortNum += 2;
 
-			trackState[i].sink
-				= matroskaFile->createRTPSinkForTrackNumber(trackNumber, rtpGroupsock, 96 + i);
+			trackState[i].sink = matroskaFile->createRTPSinkForTrackNumber(trackNumber, rtpGroupsock, 96 + i);
 			if (trackState[i].sink != NULL)
 			{
 				if (trackState[i].sink->estimatedBitrate() > 0)
 				{
 					estBitrate = trackState[i].sink->estimatedBitrate(); // hack
 				}
-				trackState[i].rtcp
-					= RTCPInstance::createNew(*env, rtcpGroupsock, estBitrate, CNAME,
-							trackState[i].sink, NULL /* we're a server */,
-							True /* we're a SSM source */);
+				trackState[i].rtcp = RTCPInstance::createNew(*env, rtcpGroupsock, estBitrate, CNAME, trackState[i].sink, NULL /* we're a server */, True /* we're a SSM source */);
 				// Note: This starts RTCP running automatically
 
 				// Having set up a track for streaming, add it to our RTSP server's "ServerMediaSession":
@@ -167,13 +159,9 @@ void afterPlaying(void * /*clientData*/)
 	{
 		if (trackState[i].trackNumber != 0)
 		{
-			FramedSource *baseSource
-				= matroskaDemux->newDemuxedTrackByTrackNumber(trackState[i].trackNumber);
-
+			FramedSource *baseSource = matroskaDemux->newDemuxedTrackByTrackNumber(trackState[i].trackNumber);
 			unsigned estBitrate, numFiltersInFrontOfTrack;
-			trackState[i].source = matroskaFile
-				->createSourceForStreaming(baseSource, trackState[i].trackNumber,
-					estBitrate, numFiltersInFrontOfTrack);
+			trackState[i].source = matroskaFile->createSourceForStreaming(baseSource, trackState[i].trackNumber, estBitrate, numFiltersInFrontOfTrack);
 		}
 	}
 

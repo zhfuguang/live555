@@ -23,12 +23,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "H264or5VideoStreamDiscreteFramer.hh"
 
-H264or5VideoStreamDiscreteFramer
-::H264or5VideoStreamDiscreteFramer(int hNumber, UsageEnvironment &env, FramedSource *inputSource,
-	Boolean includeStartCodeInOutput,
-	Boolean insertAccessUnitDelimiters)
-	: H264or5VideoStreamFramer(hNumber, env, inputSource, False/*don't create a parser*/,
-		  includeStartCodeInOutput, insertAccessUnitDelimiters)
+H264or5VideoStreamDiscreteFramer::H264or5VideoStreamDiscreteFramer(int hNumber,
+	UsageEnvironment &env, FramedSource *inputSource, Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters)
+	: H264or5VideoStreamFramer(hNumber, env, inputSource, False/*don't create a parser*/, includeStartCodeInOutput, insertAccessUnitDelimiters)
 {
 }
 
@@ -60,8 +57,7 @@ void H264or5VideoStreamDiscreteFramer::doGetNextFrame()
 		unsigned const audNALSize = fHNumber == 264 ? 2 : 3;
 
 		// If we have VPS,SPS,PPS NAL units, then append those as well:
-		unsigned nalDataSize
-			= audNALSize + fLastSeenVPSSize + fLastSeenSPSSize + fLastSeenPPSSize;
+		unsigned nalDataSize = audNALSize + fLastSeenVPSSize + fLastSeenSPSSize + fLastSeenPPSSize;
 		if (fIncludeStartCodeInOutput)
 		{
 			// Add the size of the 4-byte start codes:
@@ -140,26 +136,18 @@ void H264or5VideoStreamDiscreteFramer::doGetNextFrame()
 		// Arrange to read data (which should be a complete H.264 or H.265 NAL unit)
 		// from our data source, directly into the client's input buffer.
 		// After reading this, we'll do some parsing on the frame.
-		fInputSource->getNextFrame(fTo, fMaxSize,
-			afterGettingFrame, this,
-			FramedSource::handleClosure, this);
+		fInputSource->getNextFrame(fTo, fMaxSize, afterGettingFrame, this, FramedSource::handleClosure, this);
 	}
 }
 
-void H264or5VideoStreamDiscreteFramer
-::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void H264or5VideoStreamDiscreteFramer::afterGettingFrame(void *clientData,
+	unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	H264or5VideoStreamDiscreteFramer *source = (H264or5VideoStreamDiscreteFramer *)clientData;
 	source->afterGettingFrame1(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
 }
 
-void H264or5VideoStreamDiscreteFramer
-::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void H264or5VideoStreamDiscreteFramer::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	// Get the "nal_unit_type", to see if this NAL unit is one that we want to save a copy of:
 	u_int8_t nal_unit_type;

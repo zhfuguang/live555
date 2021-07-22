@@ -25,11 +25,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// H264or5VideoStreamParser definition //////////
 
-class H264or5VideoStreamParser: public MPEGVideoStreamParser
+class H264or5VideoStreamParser : public MPEGVideoStreamParser
 {
 public:
-	H264or5VideoStreamParser(int hNumber, H264or5VideoStreamFramer *usingSource,
-		FramedSource *inputSource, Boolean includeStartCodeInOutput);
+	H264or5VideoStreamParser(int hNumber, H264or5VideoStreamFramer *usingSource, FramedSource *inputSource, Boolean includeStartCodeInOutput);
 	virtual ~H264or5VideoStreamParser();
 
 private: // redefined virtual functions:
@@ -42,22 +41,10 @@ private:
 		return (H264or5VideoStreamFramer *)fUsingSource;
 	}
 
-	Boolean isVPS(u_int8_t nal_unit_type)
-	{
-		return usingSource()->isVPS(nal_unit_type);
-	}
-	Boolean isSPS(u_int8_t nal_unit_type)
-	{
-		return usingSource()->isSPS(nal_unit_type);
-	}
-	Boolean isPPS(u_int8_t nal_unit_type)
-	{
-		return usingSource()->isPPS(nal_unit_type);
-	}
-	Boolean isVCL(u_int8_t nal_unit_type)
-	{
-		return usingSource()->isVCL(nal_unit_type);
-	}
+	Boolean isVPS(u_int8_t nal_unit_type) { return usingSource()->isVPS(nal_unit_type); }
+	Boolean isSPS(u_int8_t nal_unit_type) { return usingSource()->isSPS(nal_unit_type); }
+	Boolean isPPS(u_int8_t nal_unit_type) { return usingSource()->isPPS(nal_unit_type); }
+	Boolean isVCL(u_int8_t nal_unit_type) { return usingSource()->isVCL(nal_unit_type); }
 	Boolean isSEI(u_int8_t nal_unit_type);
 	Boolean isEOF(u_int8_t nal_unit_type);
 	Boolean usuallyBeginsAccessUnit(u_int8_t nal_unit_type);
@@ -87,21 +74,13 @@ private:
 
 ////////// H264or5VideoStreamFramer implementation //////////
 
-H264or5VideoStreamFramer
-::H264or5VideoStreamFramer(int hNumber, UsageEnvironment &env, FramedSource *inputSource,
-	Boolean createParser,
-	Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters)
-	: MPEGVideoStreamFramer(env, inputSource),
-	  fHNumber(hNumber), fIncludeStartCodeInOutput(includeStartCodeInOutput),
-	  fInsertAccessUnitDelimiters(insertAccessUnitDelimiters),
-	  fLastSeenVPS(NULL), fLastSeenVPSSize(0),
-	  fLastSeenSPS(NULL), fLastSeenSPSSize(0),
-	  fLastSeenPPS(NULL), fLastSeenPPSSize(0)
+H264or5VideoStreamFramer::H264or5VideoStreamFramer(int hNumber, UsageEnvironment &env,
+	FramedSource *inputSource, Boolean createParser, Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters)
+	: MPEGVideoStreamFramer(env, inputSource), fHNumber(hNumber), fIncludeStartCodeInOutput(includeStartCodeInOutput), fInsertAccessUnitDelimiters(insertAccessUnitDelimiters)
+	, fLastSeenVPS(NULL), fLastSeenVPSSize(0), fLastSeenSPS(NULL), fLastSeenSPSSize(0), fLastSeenPPS(NULL), fLastSeenPPSSize(0)
 {
-	fParser = createParser
-		? new H264or5VideoStreamParser(hNumber, this, inputSource, includeStartCodeInOutput)
-		: NULL;
-	fFrameRate = 25.0; // We assume a frame rate of 25 fps, unless we learn otherwise (from parsing a VPS or SPS NAL unit)
+	fParser = createParser ? new H264or5VideoStreamParser(hNumber, this, inputSource, includeStartCodeInOutput) : NULL;
+	fFrameRate = 30.0; // We assume a frame rate of 30 fps, unless we learn otherwise (from parsing a VPS or SPS NAL unit)
 }
 
 H264or5VideoStreamFramer::~H264or5VideoStreamFramer()
@@ -115,8 +94,7 @@ H264or5VideoStreamFramer::~H264or5VideoStreamFramer()
 
 void H264or5VideoStreamFramer::saveCopyOfVPS(u_int8_t *from, unsigned size)
 {
-	if (from == NULL)
-		return;
+	if (from == NULL) return;
 	delete[] fLastSeenVPS;
 	fLastSeenVPS = new u_int8_t[size];
 	memmove(fLastSeenVPS, from, size);
@@ -128,8 +106,7 @@ void H264or5VideoStreamFramer::saveCopyOfVPS(u_int8_t *from, unsigned size)
 
 void H264or5VideoStreamFramer::saveCopyOfSPS(u_int8_t *from, unsigned size)
 {
-	if (from == NULL)
-		return;
+	if (from == NULL) return;
 	delete[] fLastSeenSPS;
 	fLastSeenSPS = new u_int8_t[size];
 	memmove(fLastSeenSPS, from, size);
@@ -139,8 +116,7 @@ void H264or5VideoStreamFramer::saveCopyOfSPS(u_int8_t *from, unsigned size)
 
 void H264or5VideoStreamFramer::saveCopyOfPPS(u_int8_t *from, unsigned size)
 {
-	if (from == NULL)
-		return;
+	if (from == NULL) return;
 	delete[] fLastSeenPPS;
 	fLastSeenPPS = new u_int8_t[size];
 	memmove(fLastSeenPPS, from, size);
@@ -177,9 +153,7 @@ Boolean H264or5VideoStreamFramer::isPPS(u_int8_t nal_unit_type)
 
 Boolean H264or5VideoStreamFramer::isVCL(u_int8_t nal_unit_type)
 {
-	return fHNumber == 264
-		? (nal_unit_type <= 5 && nal_unit_type > 0)
-		: (nal_unit_type <= 31);
+	return fHNumber == 264 ? (nal_unit_type <= 5 && nal_unit_type > 0) : (nal_unit_type <= 31);
 }
 
 void H264or5VideoStreamFramer::doGetNextFrame()
@@ -191,8 +165,8 @@ void H264or5VideoStreamFramer::doGetNextFrame()
 		unsigned const audNALSize = fHNumber == 264 ? 2 : 3;
 
 		fFrameSize = startCodeSize + audNALSize;
-		if (fFrameSize > fMaxSize)   // there's no space
-		{
+		if (fFrameSize > fMaxSize)
+		{ // there's no space
 			fNumTruncatedBytes = fFrameSize - fMaxSize;
 			fFrameSize = fMaxSize;
 			handleClosure();
@@ -201,18 +175,15 @@ void H264or5VideoStreamFramer::doGetNextFrame()
 
 		if (fIncludeStartCodeInOutput)
 		{
-			*fTo++ = 0x00;
-			*fTo++ = 0x00;
-			*fTo++ = 0x00;
-			*fTo++ = 0x01;
+			*fTo++ = 0x00; *fTo++ = 0x00; *fTo++ = 0x00; *fTo++ = 0x01;
 		}
 		if (fHNumber == 264)
 		{
 			*fTo++ = 9; // "Access unit delimiter" nal_unit_type
 			*fTo++ = 0xF0; // "primary_pic_type" (7); "rbsp_trailing_bits()"
 		}
-		else     // H.265
-		{
+		else
+		{ // H.265
 			*fTo++ = 35 << 1; // "Access unit delimiter" nal_unit_type
 			*fTo++ = 0; // "nuh_layer_id" (0); "nuh_temporal_id_plus1" (0) (Is this correct??)
 			*fTo++ = 0x50; // "pic_type" (2); "rbsp_trailing_bits()" (Is this correct??)
@@ -231,14 +202,10 @@ void H264or5VideoStreamFramer::doGetNextFrame()
 
 ////////// H264or5VideoStreamParser implementation //////////
 
-H264or5VideoStreamParser
-::H264or5VideoStreamParser(int hNumber, H264or5VideoStreamFramer *usingSource,
-	FramedSource *inputSource, Boolean includeStartCodeInOutput)
-	: MPEGVideoStreamParser(usingSource, inputSource),
-	  fHNumber(hNumber), fOutputStartCodeSize(includeStartCodeInOutput ? 4 : 0), fHaveSeenFirstStartCode(False), fHaveSeenFirstByteOfNALUnit(False), fParsedFrameRate(0.0),
-	  cpb_removal_delay_length_minus1(23), dpb_output_delay_length_minus1(23),
-	  CpbDpbDelaysPresentFlag(0), pic_struct_present_flag(0),
-	  DeltaTfiDivisor(2.0)
+H264or5VideoStreamParser::H264or5VideoStreamParser(int hNumber, H264or5VideoStreamFramer *usingSource, FramedSource *inputSource, Boolean includeStartCodeInOutput)
+	: MPEGVideoStreamParser(usingSource, inputSource)
+	, fHNumber(hNumber), fOutputStartCodeSize(includeStartCodeInOutput ? 4 : 0), fHaveSeenFirstStartCode(False), fHaveSeenFirstByteOfNALUnit(False), fParsedFrameRate(0.0)
+	, cpb_removal_delay_length_minus1(23), dpb_output_delay_length_minus1(23), CpbDpbDelaysPresentFlag(0), pic_struct_present_flag(0), DeltaTfiDivisor(hNumber == 264 ? 2.0 : 1.0)
 {
 }
 
@@ -250,139 +217,129 @@ H264or5VideoStreamParser::~H264or5VideoStreamParser()
 #define SUFFIX_SEI_NUT 40 // for H.265
 Boolean H264or5VideoStreamParser::isSEI(u_int8_t nal_unit_type)
 {
-	return fHNumber == 264
-		? nal_unit_type == 6
-		: (nal_unit_type == PREFIX_SEI_NUT || nal_unit_type == SUFFIX_SEI_NUT);
+	return fHNumber == 264 ? nal_unit_type == 6 : (nal_unit_type == PREFIX_SEI_NUT || nal_unit_type == SUFFIX_SEI_NUT);
 }
 
 Boolean H264or5VideoStreamParser::isEOF(u_int8_t nal_unit_type)
 {
 	// "end of sequence" or "end of (bit)stream"
-	return fHNumber == 264
-		? (nal_unit_type == 10 || nal_unit_type == 11)
-		: (nal_unit_type == 36 || nal_unit_type == 37);
+	return fHNumber == 264 ? (nal_unit_type == 10 || nal_unit_type == 11) : (nal_unit_type == 36 || nal_unit_type == 37);
 }
 
 Boolean H264or5VideoStreamParser::usuallyBeginsAccessUnit(u_int8_t nal_unit_type)
 {
 	return fHNumber == 264
 		? (nal_unit_type >= 6 && nal_unit_type <= 9) || (nal_unit_type >= 14 && nal_unit_type <= 18)
-		: (nal_unit_type >= 32 && nal_unit_type <= 35) || (nal_unit_type == 39)
-		|| (nal_unit_type >= 41 && nal_unit_type <= 44)
-		|| (nal_unit_type >= 48 && nal_unit_type <= 55);
+		: (nal_unit_type >= 32 && nal_unit_type <= 35) || (nal_unit_type == 39) || (nal_unit_type >= 41 && nal_unit_type <= 44) || (nal_unit_type >= 48 && nal_unit_type <= 55);
 }
 
-void H264or5VideoStreamParser
-::removeEmulationBytes(u_int8_t *nalUnitCopy, unsigned maxSize, unsigned &nalUnitCopySize)
+void H264or5VideoStreamParser::removeEmulationBytes(u_int8_t *nalUnitCopy, unsigned maxSize, unsigned &nalUnitCopySize)
 {
 	u_int8_t const *nalUnitOrig = fStartOfFrame + fOutputStartCodeSize;
 	unsigned const numBytesInNALunit = fTo - nalUnitOrig;
-	nalUnitCopySize
-		= removeH264or5EmulationBytes(nalUnitCopy, maxSize, nalUnitOrig, numBytesInNALunit);
+	nalUnitCopySize = removeH264or5EmulationBytes(nalUnitCopy, maxSize, nalUnitOrig, numBytesInNALunit);
 }
 
 #ifdef DEBUG
-char const *nal_unit_type_description_h264[32] =
-{
-	"Unspecified", //0
-	"Coded slice of a non-IDR picture", //1
-	"Coded slice data partition A", //2
-	"Coded slice data partition B", //3
-	"Coded slice data partition C", //4
-	"Coded slice of an IDR picture", //5
-	"Supplemental enhancement information (SEI)", //6
-	"Sequence parameter set", //7
-	"Picture parameter set", //8
-	"Access unit delimiter", //9
-	"End of sequence", //10
-	"End of stream", //11
-	"Filler data", //12
-	"Sequence parameter set extension", //13
-	"Prefix NAL unit", //14
-	"Subset sequence parameter set", //15
-	"Reserved", //16
-	"Reserved", //17
-	"Reserved", //18
-	"Coded slice of an auxiliary coded picture without partitioning", //19
-	"Coded slice extension", //20
-	"Reserved", //21
-	"Reserved", //22
-	"Reserved", //23
-	"Unspecified", //24
-	"Unspecified", //25
-	"Unspecified", //26
-	"Unspecified", //27
-	"Unspecified", //28
-	"Unspecified", //29
-	"Unspecified", //30
-	"Unspecified" //31
+char const *nal_unit_type_description_h264[32] = {
+  "Unspecified", //0
+  "Coded slice of a non-IDR picture", //1
+  "Coded slice data partition A", //2
+  "Coded slice data partition B", //3
+  "Coded slice data partition C", //4
+  "Coded slice of an IDR picture", //5
+  "Supplemental enhancement information (SEI)", //6
+  "Sequence parameter set", //7
+  "Picture parameter set", //8
+  "Access unit delimiter", //9
+  "End of sequence", //10
+  "End of stream", //11
+  "Filler data", //12
+  "Sequence parameter set extension", //13
+  "Prefix NAL unit", //14
+  "Subset sequence parameter set", //15
+  "Reserved", //16
+  "Reserved", //17
+  "Reserved", //18
+  "Coded slice of an auxiliary coded picture without partitioning", //19
+  "Coded slice extension", //20
+  "Reserved", //21
+  "Reserved", //22
+  "Reserved", //23
+  "Unspecified", //24
+  "Unspecified", //25
+  "Unspecified", //26
+  "Unspecified", //27
+  "Unspecified", //28
+  "Unspecified", //29
+  "Unspecified", //30
+  "Unspecified" //31
 };
-char const *nal_unit_type_description_h265[64] =
-{
-	"Coded slice segment of a non-TSA, non-STSA trailing picture", //0
-	"Coded slice segment of a non-TSA, non-STSA trailing picture", //1
-	"Coded slice segment of a TSA picture", //2
-	"Coded slice segment of a TSA picture", //3
-	"Coded slice segment of a STSA picture", //4
-	"Coded slice segment of a STSA picture", //5
-	"Coded slice segment of a RADL picture", //6
-	"Coded slice segment of a RADL picture", //7
-	"Coded slice segment of a RASL picture", //8
-	"Coded slice segment of a RASL picture", //9
-	"Reserved", //10
-	"Reserved", //11
-	"Reserved", //12
-	"Reserved", //13
-	"Reserved", //14
-	"Reserved", //15
-	"Coded slice segment of a BLA picture", //16
-	"Coded slice segment of a BLA picture", //17
-	"Coded slice segment of a BLA picture", //18
-	"Coded slice segment of an IDR picture", //19
-	"Coded slice segment of an IDR picture", //20
-	"Coded slice segment of a CRA picture", //21
-	"Reserved", //22
-	"Reserved", //23
-	"Reserved", //24
-	"Reserved", //25
-	"Reserved", //26
-	"Reserved", //27
-	"Reserved", //28
-	"Reserved", //29
-	"Reserved", //30
-	"Reserved", //31
-	"Video parameter set", //32
-	"Sequence parameter set", //33
-	"Picture parameter set", //34
-	"Access unit delimiter", //35
-	"End of sequence", //36
-	"End of bitstream", //37
-	"Filler data", //38
-	"Supplemental enhancement information (SEI)", //39
-	"Supplemental enhancement information (SEI)", //40
-	"Reserved", //41
-	"Reserved", //42
-	"Reserved", //43
-	"Reserved", //44
-	"Reserved", //45
-	"Reserved", //46
-	"Reserved", //47
-	"Unspecified", //48
-	"Unspecified", //49
-	"Unspecified", //50
-	"Unspecified", //51
-	"Unspecified", //52
-	"Unspecified", //53
-	"Unspecified", //54
-	"Unspecified", //55
-	"Unspecified", //56
-	"Unspecified", //57
-	"Unspecified", //58
-	"Unspecified", //59
-	"Unspecified", //60
-	"Unspecified", //61
-	"Unspecified", //62
-	"Unspecified", //63
+char const *nal_unit_type_description_h265[64] = {
+  "Coded slice segment of a non-TSA, non-STSA trailing picture", //0
+  "Coded slice segment of a non-TSA, non-STSA trailing picture", //1
+  "Coded slice segment of a TSA picture", //2
+  "Coded slice segment of a TSA picture", //3
+  "Coded slice segment of a STSA picture", //4
+  "Coded slice segment of a STSA picture", //5
+  "Coded slice segment of a RADL picture", //6
+  "Coded slice segment of a RADL picture", //7
+  "Coded slice segment of a RASL picture", //8
+  "Coded slice segment of a RASL picture", //9
+  "Reserved", //10
+  "Reserved", //11
+  "Reserved", //12
+  "Reserved", //13
+  "Reserved", //14
+  "Reserved", //15
+  "Coded slice segment of a BLA picture", //16
+  "Coded slice segment of a BLA picture", //17
+  "Coded slice segment of a BLA picture", //18
+  "Coded slice segment of an IDR picture", //19
+  "Coded slice segment of an IDR picture", //20
+  "Coded slice segment of a CRA picture", //21
+  "Reserved", //22
+  "Reserved", //23
+  "Reserved", //24
+  "Reserved", //25
+  "Reserved", //26
+  "Reserved", //27
+  "Reserved", //28
+  "Reserved", //29
+  "Reserved", //30
+  "Reserved", //31
+  "Video parameter set", //32
+  "Sequence parameter set", //33
+  "Picture parameter set", //34
+  "Access unit delimiter", //35
+  "End of sequence", //36
+  "End of bitstream", //37
+  "Filler data", //38
+  "Supplemental enhancement information (SEI)", //39
+  "Supplemental enhancement information (SEI)", //40
+  "Reserved", //41
+  "Reserved", //42
+  "Reserved", //43
+  "Reserved", //44
+  "Reserved", //45
+  "Reserved", //46
+  "Reserved", //47
+  "Unspecified", //48
+  "Unspecified", //49
+  "Unspecified", //50
+  "Unspecified", //51
+  "Unspecified", //52
+  "Unspecified", //53
+  "Unspecified", //54
+  "Unspecified", //55
+  "Unspecified", //56
+  "Unspecified", //57
+  "Unspecified", //58
+  "Unspecified", //59
+  "Unspecified", //60
+  "Unspecified", //61
+  "Unspecified", //62
+  "Unspecified", //63
 };
 #endif
 
@@ -394,14 +351,8 @@ static unsigned numDebugTabs = 1;
 class DebugTab
 {
 public:
-	DebugTab()
-	{
-		++numDebugTabs;
-	}
-	~DebugTab()
-	{
-		--numDebugTabs;
-	}
+	DebugTab() { ++numDebugTabs; }
+	~DebugTab() { --numDebugTabs; }
 };
 #define DEBUG_TAB DebugTab dummy
 #else
@@ -439,9 +390,7 @@ void H264or5VideoStreamParser::profile_tier_level(BitVector &bv, unsigned max_su
 	}
 }
 
-void H264or5VideoStreamParser
-::analyze_vui_parameters(BitVector &bv,
-	unsigned &num_units_in_tick, unsigned &time_scale)
+void H264or5VideoStreamParser::analyze_vui_parameters(BitVector &bv, unsigned &num_units_in_tick, unsigned &time_scale)
 {
 	Boolean aspect_ratio_info_present_flag = bv.get1BitBoolean();
 	DEBUG_PRINT(aspect_ratio_info_present_flag);
@@ -511,8 +460,8 @@ void H264or5VideoStreamParser
 			Boolean fixed_frame_rate_flag = bv.get1BitBoolean();
 			DEBUG_PRINT(fixed_frame_rate_flag);
 		}
-		else     // 265
-		{
+		else
+		{ // 265
 			Boolean vui_poc_proportional_to_timing_flag = bv.get1BitBoolean();
 			DEBUG_PRINT(vui_poc_proportional_to_timing_flag);
 			if (vui_poc_proportional_to_timing_flag)
@@ -526,12 +475,10 @@ void H264or5VideoStreamParser
 	// The following is H.264 only: #####
 	Boolean nal_hrd_parameters_present_flag = bv.get1BitBoolean();
 	DEBUG_PRINT(nal_hrd_parameters_present_flag);
-	if (nal_hrd_parameters_present_flag)
-		analyze_hrd_parameters(bv);
+	if (nal_hrd_parameters_present_flag) analyze_hrd_parameters(bv);
 	Boolean vcl_hrd_parameters_present_flag = bv.get1BitBoolean();
 	DEBUG_PRINT(vcl_hrd_parameters_present_flag);
-	if (vcl_hrd_parameters_present_flag)
-		analyze_hrd_parameters(bv);
+	if (vcl_hrd_parameters_present_flag) analyze_hrd_parameters(bv);
 	CpbDpbDelaysPresentFlag = nal_hrd_parameters_present_flag || vcl_hrd_parameters_present_flag;
 	if (CpbDpbDelaysPresentFlag)
 	{
@@ -571,8 +518,7 @@ void H264or5VideoStreamParser::analyze_hrd_parameters(BitVector &bv)
 	DEBUG_PRINT(time_offset_length);
 }
 
-void H264or5VideoStreamParser
-::analyze_video_parameter_set_data(unsigned &num_units_in_tick, unsigned &time_scale)
+void H264or5VideoStreamParser::analyze_video_parameter_set_data(unsigned &num_units_in_tick, unsigned &time_scale)
 {
 	num_units_in_tick = time_scale = 0; // default values
 
@@ -593,8 +539,7 @@ void H264or5VideoStreamParser
 	profile_tier_level(bv, vps_max_sub_layers_minus1);
 	Boolean vps_sub_layer_ordering_info_present_flag = bv.get1BitBoolean();
 	DEBUG_PRINT(vps_sub_layer_ordering_info_present_flag);
-	for (i = vps_sub_layer_ordering_info_present_flag ? 0 : vps_max_sub_layers_minus1;
-		i <= vps_max_sub_layers_minus1; ++i)
+	for (i = vps_sub_layer_ordering_info_present_flag ? 0 : vps_max_sub_layers_minus1; i <= vps_max_sub_layers_minus1; ++i)
 	{
 		(void)bv.get_expGolomb(); // vps_max_dec_pic_buffering_minus1[i]
 		(void)bv.get_expGolomb(); // vps_max_num_reorder_pics[i]
@@ -629,8 +574,7 @@ void H264or5VideoStreamParser
 	DEBUG_PRINT(vps_extension_flag);
 }
 
-void H264or5VideoStreamParser
-::analyze_seq_parameter_set_data(unsigned &num_units_in_tick, unsigned &time_scale)
+void H264or5VideoStreamParser::analyze_seq_parameter_set_data(unsigned &num_units_in_tick, unsigned &time_scale)
 {
 	num_units_in_tick = time_scale = 0; // default values
 
@@ -652,7 +596,8 @@ void H264or5VideoStreamParser
 		DEBUG_PRINT(level_idc);
 		unsigned seq_parameter_set_id = bv.get_expGolomb();
 		DEBUG_PRINT(seq_parameter_set_id);
-		if (profile_idc == 100 || profile_idc == 110 || profile_idc == 122 || profile_idc == 244 || profile_idc == 44 || profile_idc == 83 || profile_idc == 86 || profile_idc == 118 || profile_idc == 128)
+		if (profile_idc == 100 || profile_idc == 110 || profile_idc == 122 || profile_idc == 244
+			|| profile_idc == 44 || profile_idc == 83 || profile_idc == 86 || profile_idc == 118 || profile_idc == 128)
 		{
 			DEBUG_TAB;
 			unsigned chroma_format_idc = bv.get_expGolomb();
@@ -756,8 +701,8 @@ void H264or5VideoStreamParser
 			analyze_vui_parameters(bv, num_units_in_tick, time_scale);
 		}
 	}
-	else     // 265
-	{
+	else
+	{ // 265
 		unsigned i;
 
 		bv.skipBits(16); // nal_unit_header
@@ -769,8 +714,7 @@ void H264or5VideoStreamParser
 		(void)bv.get_expGolomb(); // sps_seq_parameter_set_id
 		unsigned chroma_format_idc = bv.get_expGolomb();
 		DEBUG_PRINT(chroma_format_idc);
-		if (chroma_format_idc == 3)
-			bv.skipBits(1); // separate_colour_plane_flag
+		if (chroma_format_idc == 3) bv.skipBits(1); // separate_colour_plane_flag
 		unsigned pic_width_in_luma_samples = bv.get_expGolomb();
 		DEBUG_PRINT(pic_width_in_luma_samples);
 		unsigned pic_height_in_luma_samples = bv.get_expGolomb();
@@ -889,8 +833,7 @@ void H264or5VideoStreamParser
 					DEBUG_PRINT(j);
 					Boolean used_by_curr_pic_flag = bv.get1BitBoolean();
 					DEBUG_PRINT(used_by_curr_pic_flag);
-					if (!used_by_curr_pic_flag)
-						bv.skipBits(1); // use_delta_flag[j]
+					if (!used_by_curr_pic_flag) bv.skipBits(1); // use_delta_flag[j]
 				}
 			}
 			else
@@ -944,55 +887,54 @@ void H264or5VideoStreamParser
 
 #ifdef DEBUG
 #define MAX_SEI_PAYLOAD_TYPE_DESCRIPTION_H264 46
-char const *sei_payloadType_description_h264[MAX_SEI_PAYLOAD_TYPE_DESCRIPTION_H264 + 1] =
-{
-	"buffering_period", //0
-	"pic_timing", //1
-	"pan_scan_rect", //2
-	"filler_payload", //3
-	"user_data_registered_itu_t_t35", //4
-	"user_data_unregistered", //5
-	"recovery_point", //6
-	"dec_ref_pic_marking_repetition", //7
-	"spare_pic", //8
-	"scene_info", //9
-	"sub_seq_info", //10
-	"sub_seq_layer_characteristics", //11
-	"sub_seq_characteristics", //12
-	"full_frame_freeze", //13
-	"full_frame_freeze_release", //14
-	"full_frame_snapshot", //15
-	"progressive_refinement_segment_start", //16
-	"progressive_refinement_segment_end", //17
-	"motion_constrained_slice_group_set", //18
-	"film_grain_characteristics", //19
-	"deblocking_filter_display_preference", //20
-	"stereo_video_info", //21
-	"post_filter_hint", //22
-	"tone_mapping_info", //23
-	"scalability_info", //24
-	"sub_pic_scalable_layer", //25
-	"non_required_layer_rep", //26
-	"priority_layer_info", //27
-	"layers_not_present", //28
-	"layer_dependency_change", //29
-	"scalable_nesting", //30
-	"base_layer_temporal_hrd", //31
-	"quality_layer_integrity_check", //32
-	"redundant_pic_property", //33
-	"tl0_dep_rep_index", //34
-	"tl_switching_point", //35
-	"parallel_decoding_info", //36
-	"mvc_scalable_nesting", //37
-	"view_scalability_info", //38
-	"multiview_scene_info", //39
-	"multiview_acquisition_info", //40
-	"non_required_view_component", //41
-	"view_dependency_change", //42
-	"operation_points_not_present", //43
-	"base_view_temporal_hrd", //44
-	"frame_packing_arrangement", //45
-	"reserved_sei_message" // 46 or higher
+char const *sei_payloadType_description_h264[MAX_SEI_PAYLOAD_TYPE_DESCRIPTION_H264 + 1] = {
+  "buffering_period", //0
+  "pic_timing", //1
+  "pan_scan_rect", //2
+  "filler_payload", //3
+  "user_data_registered_itu_t_t35", //4
+  "user_data_unregistered", //5
+  "recovery_point", //6
+  "dec_ref_pic_marking_repetition", //7
+  "spare_pic", //8
+  "scene_info", //9
+  "sub_seq_info", //10
+  "sub_seq_layer_characteristics", //11
+  "sub_seq_characteristics", //12
+  "full_frame_freeze", //13
+  "full_frame_freeze_release", //14
+  "full_frame_snapshot", //15
+  "progressive_refinement_segment_start", //16
+  "progressive_refinement_segment_end", //17
+  "motion_constrained_slice_group_set", //18
+  "film_grain_characteristics", //19
+  "deblocking_filter_display_preference", //20
+  "stereo_video_info", //21
+  "post_filter_hint", //22
+  "tone_mapping_info", //23
+  "scalability_info", //24
+  "sub_pic_scalable_layer", //25
+  "non_required_layer_rep", //26
+  "priority_layer_info", //27
+  "layers_not_present", //28
+  "layer_dependency_change", //29
+  "scalable_nesting", //30
+  "base_layer_temporal_hrd", //31
+  "quality_layer_integrity_check", //32
+  "redundant_pic_property", //33
+  "tl0_dep_rep_index", //34
+  "tl_switching_point", //35
+  "parallel_decoding_info", //36
+  "mvc_scalable_nesting", //37
+  "view_scalability_info", //38
+  "multiview_scene_info", //39
+  "multiview_acquisition_info", //40
+  "non_required_view_component", //41
+  "view_dependency_change", //42
+  "operation_points_not_present", //43
+  "base_view_temporal_hrd", //44
+  "frame_packing_arrangement", //45
+  "reserved_sei_message" // 46 or higher
 };
 #endif
 
@@ -1003,7 +945,7 @@ void H264or5VideoStreamParser::analyze_sei_data(u_int8_t nal_unit_type)
 	unsigned seiSize;
 	removeEmulationBytes(sei, sizeof sei, seiSize);
 
-	unsigned j = 1; // skip the initial byte (forbidden_zero_bit; nal_ref_idc; nal_unit_type); we've already seen it
+	unsigned j = 1; // skip the initial byte (forbidden_zero_bit; nal_ref_idc; nal_unit_type); we've already seen it 
 	while (j < seiSize)
 	{
 		unsigned payloadType = 0;
@@ -1011,16 +953,14 @@ void H264or5VideoStreamParser::analyze_sei_data(u_int8_t nal_unit_type)
 		{
 			payloadType += sei[j];
 		} while (sei[j++] == 255 && j < seiSize);
-		if (j >= seiSize)
-			break;
+		if (j >= seiSize) break;
 
 		unsigned payloadSize = 0;
 		do
 		{
 			payloadSize += sei[j];
 		} while (sei[j++] == 255 && j < seiSize);
-		if (j >= seiSize)
-			break;
+		if (j >= seiSize) break;
 
 #ifdef DEBUG
 		char const *description;
@@ -1030,8 +970,8 @@ void H264or5VideoStreamParser::analyze_sei_data(u_int8_t nal_unit_type)
 				? payloadType : MAX_SEI_PAYLOAD_TYPE_DESCRIPTION_H264;
 			description = sei_payloadType_description_h264[descriptionNum];
 		}
-		else     // 265
-		{
+		else
+		{ // 265
 			description =
 				payloadType == 3 ? "filler_payload" :
 				payloadType == 4 ? "user_data_registered_itu_t_t35" :
@@ -1066,8 +1006,7 @@ void H264or5VideoStreamParser::analyze_sei_data(u_int8_t nal_unit_type)
 	}
 }
 
-void H264or5VideoStreamParser
-::analyze_sei_payload(unsigned payloadType, unsigned payloadSize, u_int8_t *payload)
+void H264or5VideoStreamParser::analyze_sei_payload(unsigned payloadType, unsigned payloadSize, u_int8_t *payload)
 {
 	if (payloadType == 1/* pic_timing, for both H.264 and H.265 */)
 	{
@@ -1098,8 +1037,8 @@ void H264or5VideoStreamParser
 					pic_struct == 8 ? 6.0 :
 					2.0;
 			}
-			else     // H.265
-			{
+			else
+			{ // H.265
 				DeltaTfiDivisor =
 					pic_struct == 0 ? 2.0 :
 					pic_struct <= 2 ? 1.0 :
@@ -1117,8 +1056,8 @@ void H264or5VideoStreamParser
 			{
 				// Need to get field_pic_flag from slice_header to set this properly! #####
 			}
-			else     // H.265
-			{
+			else
+			{ // H.265
 				DeltaTfiDivisor = 1.0;
 			}
 		}
@@ -1155,8 +1094,7 @@ unsigned H264or5VideoStreamParser::parse()
 			u_int32_t first4Bytes;
 			while ((first4Bytes = test4Bytes()) != 0x00000001)
 			{
-				get1Byte();
-				setParseState(); // ensures that we progress over bad data
+				get1Byte(); setParseState(); // ensures that we progress over bad data
 			}
 			skipBytes(4); // skip this initial code
 
@@ -1171,7 +1109,7 @@ unsigned H264or5VideoStreamParser::parse()
 		}
 
 		// Then save everything up until the next 0x00000001 (4 bytes) or 0x000001 (3 bytes), or we hit EOF.
-		// Also make note of the first byte, because it contains the "nal_unit_type":
+		// Also make note of the first byte, because it contains the "nal_unit_type": 
 		if (haveSeenEOF())
 		{
 			// We hit EOF the last time that we tried to parse this data, so we know that any remaining unparsed data
@@ -1200,8 +1138,8 @@ unsigned H264or5VideoStreamParser::parse()
 				fprintf(stderr, "Parsed trailing %d-byte NAL-unit (nal_ref_idc: %d, nal_unit_type: %d (\"%s\"))\n",
 					trailingNALUnitSize, nal_ref_idc, nal_unit_type, nal_unit_type_description_h264[nal_unit_type]);
 			}
-			else     // 265
-			{
+			else
+			{ // 265
 				u_int8_t nal_unit_type = (fFirstByteOfNALUnit & 0x7E) >> 1;
 				fprintf(stderr, "Parsed trailing %d-byte NAL-unit (nal_unit_type: %d (\"%s\"))\n",
 					trailingNALUnitSize, nal_unit_type, nal_unit_type_description_h265[nal_unit_type]);
@@ -1260,8 +1198,8 @@ unsigned H264or5VideoStreamParser::parse()
 				curFrameSize() - fOutputStartCodeSize, nal_ref_idc, nal_unit_type, nal_unit_type_description_h264[nal_unit_type]);
 #endif
 		}
-		else     // 265
-		{
+		else
+		{ // 265
 			nal_unit_type = (fFirstByteOfNALUnit & 0x7E) >> 1;
 #ifdef DEBUG
 			fprintf(stderr, "Parsed %d-byte NAL-unit (nal_unit_type: %d (\"%s\"))\n",
@@ -1270,8 +1208,9 @@ unsigned H264or5VideoStreamParser::parse()
 		}
 
 		// Now that we have found (& copied) a NAL unit, process it if it's of special interest to us:
-		if (isVPS(nal_unit_type))   // Video parameter set
+		if (isVPS(nal_unit_type))
 		{
+			// Video parameter set
 			// First, save a copy of this NAL unit, in case the downstream object wants to see it:
 			usingSource()->saveCopyOfVPS(fStartOfFrame + fOutputStartCodeSize, curFrameSize() - fOutputStartCodeSize);
 
@@ -1283,8 +1222,7 @@ unsigned H264or5VideoStreamParser::parse()
 				analyze_video_parameter_set_data(num_units_in_tick, time_scale);
 				if (time_scale > 0 && num_units_in_tick > 0)
 				{
-					usingSource()->fFrameRate = fParsedFrameRate
-						= time_scale / (DeltaTfiDivisor * num_units_in_tick);
+					usingSource()->fFrameRate = fParsedFrameRate = time_scale / (DeltaTfiDivisor * num_units_in_tick);
 #ifdef DEBUG
 					fprintf(stderr, "Set frame rate to %f fps\n", usingSource()->fFrameRate);
 #endif
@@ -1297,8 +1235,9 @@ unsigned H264or5VideoStreamParser::parse()
 				}
 			}
 		}
-		else if (isSPS(nal_unit_type))     // Sequence parameter set
+		else if (isSPS(nal_unit_type))
 		{
+			// Sequence parameter set
 			// First, save a copy of this NAL unit, in case the downstream object wants to see it:
 			usingSource()->saveCopyOfSPS(fStartOfFrame + fOutputStartCodeSize, curFrameSize() - fOutputStartCodeSize);
 
@@ -1310,8 +1249,7 @@ unsigned H264or5VideoStreamParser::parse()
 				analyze_seq_parameter_set_data(num_units_in_tick, time_scale);
 				if (time_scale > 0 && num_units_in_tick > 0)
 				{
-					usingSource()->fFrameRate = fParsedFrameRate
-						= time_scale / (DeltaTfiDivisor * num_units_in_tick);
+					usingSource()->fFrameRate = fParsedFrameRate = time_scale / (DeltaTfiDivisor * num_units_in_tick);
 #ifdef DEBUG
 					fprintf(stderr, "Set frame rate to %f fps\n", usingSource()->fFrameRate);
 #endif
@@ -1324,13 +1262,15 @@ unsigned H264or5VideoStreamParser::parse()
 				}
 			}
 		}
-		else if (isPPS(nal_unit_type))     // Picture parameter set
+		else if (isPPS(nal_unit_type))
 		{
+			// Picture parameter set
 			// Save a copy of this NAL unit, in case the downstream object wants to see it:
 			usingSource()->saveCopyOfPPS(fStartOfFrame + fOutputStartCodeSize, curFrameSize() - fOutputStartCodeSize);
 		}
-		else if (isSEI(nal_unit_type))     // Supplemental enhancement information (SEI)
+		else if (isSEI(nal_unit_type))
 		{
+			// Supplemental enhancement information (SEI)
 			analyze_sei_data(nal_unit_type);
 			// Later, perhaps adjust "fPresentationTime" if we saw a "pic_timing" SEI payload??? #####
 		}
@@ -1362,14 +1302,12 @@ unsigned H264or5VideoStreamParser::parse()
 			u_int8_t firstBytesOfNextNALUnit[3];
 			testBytes(firstBytesOfNextNALUnit, 3);
 
-			u_int8_t const &next_nal_unit_type = fHNumber == 264
-				? (firstBytesOfNextNALUnit[0] & 0x1F) : ((firstBytesOfNextNALUnit[0] & 0x7E) >> 1);
+			u_int8_t const &next_nal_unit_type = fHNumber == 264 ? (firstBytesOfNextNALUnit[0] & 0x1F) : ((firstBytesOfNextNALUnit[0] & 0x7E) >> 1);
 			if (isVCL(next_nal_unit_type))
 			{
 				// The high-order bit of the byte after the "nal_unit_header" tells us whether it's
 				// the start of a new 'access unit' (and thus the current NAL unit ends an 'access unit'):
-				u_int8_t const byteAfter_nal_unit_header
-					= fHNumber == 264 ? firstBytesOfNextNALUnit[1] : firstBytesOfNextNALUnit[2];
+				u_int8_t const byteAfter_nal_unit_header = fHNumber == 264 ? firstBytesOfNextNALUnit[1] : firstBytesOfNextNALUnit[2];
 				thisNALUnitEndsAccessUnit = (byteAfter_nal_unit_header & 0x80) != 0;
 			}
 			else if (usuallyBeginsAccessUnit(next_nal_unit_type))
@@ -1415,8 +1353,7 @@ unsigned H264or5VideoStreamParser::parse()
 	}
 }
 
-unsigned removeH264or5EmulationBytes(u_int8_t *to, unsigned toMaxSize,
-	u_int8_t const *from, unsigned fromSize)
+unsigned removeH264or5EmulationBytes(u_int8_t *to, unsigned toMaxSize, u_int8_t const *from, unsigned fromSize)
 {
 	unsigned toSize = 0;
 	unsigned i = 0;

@@ -35,8 +35,7 @@ Boolean reuseFirstSource = False;
 // change the following "False" to "True":
 Boolean iFramesOnly = False;
 
-static void announceStream(RTSPServer *rtspServer, ServerMediaSession *sms,
-	char const *streamName, char const *inputFileName); // forward
+static void announceStream(RTSPServer *rtspServer, ServerMediaSession *sms, char const *streamName, char const *inputFileName); // forward
 
 static char newDemuxWatchVariable;
 
@@ -77,8 +76,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	char const *descriptionString
-		= "Session streamed by \"testOnDemandRTSPServer\"";
+	char const *descriptionString = "Session streamed by \"testOnDemandRTSPServer\"";
 
 	// Set up each of the possible streams that can be served by the
 	// RTSP server.  Each such stream is implemented using a
@@ -89,11 +87,8 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "mpeg4ESVideoTest";
 		char const *inputFileName = "test.m4e";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
-		sms->addSubsession(MPEG4VideoFileServerMediaSubsession
-			::createNew(*env, inputFileName, reuseFirstSource));
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
+		sms->addSubsession(MPEG4VideoFileServerMediaSubsession::createNew(*env, inputFileName, reuseFirstSource));
 		rtspServer->addServerMediaSession(sms);
 
 		announceStream(rtspServer, sms, streamName, inputFileName);
@@ -103,11 +98,8 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "h264ESVideoTest";
 		char const *inputFileName = "test.264";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
-		sms->addSubsession(H264VideoFileServerMediaSubsession
-			::createNew(*env, inputFileName, reuseFirstSource));
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
+		sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(*env, inputFileName, reuseFirstSource));
 		rtspServer->addServerMediaSession(sms);
 
 		announceStream(rtspServer, sms, streamName, inputFileName);
@@ -117,11 +109,8 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "h265ESVideoTest";
 		char const *inputFileName = "test.265";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
-		sms->addSubsession(H265VideoFileServerMediaSubsession
-			::createNew(*env, inputFileName, reuseFirstSource));
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
+		sms->addSubsession(H265VideoFileServerMediaSubsession::createNew(*env, inputFileName, reuseFirstSource));
 		rtspServer->addServerMediaSession(sms);
 
 		announceStream(rtspServer, sms, streamName, inputFileName);
@@ -132,11 +121,8 @@ int main(int argc, char **argv)
 		char const *streamName = "mpeg1or2AudioVideoTest";
 		char const *inputFileName = "test.mpg";
 		// NOTE: This *must* be a Program Stream; not an Elementary Stream
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
-		MPEG1or2FileServerDemux *demux
-			= MPEG1or2FileServerDemux::createNew(*env, inputFileName, reuseFirstSource);
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
+		MPEG1or2FileServerDemux *demux = MPEG1or2FileServerDemux::createNew(*env, inputFileName, reuseFirstSource);
 		sms->addSubsession(demux->newVideoServerMediaSubsession(iFramesOnly));
 		sms->addSubsession(demux->newAudioServerMediaSubsession());
 		rtspServer->addServerMediaSession(sms);
@@ -149,11 +135,8 @@ int main(int argc, char **argv)
 		char const *streamName = "mpeg1or2ESVideoTest";
 		char const *inputFileName = "testv.mpg";
 		// NOTE: This *must* be a Video Elementary Stream; not a Program Stream
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
-		sms->addSubsession(MPEG1or2VideoFileServerMediaSubsession
-			::createNew(*env, inputFileName, reuseFirstSource, iFramesOnly));
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
+		sms->addSubsession(MPEG1or2VideoFileServerMediaSubsession::createNew(*env, inputFileName, reuseFirstSource, iFramesOnly));
 		rtspServer->addServerMediaSession(sms);
 
 		announceStream(rtspServer, sms, streamName, inputFileName);
@@ -169,25 +152,19 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "mp3AudioTest";
 		char const *inputFileName = "test.mp3";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
 		Boolean useADUs = False;
 		Interleaving *interleaving = NULL;
 #ifdef STREAM_USING_ADUS
 		useADUs = True;
 #ifdef INTERLEAVE_ADUS
-		unsigned char interleaveCycle[] = {0, 2, 1, 3}; // or choose your own...
-		unsigned const interleaveCycleSize
-			= (sizeof interleaveCycle) / (sizeof(unsigned char));
+		unsigned char interleaveCycle[] = { 0, 2, 1, 3 }; // or choose your own...
+		unsigned const interleaveCycleSize = (sizeof interleaveCycle) / (sizeof(unsigned char));
 		interleaving = new Interleaving(interleaveCycleSize, interleaveCycle);
 #endif
 #endif
-		sms->addSubsession(MP3AudioFileServerMediaSubsession
-			::createNew(*env, inputFileName, reuseFirstSource,
-				useADUs, interleaving));
+		sms->addSubsession(MP3AudioFileServerMediaSubsession::createNew(*env, inputFileName, reuseFirstSource, useADUs, interleaving));
 		rtspServer->addServerMediaSession(sms);
-
 		announceStream(rtspServer, sms, streamName, inputFileName);
 	}
 
@@ -195,14 +172,11 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "wavAudioTest";
 		char const *inputFileName = "test.wav";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
 		// To convert 16-bit PCM data to 8-bit u-law, prior to streaming,
 		// change the following to True:
 		Boolean convertToULaw = False;
-		sms->addSubsession(WAVAudioFileServerMediaSubsession
-			::createNew(*env, inputFileName, reuseFirstSource, convertToULaw));
+		sms->addSubsession(WAVAudioFileServerMediaSubsession::createNew(*env, inputFileName, reuseFirstSource, convertToULaw));
 		rtspServer->addServerMediaSession(sms);
 
 		announceStream(rtspServer, sms, streamName, inputFileName);
@@ -212,11 +186,8 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "amrAudioTest";
 		char const *inputFileName = "test.amr";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
-		sms->addSubsession(AMRAudioFileServerMediaSubsession
-			::createNew(*env, inputFileName, reuseFirstSource));
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
+		sms->addSubsession(AMRAudioFileServerMediaSubsession::createNew(*env, inputFileName, reuseFirstSource));
 		rtspServer->addServerMediaSession(sms);
 
 		announceStream(rtspServer, sms, streamName, inputFileName);
@@ -226,12 +197,9 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "vobTest";
 		char const *inputFileName = "test.vob";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
 		// Note: VOB files are MPEG-2 Program Stream files, but using AC-3 audio
-		MPEG1or2FileServerDemux *demux
-			= MPEG1or2FileServerDemux::createNew(*env, inputFileName, reuseFirstSource);
+		MPEG1or2FileServerDemux *demux = MPEG1or2FileServerDemux::createNew(*env, inputFileName, reuseFirstSource);
 		sms->addSubsession(demux->newVideoServerMediaSubsession(iFramesOnly));
 		sms->addSubsession(demux->newAC3AudioServerMediaSubsession());
 		rtspServer->addServerMediaSession(sms);
@@ -244,11 +212,8 @@ int main(int argc, char **argv)
 		char const *streamName = "mpeg2TransportStreamTest";
 		char const *inputFileName = "test.ts";
 		char const *indexFileName = "test.tsx";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
-		sms->addSubsession(MPEG2TransportFileServerMediaSubsession
-			::createNew(*env, inputFileName, indexFileName, reuseFirstSource));
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
+		sms->addSubsession(MPEG2TransportFileServerMediaSubsession::createNew(*env, inputFileName, indexFileName, reuseFirstSource));
 		rtspServer->addServerMediaSession(sms);
 
 		announceStream(rtspServer, sms, streamName, inputFileName);
@@ -258,11 +223,8 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "aacAudioTest";
 		char const *inputFileName = "test.aac";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
-		sms->addSubsession(ADTSAudioFileServerMediaSubsession
-			::createNew(*env, inputFileName, reuseFirstSource));
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
+		sms->addSubsession(ADTSAudioFileServerMediaSubsession::createNew(*env, inputFileName, reuseFirstSource));
 		rtspServer->addServerMediaSession(sms);
 
 		announceStream(rtspServer, sms, streamName, inputFileName);
@@ -275,11 +237,8 @@ int main(int argc, char **argv)
 
 		char const *streamName = "dvVideoTest";
 		char const *inputFileName = "test.dv";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
-		sms->addSubsession(DVVideoFileServerMediaSubsession
-			::createNew(*env, inputFileName, reuseFirstSource));
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
+		sms->addSubsession(DVVideoFileServerMediaSubsession::createNew(*env, inputFileName, reuseFirstSource));
 		rtspServer->addServerMediaSession(sms);
 
 		announceStream(rtspServer, sms, streamName, inputFileName);
@@ -289,15 +248,10 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "ac3AudioTest";
 		char const *inputFileName = "test.ac3";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
 
-		sms->addSubsession(AC3AudioFileServerMediaSubsession
-			::createNew(*env, inputFileName, reuseFirstSource));
-
+		sms->addSubsession(AC3AudioFileServerMediaSubsession::createNew(*env, inputFileName, reuseFirstSource));
 		rtspServer->addServerMediaSession(sms);
-
 		announceStream(rtspServer, sms, streamName, inputFileName);
 	}
 
@@ -305,9 +259,7 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "matroskaFileTest";
 		char const *inputFileName = "test.mkv";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
 
 		newDemuxWatchVariable = 0;
 		MatroskaFileServerDemux::createNew(*env, inputFileName, onMatroskaDemuxCreation, NULL);
@@ -334,9 +286,7 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "webmFileTest";
 		char const *inputFileName = "test.webm";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
 
 		newDemuxWatchVariable = 0;
 		MatroskaFileServerDemux::createNew(*env, inputFileName, onMatroskaDemuxCreation, NULL);
@@ -362,9 +312,7 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "oggFileTest";
 		char const *inputFileName = "test.ogg";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
 
 		newDemuxWatchVariable = 0;
 		OggFileServerDemux::createNew(*env, inputFileName, onOggDemuxCreation, NULL);
@@ -391,9 +339,7 @@ int main(int argc, char **argv)
 	{
 		char const *streamName = "opusFileTest";
 		char const *inputFileName = "test.opus";
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
 
 		newDemuxWatchVariable = 0;
 		OggFileServerDemux::createNew(*env, inputFileName, onOggDemuxCreation, NULL);
@@ -424,11 +370,8 @@ int main(int argc, char **argv)
 		portNumBits const inputPortNum = 1234;
 		// This causes the server to take its input from the stream sent by the "testMPEG2TransportStreamer" demo application.
 		Boolean const inputStreamIsRawUDP = False;
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, streamName, streamName,
-					descriptionString);
-		sms->addSubsession(MPEG2TransportUDPServerMediaSubsession
-			::createNew(*env, inputAddressStr, inputPortNum, inputStreamIsRawUDP));
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
+		sms->addSubsession(MPEG2TransportUDPServerMediaSubsession::createNew(*env, inputAddressStr, inputPortNum, inputStreamIsRawUDP));
 		rtspServer->addServerMediaSession(sms);
 
 		*env << "\n\"" << streamName << "\" stream, from a UDP Transport Stream input source \n\t(";
@@ -458,16 +401,13 @@ int main(int argc, char **argv)
 	}
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 
-static void announceStream(RTSPServer *rtspServer, ServerMediaSession *sms,
-	char const *streamName, char const *inputFileName)
+static void announceStream(RTSPServer *rtspServer, ServerMediaSession *sms, char const *streamName, char const *inputFileName)
 {
 	UsageEnvironment &env = rtspServer->envir();
 
-	env << "\n\"" << streamName << "\" stream, from the file \""
-		<< inputFileName << "\"\n";
+	env << "\n\"" << streamName << "\" stream, from the file \"" << inputFileName << "\"\n";
 	announceURL(rtspServer, sms);
 }

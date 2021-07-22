@@ -170,10 +170,8 @@ int main(int argc, char **argv)
 			usage();
 		hlsPrefix = argv[1];
 
-		handlerServerForREGISTERCommand
-			= HandlerServerForREGISTERCommand::createNew(*env, continueAfterClientCreation0,
-					handlerServerForREGISTERCommandPortNum, authDBForREGISTER,
-					RTSP_CLIENT_VERBOSITY_LEVEL, programName);
+		handlerServerForREGISTERCommand = HandlerServerForREGISTERCommand::createNew(*env,
+				continueAfterClientCreation0, handlerServerForREGISTERCommandPortNum, authDBForREGISTER, RTSP_CLIENT_VERBOSITY_LEVEL, programName);
 		if (handlerServerForREGISTERCommand == NULL)
 		{
 			*env << "Failed to create a server for handling incoming \"REGISTER\" commands: " << env->getResultMsg() << "\n";
@@ -196,8 +194,7 @@ int main(int argc, char **argv)
 		char const *rtspURL = argv[1];
 		hlsPrefix = argv[2];
 
-		RTSPClient *rtspClient
-			= RTSPClient::createNew(*env, rtspURL, RTSP_CLIENT_VERBOSITY_LEVEL, programName, tunnelOverHTTPPortNum);
+		RTSPClient *rtspClient = RTSPClient::createNew(*env, rtspURL, RTSP_CLIENT_VERBOSITY_LEVEL, programName, tunnelOverHTTPPortNum);
 		if (rtspClient == NULL)
 		{
 			*env << "Failed to create a RTSP client for URL \"" << rtspURL << "\": " << env->getResultMsg() << "\n";
@@ -209,7 +206,6 @@ int main(int argc, char **argv)
 
 	// All further processing will be done from within the event loop:
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 
@@ -295,11 +291,8 @@ void setupNextSubsession(RTSPClient *rtspClient)
 	{
 		// Check whether this subsession is a codec that we support.
 		// We support H.264 or H.265 video, and AAC audio.
-		if ((strcmp(subsession->mediumName(), "video") == 0 &&
-				(strcmp(subsession->codecName(), "H264") == 0 ||
-					strcmp(subsession->codecName(), "H265") == 0)) ||
-			(strcmp(subsession->mediumName(), "audio") == 0 &&
-				strcmp(subsession->codecName(), "MPEG4-GENERIC"/*aka. AAC*/) == 0))
+		if ((strcmp(subsession->mediumName(), "video") == 0 && (strcmp(subsession->codecName(), "H264") == 0 || strcmp(subsession->codecName(), "H265") == 0)) ||
+			(strcmp(subsession->mediumName(), "audio") == 0 && strcmp(subsession->codecName(), "MPEG4-GENERIC"/*aka. AAC*/) == 0))
 		{
 			// Use this subsession.
 			++numUsableSubsessions;
@@ -312,8 +305,7 @@ void setupNextSubsession(RTSPClient *rtspClient)
 				*env << *rtspClient << "Initiated the \"" << *subsession << "\" subsession\n";
 
 				// Continue setting up this subsession, by sending a RTSP "SETUP" command:
-				rtspClient->sendSetupCommand(*subsession, continueAfterSETUP, False, streamUsingTCP,
-					False, ourAuthenticator);
+				rtspClient->sendSetupCommand(*subsession, continueAfterSETUP, False, streamUsingTCP, False, ourAuthenticator);
 				return;
 			}
 		}
@@ -357,9 +349,7 @@ void continueAfterSETUP(RTSPClient *rtspClient, int resultCode, char *resultStri
 			if (strcmp(subsession->codecName(), "H264") == 0)
 			{
 				mpegVersion = 5; // for H.264
-				framer = H264VideoStreamDiscreteFramer::createNew(*env, subsession->readSource(),
-						True/*includeStartCodeInOutput*/,
-						True/*insertAccessUnitDelimiters*/);
+				framer = H264VideoStreamDiscreteFramer::createNew(*env, subsession->readSource(), True/*includeStartCodeInOutput*/, True/*insertAccessUnitDelimiters*/);
 
 				// Add any known SPS and PPS NAL units to the framer, so they'll get output ASAP:
 				u_int8_t *sps = NULL;
@@ -367,8 +357,7 @@ void continueAfterSETUP(RTSPClient *rtspClient, int resultCode, char *resultStri
 				u_int8_t *pps = NULL;
 				unsigned ppsSize = 0;
 				unsigned numSPropRecords;
-				SPropRecord *sPropRecords
-					= parseSPropParameterSets(subsession->fmtp_spropparametersets(), numSPropRecords);
+				SPropRecord *sPropRecords = parseSPropParameterSets(subsession->fmtp_spropparametersets(), numSPropRecords);
 				if (numSPropRecords > 0)
 				{
 					sps = sPropRecords[0].sPropBytes;
@@ -385,9 +374,7 @@ void continueAfterSETUP(RTSPClient *rtspClient, int resultCode, char *resultStri
 			else     // H.265
 			{
 				mpegVersion = 6; // for H.265
-				framer = H265VideoStreamDiscreteFramer::createNew(*env, subsession->readSource(),
-						True/*includeStartCodeInOutput*/,
-						True/*insertAccessUnitDelimiters*/);
+				framer = H265VideoStreamDiscreteFramer::createNew(*env, subsession->readSource(), True/*includeStartCodeInOutput*/, True/*insertAccessUnitDelimiters*/);
 
 				// Add any known VPS, SPS and PPS NAL units to the framer, so they'll get output ASAP:
 				u_int8_t *vps = NULL;
@@ -432,9 +419,7 @@ void continueAfterSETUP(RTSPClient *rtspClient, int resultCode, char *resultStri
 		{
 			// Create a 'framer' filter for the input source, to add a ADTS header to each AAC frame,
 			// to make the audio playable.
-			ADTSAudioStreamDiscreteFramer *framer
-				= ADTSAudioStreamDiscreteFramer::createNew(*env, subsession->readSource(),
-						subsession->fmtp_config());
+			ADTSAudioStreamDiscreteFramer *framer = ADTSAudioStreamDiscreteFramer::createNew(*env, subsession->readSource(), subsession->fmtp_config());
 			transportStream->addNewAudioSource(framer, 4/*mpegVersion: AAC*/);
 		}
 
@@ -455,8 +440,7 @@ void startPlayingSession(RTSPClient *rtspClient)
 	// (This will prepare the data sink to receive data; the actual flow of data from the client won't start happening until later,
 	// after we've sent a RTSP "PLAY" command.)
 
-	MediaSink *sink
-		= HLSSegmenter::createNew(*env, OUR_HLS_SEGMENTATION_DURATION, hlsPrefix, segmentationCallback);
+	MediaSink *sink = HLSSegmenter::createNew(*env, OUR_HLS_SEGMENTATION_DURATION, hlsPrefix, segmentationCallback);
 
 	// Start playing the sink object:
 	*env << "Beginning to read...\n";
@@ -513,8 +497,7 @@ SegmentRecord *tail = NULL;
 double totalDuration = 0.0;
 char *ourM3U8FileName = NULL;
 
-void segmentationCallback(void * /*clientData*/,
-	char const *segmentFileName, double segmentDuration)
+void segmentationCallback(void * /*clientData*/, char const *segmentFileName, double segmentDuration)
 {
 	// Begin by updating our list of segments:
 	SegmentRecord *newSegment = new SegmentRecord(segmentFileName, segmentDuration);
@@ -529,8 +512,7 @@ void segmentationCallback(void * /*clientData*/,
 	tail = newSegment;
 	totalDuration += segmentDuration;
 
-	fprintf(stderr, "Wrote segment \"%s\" (duration: %f seconds) -> %f seconds of data stored\n",
-		segmentFileName, segmentDuration, totalDuration);
+	fprintf(stderr, "Wrote segment \"%s\" (duration: %f seconds) -> %f seconds of data stored\n", segmentFileName, segmentDuration, totalDuration);
 
 	static unsigned firstSegmentCounter = 1;
 	while (totalDuration > OUR_HLS_REWIND_DURATION)
@@ -548,8 +530,7 @@ void segmentationCallback(void * /*clientData*/,
 		segmentToRemove->next() = NULL;
 
 		totalDuration -= segmentToRemove->duration();
-		fprintf(stderr, "\tDeleting segment \"%s\" (duration: %f seconds) -> %f seconds of data stored\n",
-			segmentToRemove->fileName(), segmentToRemove->duration(), totalDuration);
+		fprintf(stderr, "\tDeleting segment \"%s\" (duration: %f seconds) -> %f seconds of data stored\n", segmentToRemove->fileName(), segmentToRemove->duration(), totalDuration);
 		if (unlink(segmentToRemove->fileName()) != 0)
 		{
 			*env << "\t\tunlink(\"" << segmentToRemove->fileName() << "\") failed: " << env->getResultMsg() << "\n";
@@ -587,11 +568,7 @@ void segmentationCallback(void * /*clientData*/,
 	// Write the list of segments:
 	for (SegmentRecord *segment = head; segment != NULL; segment = segment->next())
 	{
-		fprintf(ourM3U8Fid,
-			"#EXTINF:%f,\n"
-			"%s\n",
-			segment->duration(),
-			segment->fileName());
+		fprintf(ourM3U8Fid, "#EXTINF:%f,\n""%s\n", segment->duration(), segment->fileName());
 	}
 
 	// Close our ".m3u8" file:

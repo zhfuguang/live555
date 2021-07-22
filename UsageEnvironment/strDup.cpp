@@ -37,7 +37,6 @@ char *strDup(char const *str)
 char *strDupSize(char const *str)
 {
 	size_t dummy;
-
 	return strDupSize(str, dummy);
 }
 

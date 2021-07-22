@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "DVVideoStreamFramer.hh"
 #endif
 
-class DVVideoRTPSink: public VideoRTPSink
+class DVVideoRTPSink : public VideoRTPSink
 {
 public:
 	static DVVideoRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat);
@@ -43,11 +43,8 @@ protected:
 
 private: // redefined virtual functions:
 	virtual Boolean sourceIsCompatibleWithUs(MediaSource &source);
-	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
+	virtual void doSpecialFrameHandling(unsigned fragmentationOffset, unsigned char *frameStart,
+		unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
 	virtual unsigned computeOverflowForNewFrame(unsigned newFrameSize) const;
 	virtual char const *auxSDPLine();
 

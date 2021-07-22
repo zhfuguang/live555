@@ -25,11 +25,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// H264VideoRTPSink implementation //////////
 
-H264VideoRTPSink
-::H264VideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat,
-	u_int8_t const *sps, unsigned spsSize, u_int8_t const *pps, unsigned ppsSize)
-	: H264or5VideoRTPSink(264, env, RTPgs, rtpPayloadFormat,
-		  NULL, 0, sps, spsSize, pps, ppsSize)
+H264VideoRTPSink::H264VideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
+	unsigned char rtpPayloadFormat, u_int8_t const *sps, unsigned spsSize, u_int8_t const *pps, unsigned ppsSize)
+	: H264or5VideoRTPSink(264, env, RTPgs, rtpPayloadFormat, NULL, 0, sps, spsSize, pps, ppsSize)
 {
 }
 
@@ -37,22 +35,18 @@ H264VideoRTPSink::~H264VideoRTPSink()
 {
 }
 
-H264VideoRTPSink *H264VideoRTPSink
-::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat)
+H264VideoRTPSink *H264VideoRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat)
 {
 	return new H264VideoRTPSink(env, RTPgs, rtpPayloadFormat);
 }
 
-H264VideoRTPSink *H264VideoRTPSink
-::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat,
-	u_int8_t const *sps, unsigned spsSize, u_int8_t const *pps, unsigned ppsSize)
+H264VideoRTPSink *H264VideoRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs,
+	unsigned char rtpPayloadFormat, u_int8_t const *sps, unsigned spsSize, u_int8_t const *pps, unsigned ppsSize)
 {
 	return new H264VideoRTPSink(env, RTPgs, rtpPayloadFormat, sps, spsSize, pps, ppsSize);
 }
 
-H264VideoRTPSink *H264VideoRTPSink
-::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat,
-	char const *sPropParameterSetsStr)
+H264VideoRTPSink *H264VideoRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, char const *sPropParameterSetsStr)
 {
 	u_int8_t *sps = NULL;
 	unsigned spsSize = 0;
@@ -78,8 +72,7 @@ H264VideoRTPSink *H264VideoRTPSink
 		}
 	}
 
-	H264VideoRTPSink *result
-		= new H264VideoRTPSink(env, RTPgs, rtpPayloadFormat, sps, spsSize, pps, ppsSize);
+	H264VideoRTPSink *result = new H264VideoRTPSink(env, RTPgs, rtpPayloadFormat, sps, spsSize, pps, ppsSize);
 	delete[] sPropRecords;
 
 	return result;
@@ -135,15 +128,14 @@ char const *H264VideoRTPSink::auxSDPLine()
 		"a=fmtp:%d packetization-mode=1"
 		";profile-level-id=%06X"
 		";sprop-parameter-sets=%s,%s\r\n";
+
 	unsigned fmtpFmtSize = strlen(fmtpFmt)
 		+ 3 /* max char len */
 		+ 6 /* 3 bytes in hex */
 		+ strlen(sps_base64) + strlen(pps_base64);
+
 	char *fmtp = new char[fmtpFmtSize];
-	sprintf(fmtp, fmtpFmt,
-		rtpPayloadType(),
-		profileLevelId,
-		sps_base64, pps_base64);
+	sprintf(fmtp, fmtpFmt, rtpPayloadType(), profileLevelId, sps_base64, pps_base64);
 
 	delete[] sps_base64;
 	delete[] pps_base64;

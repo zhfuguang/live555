@@ -121,17 +121,14 @@ public:
 // showing how to play multiple streams, concurrently, we can't do that.  Instead, we have to have a separate "StreamClientState"
 // structure for each "RTSPClient".  To do this, we subclass "RTSPClient", and add a "StreamClientState" field to the subclass:
 
-class ourRTSPClient: public RTSPClient
+class ourRTSPClient : public RTSPClient
 {
 public:
 	static ourRTSPClient *createNew(UsageEnvironment &env, char const *rtspURL,
-		int verbosityLevel = 0,
-		char const *applicationName = NULL,
-		portNumBits tunnelOverHTTPPortNum = 0);
+		int verbosityLevel = 0, char const *applicationName = NULL, portNumBits tunnelOverHTTPPortNum = 0);
 
 protected:
-	ourRTSPClient(UsageEnvironment &env, char const *rtspURL,
-		int verbosityLevel, char const *applicationName, portNumBits tunnelOverHTTPPortNum);
+	ourRTSPClient(UsageEnvironment &env, char const *rtspURL, int verbosityLevel, char const *applicationName, portNumBits tunnelOverHTTPPortNum);
 	// called only by createNew();
 	virtual ~ourRTSPClient();
 
@@ -144,7 +141,7 @@ public:
 // Or it might be a "FileSink", for outputting the received data into a file (as is done by the "openRTSP" application).
 // In this example code, however, we define a simple 'dummy' sink that receives incoming data, but does nothing with it.
 
-class DummySink: public MediaSink
+class DummySink : public MediaSink
 {
 public:
 	static DummySink *createNew(UsageEnvironment &env,
@@ -156,12 +153,8 @@ private:
 	// called only by "createNew()"
 	virtual ~DummySink();
 
-	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
-	void afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
-		struct timeval presentationTime, unsigned durationInMicroseconds);
+	static void afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
+	void afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 
 private:
 	// redefined virtual functions:
@@ -330,8 +323,7 @@ void continueAfterSETUP(RTSPClient *rtspClient, int resultCode, char *resultStri
 
 		env << *rtspClient << "Created a data sink for the \"" << *scs.subsession << "\" subsession\n";
 		scs.subsession->miscPtr = rtspClient; // a hack to let subsession handler functions get the "RTSPClient" from the subsession
-		scs.subsession->sink->startPlaying(*(scs.subsession->readSource()),
-			subsessionAfterPlaying, scs.subsession);
+		scs.subsession->sink->startPlaying(*(scs.subsession->readSource()), subsessionAfterPlaying, scs.subsession);
 		// Also set a handler to be called if a RTCP "BYE" arrives for this subsession:
 		if (scs.subsession->rtcpInstance() != NULL)
 		{
@@ -438,7 +430,6 @@ void streamTimerHandler(void *clientData)
 	StreamClientState &scs = rtspClient->scs; // alias
 
 	scs.streamTimerTask = NULL;
-
 	// Shut down the stream:
 	shutdownStream(rtspClient);
 }
@@ -546,7 +537,7 @@ DummySink *DummySink::createNew(UsageEnvironment &env, MediaSubsession &subsessi
 
 DummySink::DummySink(UsageEnvironment &env, MediaSubsession &subsession, char const *streamId)
 	: MediaSink(env),
-	  fSubsession(subsession)
+	fSubsession(subsession)
 {
 	fStreamId = strDup(streamId);
 	fReceiveBuffer = new u_int8_t[DUMMY_SINK_RECEIVE_BUFFER_SIZE];
@@ -558,8 +549,8 @@ DummySink::~DummySink()
 	delete[] fStreamId;
 }
 
-void DummySink::afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes,
-	struct timeval presentationTime, unsigned durationInMicroseconds)
+void DummySink::afterGettingFrame(void *clientData, unsigned frameSize,
+	unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	DummySink *sink = (DummySink *)clientData;
 	sink->afterGettingFrame(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
@@ -568,8 +559,7 @@ void DummySink::afterGettingFrame(void *clientData, unsigned frameSize, unsigned
 // If you don't want to see debugging output for each received frame, then comment out the following line:
 #define DEBUG_PRINT_EACH_RECEIVED_FRAME 1
 
-void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
-	struct timeval presentationTime, unsigned /*durationInMicroseconds*/)
+void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned /*durationInMicroseconds*/)
 {
 	// We've just received a frame of data.  (Optionally) print out information about it:
 #ifdef DEBUG_PRINT_EACH_RECEIVED_FRAME
@@ -578,9 +568,11 @@ void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes
 	envir() << fSubsession.mediumName() << "/" << fSubsession.codecName() << ":\tReceived " << frameSize << " bytes";
 	if (numTruncatedBytes > 0)
 		envir() << " (with " << numTruncatedBytes << " bytes truncated)";
+
 	char uSecsStr[6 + 1]; // used to output the 'microseconds' part of the presentation time
 	sprintf(uSecsStr, "%06u", (unsigned)presentationTime.tv_usec);
 	envir() << ".\tPresentation time: " << (int)presentationTime.tv_sec << "." << uSecsStr;
+
 	if (fSubsession.rtpSource() != NULL && !fSubsession.rtpSource()->hasBeenSynchronizedUsingRTCP())
 	{
 		envir() << "!"; // mark the debugging output to indicate that this presentation time is not RTCP-synchronized
@@ -601,8 +593,6 @@ Boolean DummySink::continuePlaying()
 		return False; // sanity check (should not happen)
 
 	// Request the next frame of data from our input source.  "afterGettingFrame()" will get called later, when it arrives:
-	fSource->getNextFrame(fReceiveBuffer, DUMMY_SINK_RECEIVE_BUFFER_SIZE,
-		afterGettingFrame, this,
-		onSourceClosure, this);
+	fSource->getNextFrame(fReceiveBuffer, DUMMY_SINK_RECEIVE_BUFFER_SIZE, afterGettingFrame, this, onSourceClosure, this);
 	return True;
 }

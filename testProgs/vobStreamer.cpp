@@ -82,7 +82,6 @@ int main(int argc, char const **argv)
 			break;
 		switch (opt[1])
 		{
-
 			case 'i':   // transmit video I-frames only
 			{
 				iFramesOnly = True;
@@ -91,13 +90,13 @@ int main(int argc, char const **argv)
 
 			case 'a':   // transmit audio, but not video
 			{
-				mediaToStream &= ~ VOB_VIDEO;
+				mediaToStream &= ~VOB_VIDEO;
 				break;
 			}
 
 			case 'v':   // transmit video, but not audio
 			{
-				mediaToStream &= ~ VOB_AUDIO;
+				mediaToStream &= ~VOB_AUDIO;
 				break;
 			}
 
@@ -171,47 +170,36 @@ int main(int argc, char const **argv)
 
 	if (mediaToStream & VOB_AUDIO)
 	{
-		rtpGroupsockAudio
-			= new Groupsock(*env, destinationAddress, rtpPortAudio, ttl);
+		rtpGroupsockAudio = new Groupsock(*env, destinationAddress, rtpPortAudio, ttl);
 		rtpGroupsockAudio->multicastSendOnly(); // because we're a SSM source
 
 		// Create an 'AC3 Audio RTP' sink from the RTP 'groupsock':
-		audioSink
-			= AC3AudioRTPSink::createNew(*env, rtpGroupsockAudio, 96, 0);
+		audioSink = AC3AudioRTPSink::createNew(*env, rtpGroupsockAudio, 96, 0);
 		// set the RTP timestamp frequency 'for real' later
 
 		// Create (and start) a 'RTCP instance' for this RTP sink:
-		rtcpGroupsockAudio
-			= new Groupsock(*env, destinationAddress, rtcpPortAudio, ttl);
+		rtcpGroupsockAudio = new Groupsock(*env, destinationAddress, rtcpPortAudio, ttl);
 		rtcpGroupsockAudio->multicastSendOnly(); // because we're a SSM source
-		const unsigned estimatedSessionBandwidthAudio
-			= 160; // in kbps; for RTCP b/w share
+		const unsigned estimatedSessionBandwidthAudio = 160; // in kbps; for RTCP b/w share
 		audioRTCP = RTCPInstance::createNew(*env, rtcpGroupsockAudio,
-				estimatedSessionBandwidthAudio, CNAME,
-				audioSink, NULL /* we're a server */,
-				True /* we're a SSM source */);
+			estimatedSessionBandwidthAudio, CNAME, audioSink, NULL /* we're a server */, True /* we're a SSM source */);
 		// Note: This starts RTCP running automatically
 	}
 
 	if (mediaToStream & VOB_VIDEO)
 	{
-		rtpGroupsockVideo
-			= new Groupsock(*env, destinationAddress, rtpPortVideo, ttl);
+		rtpGroupsockVideo = new Groupsock(*env, destinationAddress, rtpPortVideo, ttl);
 		rtpGroupsockVideo->multicastSendOnly(); // because we're a SSM source
 
 		// Create a 'MPEG Video RTP' sink from the RTP 'groupsock':
 		videoSink = MPEG1or2VideoRTPSink::createNew(*env, rtpGroupsockVideo);
 
 		// Create (and start) a 'RTCP instance' for this RTP sink:
-		rtcpGroupsockVideo
-			= new Groupsock(*env, destinationAddress, rtcpPortVideo, ttl);
+		rtcpGroupsockVideo = new Groupsock(*env, destinationAddress, rtcpPortVideo, ttl);
 		rtcpGroupsockVideo->multicastSendOnly(); // because we're a SSM source
-		const unsigned estimatedSessionBandwidthVideo
-			= 4500; // in kbps; for RTCP b/w share
+		const unsigned estimatedSessionBandwidthVideo = 4500; // in kbps; for RTCP b/w share
 		videoRTCP = RTCPInstance::createNew(*env, rtcpGroupsockVideo,
-				estimatedSessionBandwidthVideo, CNAME,
-				videoSink, NULL /* we're a server */,
-				True /* we're a SSM source */);
+			estimatedSessionBandwidthVideo, CNAME, videoSink, NULL /* we're a server */, True /* we're a SSM source */);
 		// Note: This starts RTCP running automatically
 	}
 
@@ -224,9 +212,7 @@ int main(int argc, char const **argv)
 			*env << "To change the RTSP server's port number, use the \"-p <port number>\" option.\n";
 			exit(1);
 		}
-		ServerMediaSession *sms
-			= ServerMediaSession::createNew(*env, "vobStream", *curInputFileName,
-					"Session streamed by \"vobStreamer\"", True /*SSM*/);
+		ServerMediaSession *sms = ServerMediaSession::createNew(*env, "vobStream", *curInputFileName, "Session streamed by \"vobStreamer\"", True /*SSM*/);
 		if (audioSink != NULL)
 			sms->addSubsession(PassiveServerMediaSubsession::createNew(*audioSink, audioRTCP));
 		if (videoSink != NULL)
@@ -242,7 +228,6 @@ int main(int argc, char const **argv)
 	play();
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 
@@ -295,8 +280,7 @@ void play()
 		= ByteStreamFileSource::createNew(*env, *curInputFileName);
 	if (fileSource == NULL)
 	{
-		*env << "Unable to open file \"" << *curInputFileName
-			<< "\" as a byte-stream file source\n";
+		*env << "Unable to open file \"" << *curInputFileName << "\" as a byte-stream file source\n";
 		// Try the next file instead:
 		++curInputFileName;
 		play();
@@ -311,15 +295,12 @@ void play()
 	{
 		FramedSource *audioES = mpegDemux->newElementaryStream(0xBD);
 		// Because, in a VOB file, the AC3 audio has stream id 0xBD
-		audioSource
-			= AC3AudioStreamFramer::createNew(*env, audioES, 0x80);
+		audioSource = AC3AudioStreamFramer::createNew(*env, audioES, 0x80);
 	}
 	if (mediaToStream & VOB_VIDEO)
 	{
 		FramedSource *videoES = mpegDemux->newVideoStream();
-
-		videoSource
-			= MPEG1or2VideoStreamFramer::createNew(*env, videoES, iFramesOnly);
+		videoSource = MPEG1or2VideoStreamFramer::createNew(*env, videoES, iFramesOnly);
 	}
 
 	// Finally, start playing each sink.

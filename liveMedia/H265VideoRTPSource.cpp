@@ -22,20 +22,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// H265BufferedPacket and H265BufferedPacketFactory //////////
 
-class H265BufferedPacket: public BufferedPacket
+class H265BufferedPacket : public BufferedPacket
 {
 public:
 	H265BufferedPacket(H265VideoRTPSource &ourSource);
 	virtual ~H265BufferedPacket();
 
 private: // redefined virtual functions
-	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr,
-		unsigned dataSize);
+	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize);
 private:
 	H265VideoRTPSource &fOurSource;
 };
 
-class H265BufferedPacketFactory: public BufferedPacketFactory
+class H265BufferedPacketFactory : public BufferedPacketFactory
 {
 private: // redefined virtual functions
 	virtual BufferedPacket *createNewPacket(MultiFramedRTPSource *ourSource);
@@ -44,24 +43,15 @@ private: // redefined virtual functions
 
 ///////// H265VideoRTPSource implementation ////////
 
-H265VideoRTPSource *H265VideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	Boolean expectDONFields,
-	unsigned rtpTimestampFrequency)
+H265VideoRTPSource *H265VideoRTPSource::createNew(UsageEnvironment &env,
+	Groupsock *RTPgs, unsigned char rtpPayloadFormat, Boolean expectDONFields, unsigned rtpTimestampFrequency)
 {
-	return new H265VideoRTPSource(env, RTPgs, rtpPayloadFormat,
-			expectDONFields, rtpTimestampFrequency);
+	return new H265VideoRTPSource(env, RTPgs, rtpPayloadFormat, expectDONFields, rtpTimestampFrequency);
 }
 
-H265VideoRTPSource
-::H265VideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	Boolean expectDONFields,
-	unsigned rtpTimestampFrequency)
-	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency,
-		  new H265BufferedPacketFactory),
-	  fExpectDONFields(expectDONFields),
-	  fPreviousNALUnitDON(0), fCurrentNALUnitAbsDon((u_int64_t)(~0))
+H265VideoRTPSource::H265VideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, Boolean expectDONFields, unsigned rtpTimestampFrequency)
+	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, new H265BufferedPacketFactory)
+	, fExpectDONFields(expectDONFields), fPreviousNALUnitDON(0), fCurrentNALUnitAbsDon((u_int64_t)(~0))
 {
 }
 
@@ -69,9 +59,7 @@ H265VideoRTPSource::~H265VideoRTPSource()
 {
 }
 
-Boolean H265VideoRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean H265VideoRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	unsigned char *headerStart = packet->data();
 	unsigned packetSize = packet->dataSize();
@@ -212,8 +200,7 @@ H265BufferedPacket::~H265BufferedPacket()
 {
 }
 
-unsigned H265BufferedPacket
-::nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
+unsigned H265BufferedPacket::nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
 {
 	unsigned resultNALUSize = 0; // if an error occurs
 
@@ -256,8 +243,7 @@ unsigned H265BufferedPacket
 	return (resultNALUSize <= dataSize) ? resultNALUSize : dataSize;
 }
 
-BufferedPacket *H265BufferedPacketFactory
-::createNewPacket(MultiFramedRTPSource *ourSource)
+BufferedPacket *H265BufferedPacketFactory::createNewPacket(MultiFramedRTPSource *ourSource)
 {
 	return new H265BufferedPacket((H265VideoRTPSource &)(*ourSource));
 }

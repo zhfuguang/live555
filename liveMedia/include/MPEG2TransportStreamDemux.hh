@@ -25,17 +25,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedSource.hh"
 #endif
 
-class MPEG2TransportStreamDemux: public Medium
+class MPEG2TransportStreamDemux : public Medium
 {
 public:
-	static MPEG2TransportStreamDemux *createNew(UsageEnvironment &env,
-		FramedSource *inputSource,
-		FramedSource::onCloseFunc *onCloseFunc,
-		void *onCloseClientData);
+	static MPEG2TransportStreamDemux *createNew(UsageEnvironment &env, FramedSource *inputSource, FramedSource::onCloseFunc *onCloseFunc, void *onCloseClientData);
 
 private:
-	MPEG2TransportStreamDemux(UsageEnvironment &env, FramedSource *inputSource,
-		FramedSource::onCloseFunc *onCloseFunc, void *onCloseClientData);
+	MPEG2TransportStreamDemux(UsageEnvironment &env, FramedSource *inputSource, FramedSource::onCloseFunc *onCloseFunc, void *onCloseClientData);
 	// called only by createNew()
 	virtual ~MPEG2TransportStreamDemux();
 

@@ -20,16 +20,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "BitVector.hh"
 
-BitVector::BitVector(unsigned char *baseBytePtr,
-	unsigned baseBitOffset,
-	unsigned totNumBits)
+BitVector::BitVector(unsigned char *baseBytePtr, unsigned baseBitOffset, unsigned totNumBits)
 {
 	setup(baseBytePtr, baseBitOffset, totNumBits);
 }
 
-void BitVector::setup(unsigned char *baseBytePtr,
-	unsigned baseBitOffset,
-	unsigned totNumBits)
+void BitVector::setup(unsigned char *baseBytePtr, unsigned baseBitOffset, unsigned totNumBits)
 {
 	fBaseBytePtr = baseBytePtr;
 	fBaseBitOffset = baseBitOffset;
@@ -37,8 +33,7 @@ void BitVector::setup(unsigned char *baseBytePtr,
 	fCurBitIndex = 0;
 }
 
-static unsigned char const singleBitMask[8]
-	= {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01};
+static unsigned char const singleBitMask[8] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
 
 #define MAX_LENGTH 32
 
@@ -88,7 +83,7 @@ void BitVector::put1Bit(unsigned bit)
 		}
 		else
 		{
-			fBaseBytePtr[totBitOffset / 8] &= ~ mask;
+			fBaseBytePtr[totBitOffset / 8] &= ~mask;
 		}
 	}
 }
@@ -116,8 +111,7 @@ unsigned BitVector::getBits(unsigned numBits)
 		numBits - overflowingBits /* num bits */);
 	fCurBitIndex += numBits - overflowingBits;
 
-	unsigned result
-		= (tmpBuf[0] << 24) | (tmpBuf[1] << 16) | (tmpBuf[2] << 8) | tmpBuf[3];
+	unsigned result = (tmpBuf[0] << 24) | (tmpBuf[1] << 16) | (tmpBuf[2] << 8) | tmpBuf[3];
 	result >>= (MAX_LENGTH - numBits); // move into low-order part of word
 	result &= (0xFFFFFFFF << overflowingBits); // so any overflow bits are 0
 	return result;
@@ -180,9 +174,7 @@ int BitVector::get_expGolombSigned()
 	}
 }
 
-void shiftBits(unsigned char *toBasePtr, unsigned toBitOffset,
-	unsigned char const *fromBasePtr, unsigned fromBitOffset,
-	unsigned numBits)
+void shiftBits(unsigned char *toBasePtr, unsigned toBitOffset, unsigned char const *fromBasePtr, unsigned fromBitOffset, unsigned numBits)
 {
 	if (numBits == 0)
 		return;
@@ -196,7 +188,7 @@ void shiftBits(unsigned char *toBasePtr, unsigned toBitOffset,
 	while (numBits-- > 0)
 	{
 		unsigned char fromBitMask = singleBitMask[fromBitRem];
-		unsigned char fromBit = (*fromBytePtr)&fromBitMask;
+		unsigned char fromBit = (*fromBytePtr) & fromBitMask;
 		unsigned char toBitMask = singleBitMask[toBitRem];
 
 		if (fromBit != 0)
@@ -205,7 +197,7 @@ void shiftBits(unsigned char *toBasePtr, unsigned toBitOffset,
 		}
 		else
 		{
-			*toBytePtr &= ~ toBitMask;
+			*toBytePtr &= ~toBitMask;
 		}
 
 		if (++fromBitRem == 8)

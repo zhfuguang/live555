@@ -38,16 +38,14 @@ public:
 	void setParamsFromHeader();
 };
 
-class AC3AudioStreamParser: public StreamParser
+class AC3AudioStreamParser : public StreamParser
 {
 public:
-	AC3AudioStreamParser(AC3AudioStreamFramer *usingSource,
-		FramedSource *inputSource);
+	AC3AudioStreamParser(AC3AudioStreamFramer *usingSource, FramedSource *inputSource);
 	virtual ~AC3AudioStreamParser();
 
 public:
-	void testStreamCode(unsigned char ourStreamCode,
-		unsigned char *ptr, unsigned size);
+	void testStreamCode(unsigned char ourStreamCode, unsigned char *ptr, unsigned size);
 	unsigned parseFrame(unsigned &numTruncatedBytes);
 	// returns the size of the frame that was acquired, or 0 if none was
 
@@ -65,10 +63,7 @@ public:
 	void readAndSaveAFrame();
 
 private:
-	static void afterGettingSavedFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+	static void afterGettingSavedFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 	void afterGettingSavedFrame1(unsigned frameSize);
 	static void onSavedFrameClosure(void *clientData);
 	void onSavedFrameClosure1();
@@ -189,7 +184,7 @@ void AC3AudioStreamFramer::parseNextFrame()
 		fDurationInMicroseconds = framePlayTime.tv_sec * MILLION + framePlayTime.tv_usec;
 		fNextFramePresentationTime.tv_usec += framePlayTime.tv_usec;
 		fNextFramePresentationTime.tv_sec
-		+= framePlayTime.tv_sec + fNextFramePresentationTime.tv_usec / MILLION;
+			+= framePlayTime.tv_sec + fNextFramePresentationTime.tv_usec / MILLION;
 		fNextFramePresentationTime.tv_usec %= MILLION;
 
 		// Call our own 'after getting' function.  Because we're not a 'leaf'
@@ -207,10 +202,10 @@ void AC3AudioStreamFramer::parseNextFrame()
 
 ////////// AC3AudioStreamParser implementation //////////
 
-static int const kbpsTable[] = {32,  40,  48,  56,  64,  80,  96, 112,
+static int const kbpsTable[] = { 32,  40,  48,  56,  64,  80,  96, 112,
 		128, 160, 192, 224, 256, 320, 384, 448,
 		512, 576, 640
-	};
+};
 
 void AC3FrameParams::setParamsFromHeader()
 {
@@ -243,9 +238,9 @@ AC3AudioStreamParser
 ::AC3AudioStreamParser(AC3AudioStreamFramer *usingSource,
 	FramedSource *inputSource)
 	: StreamParser(inputSource, FramedSource::handleClosure, usingSource,
-		  &AC3AudioStreamFramer::handleNewData, usingSource),
-	  fUsingSource(usingSource), fHaveParsedAFrame(False),
-	  fSavedFrame(NULL), fSavedFrameSize(0)
+		&AC3AudioStreamFramer::handleNewData, usingSource),
+	fUsingSource(usingSource), fHaveParsedAFrame(False),
+	fSavedFrame(NULL), fSavedFrameSize(0)
 {
 }
 
@@ -344,7 +339,7 @@ unsigned AC3AudioStreamParser::parseFrame(unsigned &numTruncatedBytes)
 #endif
 		return 0;  // the parsing got interrupted
 	}
-}
+	}
 
 void AC3AudioStreamParser::readAndSaveAFrame()
 {

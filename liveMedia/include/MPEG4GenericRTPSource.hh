@@ -25,15 +25,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class MPEG4GenericRTPSource: public MultiFramedRTPSource
+class MPEG4GenericRTPSource : public MultiFramedRTPSource
 {
 public:
 	static MPEG4GenericRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency,
-		char const *mediumName,
-		char const *mode, unsigned sizeLength, unsigned indexLength,
-		unsigned indexDeltaLength
+		unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, char const *mediumName,
+		char const *mode, unsigned sizeLength, unsigned indexLength, unsigned indexDeltaLength
 		// add other parameters later
 	);
 	// mediumName is "audio", "video", or "application"
@@ -41,20 +38,14 @@ public:
 
 protected:
 	MPEG4GenericRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency,
-		char const *mediumName,
-		char const *mode,
-		unsigned sizeLength, unsigned indexLength,
-		unsigned indexDeltaLength
-	);
+		unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, char const *mediumName,
+		char const *mode, unsigned sizeLength, unsigned indexLength, unsigned indexDeltaLength);
 	// called only by createNew(), or by subclass constructors
 	virtual ~MPEG4GenericRTPSource();
 
 protected:
 	// redefined virtual functions:
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	virtual char const *MIMEtype() const;
 
 private:

@@ -25,12 +25,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class MPEG4LATMAudioRTPSource: public MultiFramedRTPSource
+class MPEG4LATMAudioRTPSource : public MultiFramedRTPSource
 {
 public:
-	static MPEG4LATMAudioRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency);
+	static MPEG4LATMAudioRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency);
 
 	// By default, the LATM data length field is included at the beginning of each
 	// returned frame.  To omit this field, call the following:
@@ -45,15 +43,12 @@ protected:
 	virtual ~MPEG4LATMAudioRTPSource();
 
 private:
-	MPEG4LATMAudioRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency);
+	MPEG4LATMAudioRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency);
 	// called only by createNew()
 
 private:
 	// redefined virtual functions:
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	virtual char const *MIMEtype() const;
 
 private:
@@ -64,13 +59,9 @@ private:
 // A utility for parsing a "StreamMuxConfig" string
 Boolean parseStreamMuxConfigStr(char const *configStr,
 	// result parameters:
-	Boolean &audioMuxVersion,
-	Boolean &allStreamsSameTimeFraming,
-	unsigned char &numSubFrames,
-	unsigned char &numProgram,
-	unsigned char &numLayer,
-	unsigned char *&audioSpecificConfig,
-	unsigned &audioSpecificConfigSize);
+	Boolean &audioMuxVersion, Boolean &allStreamsSameTimeFraming,
+	unsigned char &numSubFrames, unsigned char &numProgram, unsigned char &numLayer,
+	unsigned char *&audioSpecificConfig, unsigned &audioSpecificConfigSize);
 // Parses "configStr" as a sequence of hexadecimal digits, representing
 // a "StreamMuxConfig" (as defined in ISO.IEC 14496-3, table 1.21).
 // Returns, in "audioSpecificConfig", a binary representation of

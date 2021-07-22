@@ -47,8 +47,7 @@ enum RecordType
 class IndexRecord
 {
 public:
-	IndexRecord(u_int8_t startOffset, u_int8_t size,
-		unsigned long transportPacketNumber, float pcr);
+	IndexRecord(u_int8_t startOffset, u_int8_t size, unsigned long transportPacketNumber, float pcr);
 	virtual ~IndexRecord();
 
 	RecordType &recordType()
@@ -131,8 +130,7 @@ UsageEnvironment &operator<<(UsageEnvironment &env, IndexRecord &r)
 
 ////////// MPEG2IFrameIndexFromTransportStream implementation //////////
 
-MPEG2IFrameIndexFromTransportStream *MPEG2IFrameIndexFromTransportStream::createNew(UsageEnvironment &env,
-	FramedSource *inputSource)
+MPEG2IFrameIndexFromTransportStream *MPEG2IFrameIndexFromTransportStream::createNew(UsageEnvironment &env, FramedSource *inputSource)
 {
 	return new MPEG2IFrameIndexFromTransportStream(env, inputSource);
 }
@@ -147,17 +145,15 @@ MPEG2IFrameIndexFromTransportStream *MPEG2IFrameIndexFromTransportStream::create
 // The PID used for the PAT (as defined in the MPEG Transport Stream standard):
 #define PAT_PID 0
 
-MPEG2IFrameIndexFromTransportStream
-::MPEG2IFrameIndexFromTransportStream(UsageEnvironment &env,
-	FramedSource *inputSource)
-	: FramedFilter(env, inputSource),
-	  fIsH264(False), fIsH265(False),
-	  fInputTransportPacketCounter((unsigned) - 1), fClosureNumber(0), fLastContinuityCounter(~0),
-	  fFirstPCR(0.0), fLastPCR(0.0), fHaveSeenFirstPCR(False),
-	  fPMT_PID(0x10), fVideo_PID(0xE0), // default values
-	  fParseBufferSize(PARSE_BUFFER_SIZE),
-	  fParseBufferFrameStart(0), fParseBufferParseEnd(4), fParseBufferDataEnd(0),
-	  fHeadIndexRecord(NULL), fTailIndexRecord(NULL)
+MPEG2IFrameIndexFromTransportStream::MPEG2IFrameIndexFromTransportStream(UsageEnvironment &env, FramedSource *inputSource)
+	: FramedFilter(env, inputSource)
+	, fIsH264(False), fIsH265(False)
+	, fInputTransportPacketCounter((unsigned)-1), fClosureNumber(0), fLastContinuityCounter(~0)
+	, fFirstPCR(0.0), fLastPCR(0.0), fHaveSeenFirstPCR(False)
+	, fPMT_PID(0x10), fVideo_PID(0xE0) // default values
+	, fParseBufferSize(PARSE_BUFFER_SIZE)
+	, fParseBufferFrameStart(0), fParseBufferParseEnd(4), fParseBufferDataEnd(0)
+	, fHeadIndexRecord(NULL), fTailIndexRecord(NULL)
 {
 	fParseBuffer = new unsigned char[fParseBufferSize];
 }
@@ -197,30 +193,20 @@ void MPEG2IFrameIndexFromTransportStream::doGetNextFrame()
 	}
 
 	// Arrange to read a new Transport Stream packet:
-	fInputSource->getNextFrame(fInputBuffer, sizeof fInputBuffer,
-		afterGettingFrame, this,
-		handleInputClosure, this);
+	fInputSource->getNextFrame(fInputBuffer, sizeof fInputBuffer, afterGettingFrame, this, handleInputClosure, this);
 }
 
-void MPEG2IFrameIndexFromTransportStream
-::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void MPEG2IFrameIndexFromTransportStream::afterGettingFrame(void *clientData,
+	unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
-	MPEG2IFrameIndexFromTransportStream *source
-		= (MPEG2IFrameIndexFromTransportStream *)clientData;
-	source->afterGettingFrame1(frameSize, numTruncatedBytes,
-		presentationTime, durationInMicroseconds);
+	MPEG2IFrameIndexFromTransportStream *source = (MPEG2IFrameIndexFromTransportStream *)clientData;
+	source->afterGettingFrame1(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
 }
 
 #define TRANSPORT_SYNC_BYTE 0x47
 
-void MPEG2IFrameIndexFromTransportStream
-::afterGettingFrame1(unsigned frameSize,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void MPEG2IFrameIndexFromTransportStream::afterGettingFrame1(unsigned frameSize,
+	unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	if (frameSize < TRANSPORT_PACKET_SIZE || fInputBuffer[0] != TRANSPORT_SYNC_BYTE)
 	{
@@ -237,8 +223,7 @@ void MPEG2IFrameIndexFromTransportStream
 
 	// Figure out how much of this Transport Packet contains PES data:
 	u_int8_t adaptation_field_control = (fInputBuffer[3] & 0x30) >> 4;
-	u_int8_t totalHeaderSize
-		= adaptation_field_control <= 1 ? 4 : 5 + fInputBuffer[4];
+	u_int8_t totalHeaderSize = adaptation_field_control <= 1 ? 4 : 5 + fInputBuffer[4];
 	if ((adaptation_field_control == 2 && totalHeaderSize != TRANSPORT_PACKET_SIZE) ||
 		(adaptation_field_control == 3 && totalHeaderSize >= TRANSPORT_PACKET_SIZE))
 	{
@@ -251,9 +236,7 @@ void MPEG2IFrameIndexFromTransportStream
 	if (totalHeaderSize > 5 && (fInputBuffer[5] & 0x10) != 0)
 	{
 		// There's a PCR:
-		u_int32_t pcrBaseHigh
-			= (fInputBuffer[6] << 24) | (fInputBuffer[7] << 16)
-				| (fInputBuffer[8] << 8) | fInputBuffer[9];
+		u_int32_t pcrBaseHigh = (fInputBuffer[6] << 24) | (fInputBuffer[7] << 16) | (fInputBuffer[8] << 8) | fInputBuffer[9];
 		float pcr = pcrBaseHigh / 45000.0f;
 		if ((fInputBuffer[10] & 0x80) != 0)
 			pcr += 1 / 90000.0f; // add in low-bit (if set)
@@ -270,8 +253,7 @@ void MPEG2IFrameIndexFromTransportStream
 			// The PCR timestamp has gone backwards.  Display a warning about this
 			// (because it indicates buggy Transport Stream data), and compensate for it.
 			envir() << "\nWarning: At about " << fLastPCR - fFirstPCR
-				<< " seconds into the file, the PCR timestamp decreased - from "
-				<< fLastPCR << " to " << pcr << "\n";
+				<< " seconds into the file, the PCR timestamp decreased - from " << fLastPCR << " to " << pcr << "\n";
 			fFirstPCR -= (fLastPCR - pcr);
 		}
 		fLastPCR = pcr;
@@ -291,9 +273,7 @@ void MPEG2IFrameIndexFromTransportStream
 	// Ignore transport packets for non-video programs,
 	// or packets with no data, or packets that duplicate the previous packet:
 	u_int8_t continuity_counter = fInputBuffer[3] & 0x0F;
-	if ((PID != fVideo_PID) ||
-		!(adaptation_field_control == 1 || adaptation_field_control == 3) ||
-		continuity_counter == fLastContinuityCounter)
+	if ((PID != fVideo_PID) || !(adaptation_field_control == 1 || adaptation_field_control == 3) || continuity_counter == fLastContinuityCounter)
 	{
 		doGetNextFrame();
 		return;
@@ -323,8 +303,7 @@ void MPEG2IFrameIndexFromTransportStream
 	fParseBufferDataEnd += vesSize;
 
 	// And add a new index record noting where it came from:
-	addToTail(new IndexRecord(totalHeaderSize, vesSize, fInputTransportPacketCounter,
-			fLastPCR - fFirstPCR));
+	addToTail(new IndexRecord(totalHeaderSize, vesSize, fInputTransportPacketCounter, fLastPCR - fFirstPCR));
 
 	// Try again:
 	doGetNextFrame();
@@ -332,8 +311,7 @@ void MPEG2IFrameIndexFromTransportStream
 
 void MPEG2IFrameIndexFromTransportStream::handleInputClosure(void *clientData)
 {
-	MPEG2IFrameIndexFromTransportStream *source
-		= (MPEG2IFrameIndexFromTransportStream *)clientData;
+	MPEG2IFrameIndexFromTransportStream *source = (MPEG2IFrameIndexFromTransportStream *)clientData;
 	source->handleInputClosure1();
 }
 
@@ -346,8 +324,7 @@ void MPEG2IFrameIndexFromTransportStream::handleInputClosure(void *clientData)
 
 void MPEG2IFrameIndexFromTransportStream::handleInputClosure1()
 {
-	if (++fClosureNumber == 1 && fParseBufferDataEnd > fParseBufferFrameStart
-		&& fParseBufferDataEnd <= fParseBufferSize - 4)
+	if (++fClosureNumber == 1 && fParseBufferDataEnd > fParseBufferFrameStart && fParseBufferDataEnd <= fParseBufferSize - 4)
 	{
 		// This is the first time we saw EOF, and there's still data remaining to be
 		// parsed.  Hack: Append a Picture Header code to the end of the unparsed
@@ -367,8 +344,7 @@ void MPEG2IFrameIndexFromTransportStream::handleInputClosure1()
 	}
 }
 
-void MPEG2IFrameIndexFromTransportStream
-::analyzePAT(unsigned char *pkt, unsigned size)
+void MPEG2IFrameIndexFromTransportStream::analyzePAT(unsigned char *pkt, unsigned size)
 {
 	// Get the PMT_PID:
 	while (size >= 17)   // The table is large enough
@@ -385,8 +361,7 @@ void MPEG2IFrameIndexFromTransportStream
 	}
 }
 
-void MPEG2IFrameIndexFromTransportStream
-::analyzePMT(unsigned char *pkt, unsigned size)
+void MPEG2IFrameIndexFromTransportStream::analyzePMT(unsigned char *pkt, unsigned size)
 {
 	// Scan the "elementary_PID"s in the map, until we see the first video stream.
 
@@ -411,8 +386,7 @@ void MPEG2IFrameIndexFromTransportStream
 	{
 		u_int8_t stream_type = pkt[0];
 		u_int16_t elementary_PID = ((pkt[1] & 0x1F) << 8) | pkt[2];
-		if (stream_type == 1 || stream_type == 2 ||
-			stream_type == 0x1B/*H.264 video*/ || stream_type == 0x24/*H.265 video*/)
+		if (stream_type == 1 || stream_type == 2 || stream_type == 0x1B/*H.264 video*/ || stream_type == 0x24/*H.265 video*/)
 		{
 			if (stream_type == 0x1B)
 				fIsH264 = True;
@@ -619,8 +593,7 @@ Boolean MPEG2IFrameIndexFromTransportStream::parseFrame()
 				{
 					if (!parseToNextCode(nextCode))
 						return False;
-					if (nextCode == GROUP_START_CODE ||
-						nextCode == PICTURE_START_CODE || nextCode == VOP_START_CODE)
+					if (nextCode == GROUP_START_CODE || nextCode == PICTURE_START_CODE || nextCode == VOP_START_CODE)
 						break;
 					fParseBufferParseEnd += 4; // skip over the code that we just saw
 				}
@@ -677,8 +650,7 @@ Boolean MPEG2IFrameIndexFromTransportStream::parseFrame()
 	// to "fParseBufferParseEnd". Tag the corresponding index records to note this:
 	unsigned frameSize = fParseBufferParseEnd - fParseBufferFrameStart + numInitialBadBytes;
 #ifdef DEBUG
-	envir() << "parsed " << recordTypeStr[curRecordType] << "; length "
-		<< frameSize << "\n";
+	envir() << "parsed " << recordTypeStr[curRecordType] << "; length " << frameSize << "\n";
 #endif
 	for (IndexRecord *r = fHeadIndexRecord; ; r = r->next())
 	{
@@ -707,8 +679,7 @@ Boolean MPEG2IFrameIndexFromTransportStream::parseFrame()
 			envir() << "tagged record (modified): " << *r << "\n";
 #endif
 
-			IndexRecord *newRecord
-				= new IndexRecord(newOffset, newSize, r->transportPacketNumber(), r->pcr());
+			IndexRecord *newRecord = new IndexRecord(newOffset, newSize, r->transportPacketNumber(), r->pcr());
 			newRecord->addAfter(r);
 			if (fTailIndexRecord == r)
 				fTailIndexRecord = newRecord;
@@ -739,8 +710,7 @@ Boolean MPEG2IFrameIndexFromTransportStream::parseFrame()
 	return True;
 }
 
-Boolean MPEG2IFrameIndexFromTransportStream
-::parseToNextCode(unsigned char &nextCode)
+Boolean MPEG2IFrameIndexFromTransportStream::parseToNextCode(unsigned char &nextCode)
 {
 	unsigned char const *p = &fParseBuffer[fParseBufferParseEnd];
 	unsigned char const *end = &fParseBuffer[fParseBufferDataEnd];
@@ -768,17 +738,14 @@ Boolean MPEG2IFrameIndexFromTransportStream
 void MPEG2IFrameIndexFromTransportStream::compactParseBuffer()
 {
 #ifdef DEBUG
-	envir() << "Compacting parse buffer: [" << fParseBufferFrameStart
-		<< "," << fParseBufferParseEnd << "," << fParseBufferDataEnd << "]";
+	envir() << "Compacting parse buffer: [" << fParseBufferFrameStart << "," << fParseBufferParseEnd << "," << fParseBufferDataEnd << "]";
 #endif
-	memmove(&fParseBuffer[0], &fParseBuffer[fParseBufferFrameStart],
-		fParseBufferDataEnd - fParseBufferFrameStart);
+	memmove(&fParseBuffer[0], &fParseBuffer[fParseBufferFrameStart], fParseBufferDataEnd - fParseBufferFrameStart);
 	fParseBufferDataEnd -= fParseBufferFrameStart;
 	fParseBufferParseEnd -= fParseBufferFrameStart;
 	fParseBufferFrameStart = 0;
 #ifdef DEBUG
-	envir() << "-> [" << fParseBufferFrameStart
-		<< "," << fParseBufferParseEnd << "," << fParseBufferDataEnd << "]\n";
+	envir() << "-> [" << fParseBufferFrameStart << "," << fParseBufferParseEnd << "," << fParseBufferDataEnd << "]\n";
 #endif
 }
 
@@ -800,11 +767,9 @@ void MPEG2IFrameIndexFromTransportStream::addToTail(IndexRecord *newIndexRecord)
 
 ////////// IndexRecord implementation //////////
 
-IndexRecord::IndexRecord(u_int8_t startOffset, u_int8_t size,
-	unsigned long transportPacketNumber, float pcr)
-	: fNext(this), fPrev(this), fRecordType(RECORD_UNPARSED),
-	  fStartOffset(startOffset), fSize(size),
-	  fPCR(pcr), fTransportPacketNumber(transportPacketNumber)
+IndexRecord::IndexRecord(u_int8_t startOffset, u_int8_t size, unsigned long transportPacketNumber, float pcr)
+	: fNext(this), fPrev(this), fRecordType(RECORD_UNPARSED)
+	, fStartOffset(startOffset), fSize(size), fPCR(pcr), fTransportPacketNumber(transportPacketNumber)
 {
 }
 

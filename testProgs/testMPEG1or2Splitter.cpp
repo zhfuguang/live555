@@ -48,12 +48,10 @@ int main(int argc, char **argv)
 	env = BasicUsageEnvironment::createNew(*scheduler);
 
 	// Open the input file as a 'byte-stream file source':
-	ByteStreamFileSource *inputSource
-		= ByteStreamFileSource::createNew(*env, inputFileName);
+	ByteStreamFileSource *inputSource = ByteStreamFileSource::createNew(*env, inputFileName);
 	if (inputSource == NULL)
 	{
-		*env << "Unable to open file \"" << inputFileName
-			<< "\" as a byte-stream file source\n";
+		*env << "Unable to open file \"" << inputFileName << "\" as a byte-stream file source\n";
 		exit(1);
 	}
 
@@ -70,13 +68,10 @@ int main(int argc, char **argv)
 
 	// Finally, start playing each sink.
 	*env << "Beginning to read...\n";
-	sessionState.videoSink->startPlaying(*sessionState.videoSource,
-		afterPlaying, sessionState.videoSink);
-	sessionState.audioSink->startPlaying(*sessionState.audioSource,
-		afterPlaying, sessionState.audioSink);
+	sessionState.videoSink->startPlaying(*sessionState.videoSource, afterPlaying, sessionState.videoSink);
+	sessionState.audioSink->startPlaying(*sessionState.audioSource, afterPlaying, sessionState.audioSink);
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 
@@ -102,9 +97,7 @@ void afterPlaying(void *clientData)
 	if (sessionState.videoSink == NULL && sessionState.audioSink == NULL)
 	{
 		*env << "...finished reading\n";
-
 		Medium::close(sessionState.baseDemultiplexor);
-
 		exit(0);
 	}
 }

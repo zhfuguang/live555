@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG2TransportStreamDemux.hh"
 #endif
 
-class MPEG2TransportStreamDemuxedTrack: public FramedSource
+class MPEG2TransportStreamDemuxedTrack : public FramedSource
 {
 public:
 	MPEG2TransportStreamDemuxedTrack(class MPEG2TransportStreamParser &ourParser, u_int16_t pid);

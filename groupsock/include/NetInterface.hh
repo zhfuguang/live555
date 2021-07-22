@@ -37,15 +37,13 @@ protected:
 	NetInterface(); // virtual base class
 };
 
-class Socket: public NetInterface
+class Socket : public NetInterface
 {
 public:
 	virtual ~Socket();
 	void reset(); // closes the socket, and sets "fSocketNum" to -1
 
-	virtual Boolean handleRead(unsigned char *buffer, unsigned bufferMaxSize,
-		unsigned &bytesRead,
-		struct sockaddr_storage &fromAddress) = 0;
+	virtual Boolean handleRead(unsigned char *buffer, unsigned bufferMaxSize, unsigned &bytesRead, struct sockaddr_storage &fromAddress) = 0;
 	// Returns False on error; resultData == NULL if data ignored
 
 	int socketNum() const

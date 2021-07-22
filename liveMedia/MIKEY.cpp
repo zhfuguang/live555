@@ -28,8 +28,7 @@ class MIKEYPayload
 public:
 	MIKEYPayload(MIKEYState &ourMIKEYState, u_int8_t payloadType);
 	// create with default values
-	MIKEYPayload(MIKEYState &ourMIKEYState, u_int8_t payloadType,
-		u_int8_t const *data, unsigned dataSize);
+	MIKEYPayload(MIKEYState &ourMIKEYState, u_int8_t payloadType, u_int8_t const *data, unsigned dataSize);
 	// create as a copy of existing values
 
 	virtual ~MIKEYPayload();
@@ -79,13 +78,9 @@ enum MIKEYPayloadType
 };
 
 MIKEYState::MIKEYState()
-	: // Set default encryption/authentication parameters:
-	  fEncryptSRTP(True),
-	  fEncryptSRTCP(True),
-	  fMKI(our_random32()),
-	  fUseAuthentication(True),
-
-	  fHeaderPayload(NULL), fTailPayload(NULL), fTotalPayloadByteCount(0)
+	:// Set default encryption/authentication parameters:
+	fEncryptSRTP(True), fEncryptSRTCP(True), fMKI(our_random32()), fUseAuthentication(True),
+	fHeaderPayload(NULL), fTailPayload(NULL), fTotalPayloadByteCount(0)
 {
 	// Fill in our 'key data' (30 bytes) with (pseudo-)random bits:
 	u_int8_t *p = &fKeyData[0];
@@ -181,11 +176,8 @@ u_int8_t *MIKEYState::generateMessage(unsigned &messageSize) const
 MIKEYState::MIKEYState(u_int8_t const *messageToParse, unsigned messageSize, Boolean &parsedOK)
 	: // Set encryption/authentication parameters to default values (that may be overwritten
 	  // later as we parse the message):
-	  fEncryptSRTP(False),
-	  fEncryptSRTCP(False),
-	  fUseAuthentication(False),
-
-	  fHeaderPayload(NULL), fTailPayload(NULL), fTotalPayloadByteCount(0)
+	fEncryptSRTP(False), fEncryptSRTCP(False), fUseAuthentication(False),
+	fHeaderPayload(NULL), fTailPayload(NULL), fTotalPayloadByteCount(0)
 {
 	parsedOK = False; // unless we learn otherwise
 
@@ -225,8 +217,7 @@ void MIKEYState::addNewPayload(MIKEYPayload *newPayload)
 
 #define testSize(n) if (ptr + (n) > endPtr) break
 
-Boolean MIKEYState
-::parseHDRPayload(u_int8_t const *&ptr, u_int8_t const *endPtr, u_int8_t &nextPayloadType)
+Boolean MIKEYState::parseHDRPayload(u_int8_t const *&ptr, u_int8_t const *endPtr, u_int8_t &nextPayloadType)
 {
 	do
 	{
@@ -261,8 +252,7 @@ static u_int16_t get2Bytes(u_int8_t const *&ptr)
 	return result;
 }
 
-Boolean MIKEYState
-::parseNonHDRPayload(u_int8_t const *&ptr, u_int8_t const *endPtr, u_int8_t &nextPayloadType)
+Boolean MIKEYState::parseNonHDRPayload(u_int8_t const *&ptr, u_int8_t const *endPtr, u_int8_t &nextPayloadType)
 {
 	do
 	{
@@ -697,10 +687,8 @@ MIKEYPayload::MIKEYPayload(MIKEYState &ourMIKEYState, u_int8_t payloadType)
 	}
 }
 
-MIKEYPayload::MIKEYPayload(MIKEYState &ourMIKEYState, u_int8_t payloadType,
-	u_int8_t const *data, unsigned dataSize)
-	: fOurMIKEYState(ourMIKEYState), fPayloadType(payloadType),
-	  fDataSize(dataSize), fNext(NULL)
+MIKEYPayload::MIKEYPayload(MIKEYState &ourMIKEYState, u_int8_t payloadType, u_int8_t const *data, unsigned dataSize)
+	: fOurMIKEYState(ourMIKEYState), fPayloadType(payloadType), fDataSize(dataSize), fNext(NULL)
 {
 	fData = new u_int8_t[fDataSize];
 	memcpy(fData, data, fDataSize);

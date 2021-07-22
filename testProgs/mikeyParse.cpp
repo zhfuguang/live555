@@ -58,8 +58,7 @@ Boolean parseMikeyHDR(u_int8_t const *&ptr, u_int8_t const *endPtr, u_int8_t &ne
 	fprintf(stderr, "\t#CS:%d\n", numCryptoSessions);
 
 	u_int8_t const CS_ID_map_type = getByte(ptr);
-	fprintf(stderr, "\tCS ID map type:%d (%s)\n",
-		CS_ID_map_type, CS_ID_map_type == 0 ? "SRTP-ID" : "unknown");
+	fprintf(stderr, "\tCS ID map type:%d (%s)\n", CS_ID_map_type, CS_ID_map_type == 0 ? "SRTP-ID" : "unknown");
 	if (CS_ID_map_type != 0)
 		return False;
 
@@ -67,10 +66,7 @@ Boolean parseMikeyHDR(u_int8_t const *&ptr, u_int8_t const *endPtr, u_int8_t &ne
 	testSize(numCryptoSessions * (1 + 4 + 4)); // the size of the "CS ID map info"
 	for (u_int8_t i = 1; i <= numCryptoSessions; ++i)
 	{
-		fprintf(stderr, "\tPolicy_no_%d: %d;\tSSRC_%d: 0x%08x; ROC_%d: 0x%08x\n",
-			i, getByte(ptr),
-			i, get4Bytes(ptr),
-			i, get4Bytes(ptr));
+		fprintf(stderr, "\tPolicy_no_%d: %d;\tSSRC_%d: 0x%08x; ROC_%d: 0x%08x\n", i, getByte(ptr), i, get4Bytes(ptr), i, get4Bytes(ptr));
 	}
 
 	return True;
@@ -87,14 +83,12 @@ static Boolean parseKeyDataSubPayload(u_int8_t const *&ptr, u_int8_t const *endP
 	u_int8_t Type_KV = getByte(ptr);
 	u_int8_t Type = Type_KV >> 4;
 	u_int8_t KV = Type_KV & 0x0F;
-	fprintf(stderr, "\t\tType: %d (%s)\n", Type,
-		Type == 0 ? "TGK" : Type == 1 ? "TGK+SALT" : Type == 2 ? "TEK" : Type == 3 ? "TEK+SALT" : "unknown");
+	fprintf(stderr, "\t\tType: %d (%s)\n", Type, Type == 0 ? "TGK" : Type == 1 ? "TGK+SALT" : Type == 2 ? "TEK" : Type == 3 ? "TEK+SALT" : "unknown");
 	if (Type > 3)
 		return False;
 	Boolean hasSalt = Type == 1 || Type == 3;
 
-	fprintf(stderr, "\t\tKey Validity: %d (%s)\n", KV,
-		KV == 0 ? "NULL" : KV == 1 ? "SPI/MKI" : KV == 2 ? "Interval" : "unknown");
+	fprintf(stderr, "\t\tKey Validity: %d (%s)\n", KV, KV == 0 ? "NULL" : KV == 1 ? "SPI/MKI" : KV == 2 ? "Interval" : "unknown");
 	Boolean hasKV = KV != 0;
 
 	u_int16_t keyDataLen = get2Bytes(ptr);
@@ -366,8 +360,7 @@ Boolean parseMikeyRAND(u_int8_t const *&ptr, u_int8_t const *endPtr, u_int8_t &n
 	return True;
 }
 
-typedef Boolean(parseMikeyPayloadFunc)(u_int8_t const *&ptr, u_int8_t const *endPtr,
-	u_int8_t &nextPayloadType);
+typedef Boolean(parseMikeyPayloadFunc)(u_int8_t const *&ptr, u_int8_t const *endPtr, u_int8_t &nextPayloadType);
 parseMikeyPayloadFunc *payloadParser[256];
 
 int main(int argc, char **argv)

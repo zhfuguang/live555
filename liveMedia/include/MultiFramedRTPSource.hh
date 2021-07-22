@@ -29,23 +29,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class BufferedPacket; // forward
 class BufferedPacketFactory; // forward
 
-class MultiFramedRTPSource: public RTPSource
+class MultiFramedRTPSource : public RTPSource
 {
 protected:
 	MultiFramedRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency,
-		BufferedPacketFactory *packetFactory = NULL);
+		unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, BufferedPacketFactory *packetFactory = NULL);
 	// virtual base class
 	virtual ~MultiFramedRTPSource();
 
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	// Subclasses redefine this to handle any special, payload format
 	// specific header that follows the RTP header.
 
-	virtual Boolean packetIsUsableInJitterCalculation(unsigned char *packet,
-		unsigned packetSize);
+	virtual Boolean packetIsUsableInJitterCalculation(unsigned char *packet, unsigned packetSize);
 	// The default implementation returns True, but this can be redefined
 
 protected:
@@ -101,17 +97,12 @@ public:
 
 	Boolean fillInData(RTPInterface &rtpInterface, struct sockaddr_storage &fromAddress, Boolean &packetReadWasIncomplete);
 	void assignMiscParams(unsigned short rtpSeqNo, unsigned rtpTimestamp,
-		struct timeval presentationTime,
-		Boolean hasBeenSyncedUsingRTCP,
-		Boolean rtpMarkerBit, struct timeval timeReceived);
+		struct timeval presentationTime, Boolean hasBeenSyncedUsingRTCP, Boolean rtpMarkerBit, struct timeval timeReceived);
 	void skip(unsigned numBytes); // used to skip over an initial header
 	void removePadding(unsigned numBytes); // used to remove trailing bytes
 	void appendData(unsigned char *newData, unsigned numBytes);
-	void use(unsigned char *to, unsigned toSize,
-		unsigned &bytesUsed, unsigned &bytesTruncated,
-		unsigned short &rtpSeqNo, unsigned &rtpTimestamp,
-		struct timeval &presentationTime,
-		Boolean &hasBeenSyncedUsingRTCP, Boolean &rtpMarkerBit);
+	void use(unsigned char *to, unsigned toSize, unsigned &bytesUsed, unsigned &bytesTruncated,
+		unsigned short &rtpSeqNo, unsigned &rtpTimestamp, struct timeval &presentationTime, Boolean &hasBeenSyncedUsingRTCP, Boolean &rtpMarkerBit);
 
 	BufferedPacket *&nextPacket()
 	{
@@ -150,13 +141,9 @@ public:
 
 protected:
 	virtual void reset();
-	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr,
-		unsigned dataSize);
+	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize);
 	// The above function has been deprecated.  Instead, new subclasses should use:
-	virtual void getNextEnclosedFrameParameters(unsigned char *&framePtr,
-		unsigned dataSize,
-		unsigned &frameSize,
-		unsigned &frameDurationInMicroseconds);
+	virtual void getNextEnclosedFrameParameters(unsigned char *&framePtr, unsigned dataSize, unsigned &frameSize, unsigned &frameDurationInMicroseconds);
 
 	unsigned fPacketSize;
 	unsigned char *fBuf;

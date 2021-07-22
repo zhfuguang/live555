@@ -32,10 +32,8 @@ void FramedFilter::detachInputSource()
 	}
 }
 
-FramedFilter::FramedFilter(UsageEnvironment &env,
-	FramedSource *inputSource)
-	: FramedSource(env),
-	  fInputSource(inputSource)
+FramedFilter::FramedFilter(UsageEnvironment &env, FramedSource *inputSource)
+	: FramedSource(env), fInputSource(inputSource)
 {
 }
 

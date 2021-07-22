@@ -65,9 +65,7 @@ void play()
 	WAVAudioFileSource *wavSource = WAVAudioFileSource::createNew(*env, inputFileName);
 	if (wavSource == NULL)
 	{
-		*env << "Unable to open file \"" << inputFileName
-			<< "\" as a WAV audio file source: "
-			<< env->getResultMsg() << "\n";
+		*env << "Unable to open file \"" << inputFileName << "\" as a WAV audio file source: " << env->getResultMsg() << "\n";
 		exit(1);
 	}
 
@@ -213,18 +211,13 @@ void play()
 	const Port rtpPort(rtpPortNum);
 	const Port rtcpPort(rtcpPortNum);
 
-	sessionState.rtpGroupsock
-		= new Groupsock(*env, destinationAddress, rtpPort, ttl);
+	sessionState.rtpGroupsock = new Groupsock(*env, destinationAddress, rtpPort, ttl);
 	sessionState.rtpGroupsock->multicastSendOnly(); // we're a SSM source
-	sessionState.rtcpGroupsock
-		= new Groupsock(*env, destinationAddress, rtcpPort, ttl);
+	sessionState.rtcpGroupsock = new Groupsock(*env, destinationAddress, rtcpPort, ttl);
 	sessionState.rtcpGroupsock->multicastSendOnly(); // we're a SSM source
 
 	// Create an appropriate audio RTP sink (using "SimpleRTPSink") from the RTP 'groupsock':
-	sessionState.sink
-		= SimpleRTPSink::createNew(*env, sessionState.rtpGroupsock,
-				payloadFormatCode, samplingFrequency,
-				"audio", mimeType, numChannels);
+	sessionState.sink = SimpleRTPSink::createNew(*env, sessionState.rtpGroupsock, payloadFormatCode, samplingFrequency, "audio", mimeType, numChannels);
 
 	// Create (and start) a 'RTCP instance' for this RTP sink:
 	const unsigned estimatedSessionBandwidth = (bitsPerSecond + 500) / 1000; // in kbps; for RTCP b/w share
@@ -232,11 +225,8 @@ void play()
 	unsigned char CNAME[maxCNAMElen + 1];
 	gethostname((char *)CNAME, maxCNAMElen);
 	CNAME[maxCNAMElen] = '\0'; // just in case
-	sessionState.rtcpInstance
-		= RTCPInstance::createNew(*env, sessionState.rtcpGroupsock,
-				estimatedSessionBandwidth, CNAME,
-				sessionState.sink, NULL /* we're a server */,
-				True /* we're a SSM source*/);
+	sessionState.rtcpInstance = RTCPInstance::createNew(*env, sessionState.rtcpGroupsock,
+		estimatedSessionBandwidth, CNAME, sessionState.sink, NULL /* we're a server */, True /* we're a SSM source*/);
 	// Note: This starts RTCP running automatically
 
 	// Create and start a RTSP server to serve this stream:
@@ -246,9 +236,7 @@ void play()
 		*env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
 		exit(1);
 	}
-	ServerMediaSession *sms
-		= ServerMediaSession::createNew(*env, "testStream", inputFileName,
-				"Session streamed by \"testWAVAudiotreamer\"", True/*SSM*/);
+	ServerMediaSession *sms = ServerMediaSession::createNew(*env, "testStream", inputFileName, "Session streamed by \"testWAVAudiotreamer\"", True/*SSM*/);
 	sms->addSubsession(PassiveServerMediaSubsession::createNew(*sessionState.sink, sessionState.rtcpInstance));
 	sessionState.rtspServer->addServerMediaSession(sms);
 	announceURL(sessionState.rtspServer, sms);

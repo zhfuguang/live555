@@ -68,11 +68,7 @@ int main(int argc, char **argv)
 	unsigned char CNAME[maxCNAMElen + 1];
 	gethostname((char *)CNAME, maxCNAMElen);
 	CNAME[maxCNAMElen] = '\0'; // just in case
-	RTCPInstance *rtcp
-		= RTCPInstance::createNew(*env, &rtcpGroupsock,
-				estimatedSessionBandwidth, CNAME,
-				videoSink, NULL /* we're a server */,
-				True /* we're a SSM source */);
+	RTCPInstance *rtcp = RTCPInstance::createNew(*env, &rtcpGroupsock, estimatedSessionBandwidth, CNAME, videoSink, NULL /* we're a server */, True /* we're a SSM source */);
 	// Note: This starts RTCP running automatically
 
 	RTSPServer *rtspServer = RTSPServer::createNew(*env, 8554);
@@ -81,10 +77,7 @@ int main(int argc, char **argv)
 		*env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
 		exit(1);
 	}
-	ServerMediaSession *sms
-		= ServerMediaSession::createNew(*env, "testStream", inputFileName,
-				"Session streamed by \"testDVVideoStreamer\"",
-				True /*SSM*/);
+	ServerMediaSession *sms = ServerMediaSession::createNew(*env, "testStream", inputFileName, "Session streamed by \"testDVVideoStreamer\"", True /*SSM*/);
 	sms->addSubsession(PassiveServerMediaSubsession::createNew(*videoSink, rtcp));
 	rtspServer->addServerMediaSession(sms);
 	announceURL(rtspServer, sms);
@@ -94,7 +87,6 @@ int main(int argc, char **argv)
 	play();
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 
@@ -113,17 +105,14 @@ void afterPlaying(void * /*clientData*/)
 void play()
 {
 	// Open the input file as a 'byte-stream file source':
-	ByteStreamFileSource *fileSource
-		= ByteStreamFileSource::createNew(*env, inputFileName);
+	ByteStreamFileSource *fileSource = ByteStreamFileSource::createNew(*env, inputFileName);
 	if (fileSource == NULL)
 	{
-		*env << "Unable to open file \"" << inputFileName
-			<< "\" as a byte-stream file source\n";
+		*env << "Unable to open file \"" << inputFileName << "\" as a byte-stream file source\n";
 		exit(1);
 	}
 
 	FramedSource *videoES = fileSource;
-
 	// Create a framer for the Video Elementary Stream:
 	videoSource = DVVideoStreamFramer::createNew(*env, videoES);
 

@@ -22,7 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// Definition of "StreamReplica": The class that implements each stream replica //////////
 
-class StreamReplica: public FramedSource
+class StreamReplica : public FramedSource
 {
 protected:
 	friend class StreamReplicator;
@@ -53,10 +53,9 @@ StreamReplicator *StreamReplicator::createNew(UsageEnvironment &env, FramedSourc
 }
 
 StreamReplicator::StreamReplicator(UsageEnvironment &env, FramedSource *inputSource, Boolean deleteWhenLastReplicaDies)
-	: Medium(env),
-	  fInputSource(inputSource), fDeleteWhenLastReplicaDies(deleteWhenLastReplicaDies), fInputSourceHasClosed(False),
-	  fNumReplicas(0), fNumActiveReplicas(0), fNumDeliveriesMadeSoFar(0),
-	  fFrameIndex(0), fPrimaryReplica(NULL), fReplicasAwaitingCurrentFrame(NULL), fReplicasAwaitingNextFrame(NULL)
+	: Medium(env), fInputSource(inputSource), fDeleteWhenLastReplicaDies(deleteWhenLastReplicaDies), fInputSourceHasClosed(False)
+	, fNumReplicas(0), fNumActiveReplicas(0), fNumDeliveriesMadeSoFar(0)
+	, fFrameIndex(0), fPrimaryReplica(NULL), fReplicasAwaitingCurrentFrame(NULL), fReplicasAwaitingNextFrame(NULL)
 {
 }
 
@@ -94,8 +93,7 @@ void StreamReplicator::getNextFrame(StreamReplica *replica)
 
 		// Arrange to read the next frame into this replica's buffer:
 		if (fInputSource != NULL)
-			fInputSource->getNextFrame(fPrimaryReplica->fTo, fPrimaryReplica->fMaxSize,
-				afterGettingFrame, this, onSourceClosure, this);
+			fInputSource->getNextFrame(fPrimaryReplica->fTo, fPrimaryReplica->fMaxSize, afterGettingFrame, this, onSourceClosure, this);
 	}
 	else if (replica->fFrameIndex != fFrameIndex)
 	{
@@ -253,14 +251,13 @@ void StreamReplicator::removeStreamReplica(StreamReplica *replicaBeingRemoved)
 	}
 }
 
-void StreamReplicator::afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes,
-	struct timeval presentationTime, unsigned durationInMicroseconds)
+void StreamReplicator::afterGettingFrame(void *clientData, unsigned frameSize,
+	unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	((StreamReplicator *)clientData)->afterGettingFrame(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
 }
 
-void StreamReplicator::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
-	struct timeval presentationTime, unsigned durationInMicroseconds)
+void StreamReplicator::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	// The frame was read into our primary replica's buffer.  Update the primary replica's state, but don't complete delivery to it
 	// just yet.  We do that later, after we're sure that we've delivered it to all other replicas.
@@ -346,8 +343,7 @@ void StreamReplicator::deliverReceivedFrame()
 
 			// Arrange to read the next frame into this replica's buffer:
 			if (fInputSource != NULL)
-				fInputSource->getNextFrame(fPrimaryReplica->fTo, fPrimaryReplica->fMaxSize,
-					afterGettingFrame, this, onSourceClosure, this);
+				fInputSource->getNextFrame(fPrimaryReplica->fTo, fPrimaryReplica->fMaxSize, afterGettingFrame, this, onSourceClosure, this);
 		}
 
 		// Move any other replicas that had already requested the next frame to the 'requesting current frame' list:
@@ -366,9 +362,7 @@ void StreamReplicator::deliverReceivedFrame()
 ////////// StreamReplica implementation //////////
 
 StreamReplica::StreamReplica(StreamReplicator &ourReplicator)
-	: FramedSource(ourReplicator.envir()),
-	  fOurReplicator(ourReplicator),
-	  fFrameIndex(-1/*we haven't started playing yet*/), fNext(NULL)
+	: FramedSource(ourReplicator.envir()), fOurReplicator(ourReplicator), fFrameIndex(-1/*we haven't started playing yet*/), fNext(NULL)
 {
 }
 
@@ -390,8 +384,7 @@ void StreamReplica::doStopGettingFrames()
 void StreamReplica::copyReceivedFrame(StreamReplica *toReplica, StreamReplica *fromReplica)
 {
 	// First, figure out how much data to copy.  ("toReplica" might have a smaller buffer than "fromReplica".)
-	unsigned numNewBytesToTruncate
-		= toReplica->fMaxSize < fromReplica->fFrameSize ? fromReplica->fFrameSize - toReplica->fMaxSize : 0;
+	unsigned numNewBytesToTruncate = toReplica->fMaxSize < fromReplica->fFrameSize ? fromReplica->fFrameSize - toReplica->fMaxSize : 0;
 	toReplica->fFrameSize = fromReplica->fFrameSize - numNewBytesToTruncate;
 	toReplica->fNumTruncatedBytes = fromReplica->fNumTruncatedBytes + numNewBytesToTruncate;
 

@@ -48,9 +48,7 @@ Boolean MPEG1or2VideoRTPSink::allowFragmentationAfterStart() const
 	return True;
 }
 
-Boolean MPEG1or2VideoRTPSink
-::frameCanAppearAfterPacketStart(unsigned char const *frameStart,
-	unsigned numBytesInFrame) const
+Boolean MPEG1or2VideoRTPSink::frameCanAppearAfterPacketStart(unsigned char const *frameStart, unsigned numBytesInFrame) const
 {
 	// A 'frame' (which in this context can mean a header or a slice as well as a
 	// complete picture) can appear at other than the first position in a packet
@@ -70,12 +68,8 @@ Boolean MPEG1or2VideoRTPSink
 #define VIDEO_SEQUENCE_HEADER_START_CODE 0x000001B3
 #define PICTURE_START_CODE               0x00000100
 
-void MPEG1or2VideoRTPSink
-::doSpecialFrameHandling(unsigned fragmentationOffset,
-	unsigned char *frameStart,
-	unsigned numBytesInFrame,
-	struct timeval framePresentationTime,
-	unsigned numRemainingBytes)
+void MPEG1or2VideoRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
+	unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes)
 {
 	Boolean thisFrameIsASlice = False; // until we learn otherwise
 	if (isFirstFrameInPacket())
@@ -88,8 +82,7 @@ void MPEG1or2VideoRTPSink
 		// Begin by inspecting the 4-byte code at the start of the frame:
 		if (numBytesInFrame < 4)
 			return; // shouldn't happen
-		unsigned startCode = (frameStart[0] << 24) | (frameStart[1] << 16)
-			| (frameStart[2] << 8) | frameStart[3];
+		unsigned startCode = (frameStart[0] << 24) | (frameStart[1] << 16) | (frameStart[2] << 8) | frameStart[3];
 
 		if (startCode == VIDEO_SEQUENCE_HEADER_START_CODE)
 		{
@@ -103,8 +96,7 @@ void MPEG1or2VideoRTPSink
 			// Record the parameters of this picture:
 			if (numBytesInFrame < 8)
 				return; // shouldn't happen
-			unsigned next4Bytes = (frameStart[4] << 24) | (frameStart[5] << 16)
-				| (frameStart[6] << 8) | frameStart[7];
+			unsigned next4Bytes = (frameStart[4] << 24) | (frameStart[5] << 16) | (frameStart[6] << 8) | frameStart[7];
 			unsigned char byte8 = numBytesInFrame == 8 ? 0 : frameStart[8];
 
 			fPictureState.temporal_reference = (next4Bytes & 0xFFC00000) >> (32 - 10);
@@ -117,7 +109,7 @@ void MPEG1or2VideoRTPSink
 				case 3:
 					FBV = (byte8 & 0x40) >> 6;
 					BFC = (byte8 & 0x38) >> 3;
-				// fall through to:
+					// fall through to:
 				case 2:
 					FFV = (next4Bytes & 0x00000004) >> 2;
 					FFC = ((next4Bytes & 0x00000003) << 1) | ((byte8 & 0x80) >> 7);
@@ -128,7 +120,6 @@ void MPEG1or2VideoRTPSink
 		else if ((startCode & 0xFFFFFF00) == 0x00000100)
 		{
 			unsigned char lastCodeByte = startCode & 0xFF;
-
 			if (lastCodeByte <= 0xAF)
 			{
 				// This is (the start of) a slice
@@ -185,8 +176,7 @@ void MPEG1or2VideoRTPSink
 	// slice of) a picture (and there are no fragments remaining).
 	// This relies on the source being a "MPEG1or2VideoStreamFramer".
 	MPEG1or2VideoStreamFramer *framerSource = (MPEG1or2VideoStreamFramer *)fSource;
-	if (framerSource != NULL && framerSource->pictureEndMarker()
-		&& numRemainingBytes == 0)
+	if (framerSource != NULL && framerSource->pictureEndMarker() && numRemainingBytes == 0)
 	{
 		setMarkerBit();
 		framerSource->pictureEndMarker() = False;

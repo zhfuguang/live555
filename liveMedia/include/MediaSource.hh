@@ -25,11 +25,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Media.hh"
 #endif
 
-class MediaSource: public Medium
+class MediaSource : public Medium
 {
 public:
-	static Boolean lookupByName(UsageEnvironment &env, char const *sourceName,
-		MediaSource *&resultSource);
+	static Boolean lookupByName(UsageEnvironment &env, char const *sourceName, MediaSource *&resultSource);
 	virtual void getAttributes() const;
 	// attributes are returned in "env's" 'result message'
 

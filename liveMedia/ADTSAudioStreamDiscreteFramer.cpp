@@ -33,8 +33,7 @@ static u_int8_t hexToBinary(char c)
 	return 0; // default if 'c' is not hex
 }
 
-ADTSAudioStreamDiscreteFramer *ADTSAudioStreamDiscreteFramer
-::createNew(UsageEnvironment &env, FramedSource *inputSource, char const *configStr)
+ADTSAudioStreamDiscreteFramer *ADTSAudioStreamDiscreteFramer::createNew(UsageEnvironment &env, FramedSource *inputSource, char const *configStr)
 {
 	u_int16_t configValue = 0;
 
@@ -54,13 +53,11 @@ ADTSAudioStreamDiscreteFramer *ADTSAudioStreamDiscreteFramer
 	u_int8_t samplingFrequencyIndex = (configValue & 0x0780) >> 7;
 	u_int8_t channelConfiguration = (configValue & 0x0078) >> 3;
 
-	return new ADTSAudioStreamDiscreteFramer(env, inputSource,
-			profile, samplingFrequencyIndex, channelConfiguration);
+	return new ADTSAudioStreamDiscreteFramer(env, inputSource, profile, samplingFrequencyIndex, channelConfiguration);
 }
 
-ADTSAudioStreamDiscreteFramer
-::ADTSAudioStreamDiscreteFramer(UsageEnvironment &env, FramedSource *inputSource,
-	u_int8_t profile, u_int8_t samplingFrequencyIndex, u_int8_t channelConfiguration)
+ADTSAudioStreamDiscreteFramer::ADTSAudioStreamDiscreteFramer(UsageEnvironment &env,
+	FramedSource *inputSource, u_int8_t profile, u_int8_t samplingFrequencyIndex, u_int8_t channelConfiguration)
 	: FramedFilter(env, inputSource)
 {
 	// Set up the ADTS header that we'll be prepending to each audio frame.
@@ -94,25 +91,17 @@ void ADTSAudioStreamDiscreteFramer::doGetNextFrame()
 		return;
 	}
 
-	fInputSource->getNextFrame(fTo + ADTS_HEADER_SIZE, fMaxSize - ADTS_HEADER_SIZE,
-		afterGettingFrame, this,
-		FramedSource::handleClosure, this);
+	fInputSource->getNextFrame(fTo + ADTS_HEADER_SIZE, fMaxSize - ADTS_HEADER_SIZE, afterGettingFrame, this, FramedSource::handleClosure, this);
 }
 
-void ADTSAudioStreamDiscreteFramer
-::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void ADTSAudioStreamDiscreteFramer::afterGettingFrame(void *clientData,
+	unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	ADTSAudioStreamDiscreteFramer *source = (ADTSAudioStreamDiscreteFramer *)clientData;
 	source->afterGettingFrame1(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
 }
 
-void ADTSAudioStreamDiscreteFramer
-::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void ADTSAudioStreamDiscreteFramer::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	frameSize += ADTS_HEADER_SIZE;
 

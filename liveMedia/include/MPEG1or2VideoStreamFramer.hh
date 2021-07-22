@@ -26,20 +26,15 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEGVideoStreamFramer.hh"
 #endif
 
-class MPEG1or2VideoStreamFramer: public MPEGVideoStreamFramer
+class MPEG1or2VideoStreamFramer : public MPEGVideoStreamFramer
 {
 public:
-	static MPEG1or2VideoStreamFramer *createNew(UsageEnvironment &env, FramedSource *inputSource,
-		Boolean iFramesOnly = False,
-		double vshPeriod = 5.0
-			/* how often (in seconds) to inject a Video_Sequence_Header,
-			   if one doesn't already appear in the stream */);
+	static MPEG1or2VideoStreamFramer *createNew(UsageEnvironment &env, FramedSource *inputSource, Boolean iFramesOnly = False, double vshPeriod = 5.0
+		/* how often (in seconds) to inject a Video_Sequence_Header,
+		   if one doesn't already appear in the stream */);
 
 protected:
-	MPEG1or2VideoStreamFramer(UsageEnvironment &env,
-		FramedSource *inputSource,
-		Boolean iFramesOnly, double vshPeriod,
-		Boolean createParser = True);
+	MPEG1or2VideoStreamFramer(UsageEnvironment &env, FramedSource *inputSource, Boolean iFramesOnly, double vshPeriod, Boolean createParser = True);
 	// called only by createNew(), or by subclass constructors
 	virtual ~MPEG1or2VideoStreamFramer();
 

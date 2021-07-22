@@ -30,7 +30,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class T140IdleFilter;
 
-class T140TextRTPSink: public TextRTPSink
+class T140TextRTPSink : public TextRTPSink
 {
 public:
 	static T140TextRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat);
@@ -43,13 +43,9 @@ protected:
 
 protected: // redefined virtual functions:
 	virtual Boolean continuePlaying();
-	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
-	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart,
-		unsigned numBytesInFrame) const;
+	virtual void doSpecialFrameHandling(unsigned fragmentationOffset, unsigned char *frameStart,
+		unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
+	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart, unsigned numBytesInFrame) const;
 
 protected:
 	T140IdleFilter *fOurIdleFilter;
@@ -64,7 +60,7 @@ protected:
 // -  that delivers, to the "T140TextRTPSink", a continuous sequence of (possibly) empty frames.
 // (Note: This class should be used only by "T140TextRTPSink", or a subclass.)
 
-class T140IdleFilter: public FramedFilter
+class T140IdleFilter : public FramedFilter
 {
 public:
 	T140IdleFilter(UsageEnvironment &env, FramedSource *inputSource);
@@ -75,14 +71,8 @@ private: // redefined virtual functions:
 	virtual void doStopGettingFrames();
 
 private:
-	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
-	void afterGettingFrame(unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+	static void afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
+	void afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 
 	static void handleIdleTimeout(void *clientData);
 	void handleIdleTimeout();

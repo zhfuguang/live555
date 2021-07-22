@@ -102,10 +102,8 @@ int main(int argc, char **argv)
 	const Port rtpPort(rtpPortNum);
 	const Port rtcpPort(rtcpPortNum);
 
-	sessionState.rtpGroupsock
-		= new Groupsock(*env, destinationAddress, rtpPort, ttl);
-	sessionState.rtcpGroupsock
-		= new Groupsock(*env, destinationAddress, rtcpPort, ttl);
+	sessionState.rtpGroupsock = new Groupsock(*env, destinationAddress, rtpPort, ttl);
+	sessionState.rtcpGroupsock = new Groupsock(*env, destinationAddress, rtcpPort, ttl);
 #ifdef USE_SSM
 	sessionState.rtpGroupsock->multicastSendOnly();
 	sessionState.rtcpGroupsock->multicastSendOnly();
@@ -121,11 +119,8 @@ int main(int argc, char **argv)
 	unsigned char CNAME[maxCNAMElen + 1];
 	gethostname((char *)CNAME, maxCNAMElen);
 	CNAME[maxCNAMElen] = '\0'; // just in case
-	sessionState.rtcpInstance
-		= RTCPInstance::createNew(*env, sessionState.rtcpGroupsock,
-				estimatedSessionBandwidth, CNAME,
-				sessionState.sink, NULL /* we're a server */,
-				isSSM);
+	sessionState.rtcpInstance = RTCPInstance::createNew(*env, sessionState.rtcpGroupsock,
+		estimatedSessionBandwidth, CNAME, sessionState.sink, NULL /* we're a server */, isSSM);
 	// Note: This starts RTCP running automatically
 
 #ifdef IMPLEMENT_RTSP_SERVER
@@ -135,16 +130,13 @@ int main(int argc, char **argv)
 		*env << "Failed to create RTSP server: " << env->getResultMsg() << "%s\n";
 		exit(1);
 	}
-	ServerMediaSession *sms
-		= ServerMediaSession::createNew(*env, "testStream", "GSM input",
-				"Session streamed by \"testGSMStreamer\"", isSSM);
+	ServerMediaSession *sms = ServerMediaSession::createNew(*env, "testStream", "GSM input", "Session streamed by \"testGSMStreamer\"", isSSM);
 	sms->addSubsession(PassiveServerMediaSubsession::createNew(*sessionState.sink, sessionState.rtcpInstance));
 	rtspServer->addServerMediaSession(sms);
 	announceURL(rtspServer, sms);
 #endif
 
 	play();
-
 	env->taskScheduler().doEventLoop(); // does not return
 	return 0; // only to prevent compiler warning
 }

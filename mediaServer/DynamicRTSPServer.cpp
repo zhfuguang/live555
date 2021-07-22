@@ -22,22 +22,18 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <liveMedia.hh>
 #include <string.h>
 
-DynamicRTSPServer *DynamicRTSPServer::createNew(UsageEnvironment &env, Port ourPort,
-	UserAuthenticationDatabase *authDatabase,
-	unsigned reclamationTestSeconds)
+DynamicRTSPServer *DynamicRTSPServer::createNew(UsageEnvironment &env, Port ourPort, UserAuthenticationDatabase *authDatabase, unsigned reclamationTestSeconds)
 {
 	int ourSocketIPv4 = setUpOurSocket(env, ourPort, AF_INET);
 	int ourSocketIPv6 = setUpOurSocket(env, ourPort, AF_INET6);
 	if (ourSocketIPv4 < 0 && ourSocketIPv6 < 0)
 		return NULL;
 
-	return new DynamicRTSPServer(env, ourSocketIPv4, ourSocketIPv6, ourPort,
-			authDatabase, reclamationTestSeconds);
+	return new DynamicRTSPServer(env, ourSocketIPv4, ourSocketIPv6, ourPort, authDatabase, reclamationTestSeconds);
 }
 
-DynamicRTSPServer::DynamicRTSPServer(UsageEnvironment &env, int ourSocketIPv4, int ourSocketIPv6,
-	Port ourPort,
-	UserAuthenticationDatabase *authDatabase, unsigned reclamationTestSeconds)
+DynamicRTSPServer::DynamicRTSPServer(UsageEnvironment &env,
+	int ourSocketIPv4, int ourSocketIPv6, Port ourPort, UserAuthenticationDatabase *authDatabase, unsigned reclamationTestSeconds)
 	: RTSPServer(env, ourSocketIPv4, ourSocketIPv6, ourPort, authDatabase, reclamationTestSeconds)
 {
 }
@@ -46,14 +42,10 @@ DynamicRTSPServer::~DynamicRTSPServer()
 {
 }
 
-static ServerMediaSession *createNewSMS(UsageEnvironment &env,
-	char const *fileName, FILE *fid); // forward
+static ServerMediaSession *createNewSMS(UsageEnvironment &env, char const *fileName, FILE *fid); // forward
 
-void DynamicRTSPServer
-::lookupServerMediaSession(char const *streamName,
-	lookupServerMediaSessionCompletionFunc *completionFunc,
-	void *completionClientData,
-	Boolean isFirstLookupInSession)
+void DynamicRTSPServer::lookupServerMediaSession(char const *streamName,
+	lookupServerMediaSessionCompletionFunc *completionFunc, void *completionClientData, Boolean isFirstLookupInSession)
 {
 	// First, check whether the specified "streamName" exists as a local file:
 	FILE *fid = fopen(streamName, "rb");
@@ -133,8 +125,7 @@ char const* descStr = description\
 sms = ServerMediaSession::createNew(env, fileName, fileName, descStr);\
 } while(0)
 
-static ServerMediaSession *createNewSMS(UsageEnvironment &env,
-	char const *fileName, FILE * /*fid*/)
+static ServerMediaSession *createNewSMS(UsageEnvironment &env, char const *fileName, FILE * /*fid*/)
 {
 	// Use the file name extension to determine the type of "ServerMediaSession":
 	char const *extension = strrchr(fileName, '.');
@@ -196,9 +187,8 @@ static ServerMediaSession *createNewSMS(UsageEnvironment &env,
 #ifdef STREAM_USING_ADUS
 		useADUs = True;
 #ifdef INTERLEAVE_ADUS
-		unsigned char interleaveCycle[] = {0, 2, 1, 3}; // or choose your own...
-		unsigned const interleaveCycleSize
-			= (sizeof interleaveCycle) / (sizeof(unsigned char));
+		unsigned char interleaveCycle[] = { 0, 2, 1, 3 }; // or choose your own...
+		unsigned const interleaveCycleSize = (sizeof interleaveCycle) / (sizeof(unsigned char));
 		interleaving = new Interleaving(interleaveCycleSize, interleaveCycle);
 #endif
 #endif
@@ -208,8 +198,7 @@ static ServerMediaSession *createNewSMS(UsageEnvironment &env,
 	{
 		// Assumed to be a MPEG-1 or 2 Program Stream (audio+video) file:
 		NEW_SMS("MPEG-1 or 2 Program Stream");
-		MPEG1or2FileServerDemux *demux
-			= MPEG1or2FileServerDemux::createNew(env, fileName, reuseSource);
+		MPEG1or2FileServerDemux *demux = MPEG1or2FileServerDemux::createNew(env, fileName, reuseSource);
 		sms->addSubsession(demux->newVideoServerMediaSubsession());
 		sms->addSubsession(demux->newAudioServerMediaSubsession());
 	}
@@ -217,8 +206,7 @@ static ServerMediaSession *createNewSMS(UsageEnvironment &env,
 	{
 		// Assumed to be a VOB (MPEG-2 Program Stream, with AC-3 audio) file:
 		NEW_SMS("VOB (MPEG-2 video with AC-3 audio)");
-		MPEG1or2FileServerDemux *demux
-			= MPEG1or2FileServerDemux::createNew(env, fileName, reuseSource);
+		MPEG1or2FileServerDemux *demux = MPEG1or2FileServerDemux::createNew(env, fileName, reuseSource);
 		sms->addSubsession(demux->newVideoServerMediaSubsession());
 		sms->addSubsession(demux->newAC3AudioServerMediaSubsession());
 	}

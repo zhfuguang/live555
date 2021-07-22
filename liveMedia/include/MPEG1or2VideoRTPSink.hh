@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "VideoRTPSink.hh"
 #endif
 
-class MPEG1or2VideoRTPSink: public VideoRTPSink
+class MPEG1or2VideoRTPSink : public VideoRTPSink
 {
 public:
 	static MPEG1or2VideoRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs);
@@ -39,15 +39,10 @@ protected:
 private: // redefined virtual functions:
 	virtual Boolean sourceIsCompatibleWithUs(MediaSource &source);
 
-	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
+	virtual void doSpecialFrameHandling(unsigned fragmentationOffset, unsigned char *frameStart,
+		unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
 	virtual Boolean allowFragmentationAfterStart() const;
-	virtual
-	Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart,
-		unsigned numBytesInFrame) const;
+	virtual Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart, unsigned numBytesInFrame) const;
 	virtual unsigned specialHeaderSize() const;
 
 private:

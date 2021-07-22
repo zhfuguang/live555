@@ -96,9 +96,7 @@ int main(int argc, char **argv)
 #endif
 
 	// Create an appropriate 'RTP sink' from the RTP 'groupsock':
-	videoSink =
-		SimpleRTPSink::createNew(*env, &rtpGroupsock, 33, 90000, "video", "MP2T",
-			1, True, False /*no 'M' bit*/);
+	videoSink = SimpleRTPSink::createNew(*env, &rtpGroupsock, 33, 90000, "video", "MP2T", 1, True, False /*no 'M' bit*/);
 
 	// Create (and start) a 'RTCP instance' for this RTP sink:
 	const unsigned estimatedSessionBandwidth = 5000; // in kbps; for RTCP b/w share
@@ -109,9 +107,7 @@ int main(int argc, char **argv)
 #ifdef IMPLEMENT_RTSP_SERVER
 	RTCPInstance *rtcp =
 #endif
-		RTCPInstance::createNew(*env, &rtcpGroupsock,
-			estimatedSessionBandwidth, CNAME,
-			videoSink, NULL /* we're a server */, isSSM);
+		RTCPInstance::createNew(*env, &rtcpGroupsock, estimatedSessionBandwidth, CNAME, videoSink, NULL /* we're a server */, isSSM);
 	// Note: This starts RTCP running automatically
 
 #ifdef IMPLEMENT_RTSP_SERVER
@@ -121,10 +117,7 @@ int main(int argc, char **argv)
 		*env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
 		exit(1);
 	}
-	ServerMediaSession *sms
-		= ServerMediaSession::createNew(*env, "testStream", inputFileName,
-				"Session streamed by \"testMPEG2TransportStreamer\"",
-				isSSM);
+	ServerMediaSession *sms = ServerMediaSession::createNew(*env, "testStream", inputFileName, "Session streamed by \"testMPEG2TransportStreamer\"", isSSM);
 	sms->addSubsession(PassiveServerMediaSubsession::createNew(*videoSink, rtcp));
 	rtspServer->addServerMediaSession(sms);
 	announceURL(rtspServer, sms);
@@ -135,9 +128,8 @@ int main(int argc, char **argv)
 	play();
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
-}
+	}
 
 void afterPlaying(void * /*clientData*/)
 {
@@ -152,16 +144,13 @@ void afterPlaying(void * /*clientData*/)
 
 void play()
 {
-	unsigned const inputDataChunkSize
-		= TRANSPORT_PACKETS_PER_NETWORK_PACKET * TRANSPORT_PACKET_SIZE;
+	unsigned const inputDataChunkSize = TRANSPORT_PACKETS_PER_NETWORK_PACKET * TRANSPORT_PACKET_SIZE;
 
 	// Open the input file as a 'byte-stream file source':
-	ByteStreamFileSource *fileSource
-		= ByteStreamFileSource::createNew(*env, inputFileName, inputDataChunkSize);
+	ByteStreamFileSource *fileSource = ByteStreamFileSource::createNew(*env, inputFileName, inputDataChunkSize);
 	if (fileSource == NULL)
 	{
-		*env << "Unable to open file \"" << inputFileName
-			<< "\" as a byte-stream file source\n";
+		*env << "Unable to open file \"" << inputFileName << "\" as a byte-stream file source\n";
 		exit(1);
 	}
 

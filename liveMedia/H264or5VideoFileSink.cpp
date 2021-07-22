@@ -23,14 +23,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// H264or5VideoFileSink //////////
 
-H264or5VideoFileSink
-::H264or5VideoFileSink(UsageEnvironment &env, FILE *fid,
-	unsigned bufferSize, char const *perFrameFileNamePrefix,
-	char const *sPropParameterSetsStr1,
-	char const *sPropParameterSetsStr2,
-	char const *sPropParameterSetsStr3)
-	: FileSink(env, fid, bufferSize, perFrameFileNamePrefix),
-	  fHaveWrittenFirstFrame(False)
+H264or5VideoFileSink::H264or5VideoFileSink(UsageEnvironment &env, FILE *fid, unsigned bufferSize,
+	char const *perFrameFileNamePrefix, char const *sPropParameterSetsStr1, char const *sPropParameterSetsStr2, char const *sPropParameterSetsStr3)
+	: FileSink(env, fid, bufferSize, perFrameFileNamePrefix), fHaveWrittenFirstFrame(False)
 {
 	fSPropParameterSetsStr[0] = strDup(sPropParameterSetsStr1);
 	fSPropParameterSetsStr[1] = strDup(sPropParameterSetsStr2);
@@ -45,7 +40,7 @@ H264or5VideoFileSink::~H264or5VideoFileSink()
 
 void H264or5VideoFileSink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime)
 {
-	unsigned char const start_code[4] = {0x00, 0x00, 0x00, 0x01};
+	unsigned char const start_code[4] = { 0x00, 0x00, 0x00, 0x01 };
 
 	if (!fHaveWrittenFirstFrame)
 	{
@@ -53,8 +48,7 @@ void H264or5VideoFileSink::afterGettingFrame(unsigned frameSize, unsigned numTru
 		for (unsigned j = 0; j < 3; ++j)
 		{
 			unsigned numSPropRecords;
-			SPropRecord *sPropRecords
-				= parseSPropParameterSets(fSPropParameterSetsStr[j], numSPropRecords);
+			SPropRecord *sPropRecords = parseSPropParameterSets(fSPropParameterSetsStr[j], numSPropRecords);
 			for (unsigned i = 0; i < numSPropRecords; ++i)
 			{
 				if (sPropRecords[i].sPropLength > 0)

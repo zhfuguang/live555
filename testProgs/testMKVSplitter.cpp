@@ -43,6 +43,7 @@ void usage()
 
 int main(int argc, char **argv)
 {
+	getchar();
 	// Begin by setting up our usage environment:
 	TaskScheduler *scheduler = BasicTaskScheduler::createNew();
 	env = BasicUsageEnvironment::createNew(*scheduler);
@@ -58,7 +59,6 @@ int main(int argc, char **argv)
 	MatroskaFile::createNew(*env, inputFileName, onMatroskaFileCreation, NULL);
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 
@@ -68,7 +68,6 @@ void onMatroskaFileCreation(MatroskaFile *matroskaFile, void * /*clientData*/)
 {
 	// Create a new demultiplexor for the file:
 	MatroskaDemux *matroskaDemux = matroskaFile->newDemux();
-
 	// Create source streams and file sinks for each preferred track;
 
 	unsigned numActiveTracks = 0;
@@ -100,8 +99,7 @@ void onMatroskaFileCreation(MatroskaFile *matroskaFile, void * /*clientData*/)
 			}
 		}
 
-		trackState[i].sink
-			= matroskaFile->createFileSinkForTrackNumber(trackNumber, fileName);
+		trackState[i].sink = matroskaFile->createFileSinkForTrackNumber(trackNumber, fileName);
 		if (trackState[i].sink != NULL)
 		{
 			++numActiveTracks;

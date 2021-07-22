@@ -25,14 +25,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Boolean.hh"
 #endif
 
-unsigned char *base64Decode(char const *in, unsigned &resultSize,
-	Boolean trimTrailingZeros = True);
+unsigned char *base64Decode(char const *in, unsigned &resultSize, Boolean trimTrailingZeros = True);
 // returns a newly allocated array - of size "resultSize" - that
 // the caller is responsible for delete[]ing.
 
-unsigned char *base64Decode(char const *in, unsigned inSize,
-	unsigned &resultSize,
-	Boolean trimTrailingZeros = True);
+unsigned char *base64Decode(char const *in, unsigned inSize, unsigned &resultSize, Boolean trimTrailingZeros = True);
 // As above, but includes the size of the input string (i.e., the number of bytes to decode) as a parameter.
 // This saves an extra call to "strlen()" if we already know the length of the input string.
 

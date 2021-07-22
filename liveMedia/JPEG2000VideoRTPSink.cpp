@@ -19,7 +19,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "JPEG2000VideoRTPSink.hh"
 
 JPEG2000VideoRTPSink::JPEG2000VideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs)
-	: VideoRTPSink(env, RTPgs, 98, 90000, "jpeg2000") {}
+	: VideoRTPSink(env, RTPgs, 98, 90000, "jpeg2000")
+{
+}
 
 JPEG2000VideoRTPSink::~JPEG2000VideoRTPSink() {}
 
@@ -30,12 +32,8 @@ JPEG2000VideoRTPSink *JPEG2000VideoRTPSink::createNew(UsageEnvironment &env, Gro
 
 #define JPEG2000_PAYLOAD_HEADER_SIZE 8
 
-void JPEG2000VideoRTPSink
-::doSpecialFrameHandling(unsigned fragmentationOffset,
-	unsigned char *frameStart,
-	unsigned numBytesInFrame,
-	struct timeval framePresentationTime,
-	unsigned numRemainingBytes)
+void JPEG2000VideoRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
+	unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes)
 {
 	// Fill in the Payload Header:
 	u_int8_t payloadHeader[JPEG2000_PAYLOAD_HEADER_SIZE];

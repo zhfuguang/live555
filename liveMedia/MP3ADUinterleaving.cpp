@@ -29,8 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// Interleaving //////////
 
-Interleaving::Interleaving(unsigned cycleSize,
-	unsigned char const *cycleArray)
+Interleaving::Interleaving(unsigned cycleSize, unsigned char const *cycleArray)
 	: fCycleSize(cycleSize)
 {
 	for (unsigned i = 0; i < fCycleSize; ++i)
@@ -45,8 +44,7 @@ Interleaving::~Interleaving()
 
 ////////// MP3ADUinterleaverBase //////////
 
-MP3ADUinterleaverBase::MP3ADUinterleaverBase(UsageEnvironment &env,
-	FramedSource *inputSource)
+MP3ADUinterleaverBase::MP3ADUinterleaverBase(UsageEnvironment &env, FramedSource *inputSource)
 	: FramedFilter(env, inputSource)
 {
 }
@@ -54,8 +52,7 @@ MP3ADUinterleaverBase::~MP3ADUinterleaverBase()
 {
 }
 
-FramedSource *MP3ADUinterleaverBase::getInputSource(UsageEnvironment &env,
-	char const *inputSourceName)
+FramedSource *MP3ADUinterleaverBase::getInputSource(UsageEnvironment &env, char const *inputSourceName)
 {
 	FramedSource *inputSource;
 	if (!FramedSource::lookupByName(env, inputSourceName, inputSource))
@@ -70,16 +67,12 @@ FramedSource *MP3ADUinterleaverBase::getInputSource(UsageEnvironment &env,
 	return inputSource;
 }
 
-void MP3ADUinterleaverBase::afterGettingFrame(void *clientData,
-	unsigned numBytesRead,
-	unsigned /*numTruncatedBytes*/,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void MP3ADUinterleaverBase::afterGettingFrame(void *clientData, unsigned numBytesRead,
+	unsigned /*numTruncatedBytes*/, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	MP3ADUinterleaverBase *interleaverBase = (MP3ADUinterleaverBase *)clientData;
 	// Finish up after reading:
-	interleaverBase->afterGettingFrame(numBytesRead,
-		presentationTime, durationInMicroseconds);
+	interleaverBase->afterGettingFrame(numBytesRead, presentationTime, durationInMicroseconds);
 
 	// Then, continue to deliver an outgoing frame:
 	interleaverBase->doGetNextFrame();
@@ -95,18 +88,9 @@ public:
 	virtual ~InterleavingFrames();
 
 	Boolean haveReleaseableFrame();
-	void getIncomingFrameParams(unsigned char index,
-		unsigned char *&dataPtr,
-		unsigned &bytesAvailable);
-	void getReleasingFrameParams(unsigned char index,
-		unsigned char *&dataPtr,
-		unsigned &bytesInUse,
-		struct timeval &presentationTime,
-		unsigned &durationInMicroseconds);
-	void setFrameParams(unsigned char index,
-		unsigned char icc, unsigned char ii,
-		unsigned frameSize, struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+	void getIncomingFrameParams(unsigned char index, unsigned char *&dataPtr, unsigned &bytesAvailable);
+	void getReleasingFrameParams(unsigned char index, unsigned char *&dataPtr, unsigned &bytesInUse, struct timeval &presentationTime, unsigned &durationInMicroseconds);
+	void setFrameParams(unsigned char index, unsigned char icc, unsigned char ii, unsigned frameSize, struct timeval presentationTime, unsigned durationInMicroseconds);
 	unsigned nextIndexToRelease()
 	{
 		return fNextIndexToRelease;
@@ -122,13 +106,9 @@ private:
 ////////// MP3ADUinterleaver //////////
 
 
-MP3ADUinterleaver::MP3ADUinterleaver(UsageEnvironment &env,
-	Interleaving const &interleaving,
-	FramedSource *inputSource)
-	: MP3ADUinterleaverBase(env, inputSource),
-	  fInterleaving(interleaving),
-	  fFrames(new InterleavingFrames(interleaving.cycleSize())),
-	  fII(0), fICC(0)
+MP3ADUinterleaver::MP3ADUinterleaver(UsageEnvironment &env, Interleaving const &interleaving, FramedSource *inputSource)
+	: MP3ADUinterleaverBase(env, inputSource), fInterleaving(interleaving)
+	, fFrames(new InterleavingFrames(interleaving.cycleSize())), fII(0), fICC(0)
 {
 }
 
@@ -137,9 +117,7 @@ MP3ADUinterleaver::~MP3ADUinterleaver()
 	delete fFrames;
 }
 
-MP3ADUinterleaver *MP3ADUinterleaver::createNew(UsageEnvironment &env,
-	Interleaving const &interleaving,
-	FramedSource *inputSource)
+MP3ADUinterleaver *MP3ADUinterleaver::createNew(UsageEnvironment &env, Interleaving const &interleaving, FramedSource *inputSource)
 {
 	return new MP3ADUinterleaver(env, interleaving, inputSource);
 }
@@ -161,22 +139,17 @@ void MP3ADUinterleaver::doGetNextFrame()
 		fPositionOfNextIncomingFrame = fInterleaving.lookupInverseCycle(fII);
 		unsigned char *dataPtr;
 		unsigned bytesAvailable;
-		fFrames->getIncomingFrameParams(fPositionOfNextIncomingFrame,
-			dataPtr, bytesAvailable);
+		fFrames->getIncomingFrameParams(fPositionOfNextIncomingFrame, dataPtr, bytesAvailable);
 
 		// Read the next incoming frame (asynchronously)
-		fInputSource->getNextFrame(dataPtr, bytesAvailable,
-			&MP3ADUinterleaverBase::afterGettingFrame, this,
-			handleClosure, this);
+		fInputSource->getNextFrame(dataPtr, bytesAvailable, &MP3ADUinterleaverBase::afterGettingFrame, this, handleClosure, this);
 	}
 }
 
 void MP3ADUinterleaver::releaseOutgoingFrame()
 {
 	unsigned char *fromPtr;
-	fFrames->getReleasingFrameParams(fFrames->nextIndexToRelease(),
-		fromPtr, fFrameSize,
-		fPresentationTime, fDurationInMicroseconds);
+	fFrames->getReleasingFrameParams(fFrames->nextIndexToRelease(), fromPtr, fFrameSize, fPresentationTime, fDurationInMicroseconds);
 
 	if (fFrameSize > fMaxSize)
 	{
@@ -184,18 +157,13 @@ void MP3ADUinterleaver::releaseOutgoingFrame()
 		fFrameSize = fMaxSize;
 	}
 	memmove(fTo, fromPtr, fFrameSize);
-
 	fFrames->releaseNext();
 }
 
-void MP3ADUinterleaver::afterGettingFrame(unsigned numBytesRead,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void MP3ADUinterleaver::afterGettingFrame(unsigned numBytesRead, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	// Set the (icc,ii) and frame size of the newly-read frame:
-	fFrames->setFrameParams(fPositionOfNextIncomingFrame,
-		fICC, fII, numBytesRead,
-		presentationTime, durationInMicroseconds);
+	fFrames->setFrameParams(fPositionOfNextIncomingFrame, fICC, fII, numBytesRead, presentationTime, durationInMicroseconds);
 
 	// Prepare our counters for the next frame:
 	if (++fII == fInterleaving.cycleSize())
@@ -214,16 +182,9 @@ public:
 	virtual ~DeinterleavingFrames();
 
 	Boolean haveReleaseableFrame();
-	void getIncomingFrameParams(unsigned char *&dataPtr,
-		unsigned &bytesAvailable);
-	void getIncomingFrameParamsAfter(unsigned frameSize,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds,
-		unsigned char &icc, unsigned char &ii);
-	void getReleasingFrameParams(unsigned char *&dataPtr,
-		unsigned &bytesInUse,
-		struct timeval &presentationTime,
-		unsigned &durationInMicroseconds);
+	void getIncomingFrameParams(unsigned char *&dataPtr, unsigned &bytesAvailable);
+	void getIncomingFrameParamsAfter(unsigned frameSize, struct timeval presentationTime, unsigned durationInMicroseconds, unsigned char &icc, unsigned char &ii);
+	void getReleasingFrameParams(unsigned char *&dataPtr, unsigned &bytesInUse, struct timeval &presentationTime, unsigned &durationInMicroseconds);
 	void moveIncomingFrameIntoPlace();
 	void releaseNext();
 	void startNewCycle();
@@ -238,11 +199,8 @@ private:
 
 ////////// MP3ADUdeinterleaver //////////
 
-MP3ADUdeinterleaver::MP3ADUdeinterleaver(UsageEnvironment &env,
-	FramedSource *inputSource)
-	: MP3ADUinterleaverBase(env, inputSource),
-	  fFrames(new DeinterleavingFrames),
-	  fIIlastSeen(~0), fICClastSeen(~0)
+MP3ADUdeinterleaver::MP3ADUdeinterleaver(UsageEnvironment &env, FramedSource *inputSource)
+	: MP3ADUinterleaverBase(env, inputSource), fFrames(new DeinterleavingFrames), fIIlastSeen(~0), fICClastSeen(~0)
 {
 }
 
@@ -251,8 +209,7 @@ MP3ADUdeinterleaver::~MP3ADUdeinterleaver()
 	delete fFrames;
 }
 
-MP3ADUdeinterleaver *MP3ADUdeinterleaver::createNew(UsageEnvironment &env,
-	FramedSource *inputSource)
+MP3ADUdeinterleaver *MP3ADUdeinterleaver::createNew(UsageEnvironment &env, FramedSource *inputSource)
 {
 	return new MP3ADUdeinterleaver(env, inputSource);
 }
@@ -272,10 +229,9 @@ void MP3ADUdeinterleaver::doGetNextFrame()
 	else
 	{
 #ifdef TEST_LOSS
-NOTE:
-		This code no longer works, because it uses synchronous reads,
-			 which are no longer supported.
-			 static unsigned const framesPerPacket = 3;
+		NOTE :
+		//This code no longer works, because it uses synchronous reads,which are no longer supported.
+		static unsigned const framesPerPacket = 3;
 		static unsigned const frameCount = 0;
 		static Boolean packetIsLost;
 		while (1)
@@ -294,8 +250,7 @@ NOTE:
 				unsigned numBytesRead;
 				struct timeval presentationTime;
 				// (this works only if the source can be read synchronously)
-				fInputSource->syncGetNextFrame(dummyBuf, sizeof dummyBuf,
-					numBytesRead, presentationTime);
+				fInputSource->syncGetNextFrame(dummyBuf, sizeof dummyBuf, numBytesRead, presentationTime);
 			}
 			else
 			{
@@ -308,21 +263,15 @@ NOTE:
 		fFrames->getIncomingFrameParams(dataPtr, bytesAvailable);
 
 		// Read the next incoming frame (asynchronously)
-		fInputSource->getNextFrame(dataPtr, bytesAvailable,
-			&MP3ADUinterleaverBase::afterGettingFrame, this,
-			handleClosure, this);
+		fInputSource->getNextFrame(dataPtr, bytesAvailable, &MP3ADUinterleaverBase::afterGettingFrame, this, handleClosure, this);
 	}
 }
 
-void MP3ADUdeinterleaver::afterGettingFrame(unsigned numBytesRead,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void MP3ADUdeinterleaver::afterGettingFrame(unsigned numBytesRead, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	// Get the (icc,ii) and set the frame size of the newly-read frame:
 	unsigned char icc, ii;
-	fFrames->getIncomingFrameParamsAfter(numBytesRead,
-		presentationTime, durationInMicroseconds,
-		icc, ii);
+	fFrames->getIncomingFrameParamsAfter(numBytesRead, presentationTime, durationInMicroseconds, icc, ii);
 
 	// Compare these to the values we saw last:
 	if (icc != fICClastSeen || ii == fIIlastSeen)
@@ -346,8 +295,7 @@ void MP3ADUdeinterleaver::afterGettingFrame(unsigned numBytesRead,
 void MP3ADUdeinterleaver::releaseOutgoingFrame()
 {
 	unsigned char *fromPtr;
-	fFrames->getReleasingFrameParams(fromPtr, fFrameSize,
-		fPresentationTime, fDurationInMicroseconds);
+	fFrames->getReleasingFrameParams(fromPtr, fFrameSize, fPresentationTime, fDurationInMicroseconds);
 
 	if (fFrameSize > fMaxSize)
 	{
@@ -378,8 +326,7 @@ public:
 };
 
 InterleavingFrames::InterleavingFrames(unsigned maxCycleSize)
-	: fMaxCycleSize(maxCycleSize), fNextIndexToRelease(0),
-	  fDescriptors(new InterleavingFrameDescriptor[maxCycleSize])
+	: fMaxCycleSize(maxCycleSize), fNextIndexToRelease(0), fDescriptors(new InterleavingFrameDescriptor[maxCycleSize])
 {
 }
 InterleavingFrames::~InterleavingFrames()
@@ -392,9 +339,7 @@ Boolean InterleavingFrames::haveReleaseableFrame()
 	return fDescriptors[fNextIndexToRelease].frameDataSize > 0;
 }
 
-void InterleavingFrames::getIncomingFrameParams(unsigned char index,
-	unsigned char *&dataPtr,
-	unsigned &bytesAvailable)
+void InterleavingFrames::getIncomingFrameParams(unsigned char index, unsigned char *&dataPtr, unsigned &bytesAvailable)
 {
 	InterleavingFrameDescriptor &desc = fDescriptors[index];
 	dataPtr = &desc.frameData[0];
@@ -402,10 +347,7 @@ void InterleavingFrames::getIncomingFrameParams(unsigned char index,
 }
 
 void InterleavingFrames::getReleasingFrameParams(unsigned char index,
-	unsigned char *&dataPtr,
-	unsigned &bytesInUse,
-	struct timeval &presentationTime,
-	unsigned &durationInMicroseconds)
+	unsigned char *&dataPtr, unsigned &bytesInUse, struct timeval &presentationTime, unsigned &durationInMicroseconds)
 {
 	InterleavingFrameDescriptor &desc = fDescriptors[index];
 	dataPtr = &desc.frameData[0];
@@ -414,12 +356,8 @@ void InterleavingFrames::getReleasingFrameParams(unsigned char index,
 	durationInMicroseconds = desc.durationInMicroseconds;
 }
 
-void InterleavingFrames::setFrameParams(unsigned char index,
-	unsigned char icc,
-	unsigned char ii,
-	unsigned frameSize,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void InterleavingFrames::setFrameParams(unsigned char index, unsigned char icc,
+	unsigned char ii, unsigned frameSize, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	InterleavingFrameDescriptor &desc = fDescriptors[index];
 	desc.frameDataSize = frameSize;
@@ -432,7 +370,7 @@ void InterleavingFrames::setFrameParams(unsigned char index,
 
 	// Replace the next 11 bits with (ii,icc):
 	*ptr++ = ii;
-	*ptr &= ~ 0xE0;
+	*ptr &= ~0xE0;
 	*ptr |= (icc << 5);
 }
 
@@ -464,9 +402,9 @@ public:
 };
 
 DeinterleavingFrames::DeinterleavingFrames()
-	: fNextIndexToRelease(0), fHaveEndedCycle(False),
-	  fMinIndexSeen(MAX_CYCLE_SIZE), fMaxIndexSeen(0),
-	  fDescriptors(new DeinterleavingFrameDescriptor[MAX_CYCLE_SIZE + 1])
+	: fNextIndexToRelease(0), fHaveEndedCycle(False)
+	, fMinIndexSeen(MAX_CYCLE_SIZE), fMaxIndexSeen(0)
+	, fDescriptors(new DeinterleavingFrameDescriptor[MAX_CYCLE_SIZE + 1])
 {
 }
 DeinterleavingFrames::~DeinterleavingFrames()
@@ -489,8 +427,7 @@ Boolean DeinterleavingFrames::haveReleaseableFrame()
 		{
 			fNextIndexToRelease = fMinIndexSeen;
 		}
-		while (fNextIndexToRelease < fMaxIndexSeen
-			&& fDescriptors[fNextIndexToRelease].frameDataSize == 0)
+		while (fNextIndexToRelease < fMaxIndexSeen && fDescriptors[fNextIndexToRelease].frameDataSize == 0)
 		{
 			++fNextIndexToRelease;
 		}
@@ -517,8 +454,7 @@ Boolean DeinterleavingFrames::haveReleaseableFrame()
 	}
 }
 
-void DeinterleavingFrames::getIncomingFrameParams(unsigned char *&dataPtr,
-	unsigned &bytesAvailable)
+void DeinterleavingFrames::getIncomingFrameParams(unsigned char *&dataPtr, unsigned &bytesAvailable)
 {
 	// Use fDescriptors[MAX_CYCLE_SIZE] to store the incoming frame,
 	// prior to figuring out its real position:
@@ -532,11 +468,8 @@ void DeinterleavingFrames::getIncomingFrameParams(unsigned char *&dataPtr,
 	bytesAvailable = MAX_FRAME_SIZE;
 }
 
-void DeinterleavingFrames
-::getIncomingFrameParamsAfter(unsigned frameSize,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds,
-	unsigned char &icc, unsigned char &ii)
+void DeinterleavingFrames::getIncomingFrameParamsAfter(unsigned frameSize,
+	struct timeval presentationTime, unsigned durationInMicroseconds, unsigned char &icc, unsigned char &ii)
 {
 	DeinterleavingFrameDescriptor &desc = fDescriptors[MAX_CYCLE_SIZE];
 	desc.frameDataSize = frameSize;
@@ -554,10 +487,7 @@ void DeinterleavingFrames
 	*ptr |= 0xE0;
 }
 
-void DeinterleavingFrames::getReleasingFrameParams(unsigned char *&dataPtr,
-	unsigned &bytesInUse,
-	struct timeval &presentationTime,
-	unsigned &durationInMicroseconds)
+void DeinterleavingFrames::getReleasingFrameParams(unsigned char *&dataPtr, unsigned &bytesInUse, struct timeval &presentationTime, unsigned &durationInMicroseconds)
 {
 	DeinterleavingFrameDescriptor &desc = fDescriptors[fNextIndexToRelease];
 	dataPtr = desc.frameData;

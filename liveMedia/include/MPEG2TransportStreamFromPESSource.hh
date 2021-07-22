@@ -28,14 +28,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG1or2DemuxedElementaryStream.hh"
 #endif
 
-class MPEG2TransportStreamFromPESSource: public MPEG2TransportStreamMultiplexor
+class MPEG2TransportStreamFromPESSource : public MPEG2TransportStreamMultiplexor
 {
 public:
 	static MPEG2TransportStreamFromPESSource *createNew(UsageEnvironment &env, MPEG1or2DemuxedElementaryStream *inputSource);
 
 protected:
-	MPEG2TransportStreamFromPESSource(UsageEnvironment &env,
-		MPEG1or2DemuxedElementaryStream *inputSource);
+	MPEG2TransportStreamFromPESSource(UsageEnvironment &env, MPEG1or2DemuxedElementaryStream *inputSource);
 	// called only by createNew()
 	virtual ~MPEG2TransportStreamFromPESSource();
 
@@ -45,14 +44,8 @@ private:
 	virtual void awaitNewBuffer(unsigned char *oldBuffer);
 
 private:
-	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
-	void afterGettingFrame1(unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+	static void afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
+	void afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 
 private:
 	MPEG1or2DemuxedElementaryStream *fInputSource;

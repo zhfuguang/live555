@@ -27,30 +27,27 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "GroupsockHelper.hh"
 
 
-MPEG2TransportUDPServerMediaSubsession *MPEG2TransportUDPServerMediaSubsession::createNew(UsageEnvironment &env,
-	char const *inputAddressStr, Port const &inputPort, Boolean inputStreamIsRawUDP)
+MPEG2TransportUDPServerMediaSubsession *MPEG2TransportUDPServerMediaSubsession::createNew(
+	UsageEnvironment &env, char const *inputAddressStr, Port const &inputPort, Boolean inputStreamIsRawUDP)
 {
 	return new MPEG2TransportUDPServerMediaSubsession(env, inputAddressStr, inputPort, inputStreamIsRawUDP);
 }
 
-MPEG2TransportUDPServerMediaSubsession
-::MPEG2TransportUDPServerMediaSubsession(UsageEnvironment &env,
-	char const *inputAddressStr, Port const &inputPort, Boolean inputStreamIsRawUDP)
-	: OnDemandServerMediaSubsession(env, True/*reuseFirstSource*/),
-	  fInputPort(inputPort), fInputGroupsock(NULL), fInputStreamIsRawUDP(inputStreamIsRawUDP)
+MPEG2TransportUDPServerMediaSubsession::MPEG2TransportUDPServerMediaSubsession(
+	UsageEnvironment &env, char const *inputAddressStr, Port const &inputPort, Boolean inputStreamIsRawUDP)
+	: OnDemandServerMediaSubsession(env, True/*reuseFirstSource*/)
+	, fInputPort(inputPort), fInputGroupsock(NULL), fInputStreamIsRawUDP(inputStreamIsRawUDP)
 {
 	fInputAddressStr = strDup(inputAddressStr);
 }
 
-MPEG2TransportUDPServerMediaSubsession::
-~MPEG2TransportUDPServerMediaSubsession()
+MPEG2TransportUDPServerMediaSubsession::~MPEG2TransportUDPServerMediaSubsession()
 {
 	delete fInputGroupsock;
 	delete[](char *)fInputAddressStr;
 }
 
-FramedSource *MPEG2TransportUDPServerMediaSubsession
-::createNewStreamSource(unsigned/* clientSessionId*/, unsigned &estBitrate)
+FramedSource *MPEG2TransportUDPServerMediaSubsession::createNewStreamSource(unsigned/* clientSessionId*/, unsigned &estBitrate)
 {
 	estBitrate = 5000; // kbps, estimate
 
@@ -84,10 +81,7 @@ FramedSource *MPEG2TransportUDPServerMediaSubsession
 	return MPEG2TransportStreamFramer::createNew(envir(), transportStreamSource);
 }
 
-RTPSink *MPEG2TransportUDPServerMediaSubsession
-::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char /*rtpPayloadTypeIfDynamic*/, FramedSource * /*inputSource*/)
+RTPSink *MPEG2TransportUDPServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char /*rtpPayloadTypeIfDynamic*/, FramedSource * /*inputSource*/)
 {
-	return SimpleRTPSink::createNew(envir(), rtpGroupsock,
-			33, 90000, "video", "MP2T",
-			1, True, False /*no 'M' bit*/);
+	return SimpleRTPSink::createNew(envir(), rtpGroupsock, 33, 90000, "video", "MP2T", 1, True, False /*no 'M' bit*/);
 }

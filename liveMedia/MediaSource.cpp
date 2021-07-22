@@ -82,9 +82,7 @@ Boolean MediaSource::isMPEG2TransportStreamMultiplexor() const
 	return False; // default implementation
 }
 
-Boolean MediaSource::lookupByName(UsageEnvironment &env,
-	char const *sourceName,
-	MediaSource *&resultSource)
+Boolean MediaSource::lookupByName(UsageEnvironment &env, char const *sourceName, MediaSource *&resultSource)
 {
 	resultSource = NULL; // unless we succeed
 

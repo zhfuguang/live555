@@ -25,11 +25,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class TheoraVideoRTPSource: public MultiFramedRTPSource
+class TheoraVideoRTPSource : public MultiFramedRTPSource
 {
 public:
-	static TheoraVideoRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat);
+	static TheoraVideoRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat);
 
 	u_int32_t curPacketIdent() const
 	{
@@ -37,16 +36,14 @@ public:
 	}
 
 protected:
-	TheoraVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat);
+	TheoraVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat);
 	// called only by createNew()
 
 	virtual ~TheoraVideoRTPSource();
 
 protected:
 	// redefined virtual functions:
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	virtual char const *MIMEtype() const;
 
 private:

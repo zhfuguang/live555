@@ -22,9 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "OggFile.hh"
 
 OggDemuxedTrack::OggDemuxedTrack(UsageEnvironment &env, unsigned trackNumber, OggDemux &sourceDemux)
-	: FramedSource(env),
-	  fOurTrackNumber(trackNumber), fOurSourceDemux(sourceDemux),
-	  fCurrentPageIsContinuation(False)
+	: FramedSource(env), fOurTrackNumber(trackNumber), fOurSourceDemux(sourceDemux), fCurrentPageIsContinuation(False)
 {
 	fNextPresentationTime.tv_sec = 0;
 	fNextPresentationTime.tv_usec = 0;

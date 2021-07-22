@@ -24,10 +24,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG2TransportStreamMultiplexor.hh" // for calculateCRC()
 #include "FramedSource.hh"
 
-OggFileSink *OggFileSink
-::createNew(UsageEnvironment &env, char const *fileName,
-	unsigned samplingFrequency, char const *configStr,
-	unsigned bufferSize, Boolean oneFilePerFrame)
+OggFileSink *OggFileSink::createNew(UsageEnvironment &env, char const *fileName,
+	unsigned samplingFrequency, char const *configStr, unsigned bufferSize, Boolean oneFilePerFrame)
 {
 	do
 	{
@@ -54,15 +52,10 @@ OggFileSink *OggFileSink
 	return NULL;
 }
 
-OggFileSink::OggFileSink(UsageEnvironment &env, FILE *fid,
-	unsigned samplingFrequency, char const *configStr,
-	unsigned bufferSize, char const *perFrameFileNamePrefix)
-	: FileSink(env, fid, bufferSize, perFrameFileNamePrefix),
-	  fSamplingFrequency(samplingFrequency), fConfigStr(strDup(configStr)),
-	  fHaveWrittenFirstFrame(False), fHaveSeenEOF(False),
-	  fGranulePosition(0), fGranulePositionAdjustment(0), fPageSequenceNumber(0),
-	  fIsTheora(False), fGranuleIncrementPerFrame(1),
-	  fAltFrameSize(0), fAltNumTruncatedBytes(0)
+OggFileSink::OggFileSink(UsageEnvironment &env, FILE *fid, unsigned samplingFrequency, char const *configStr, unsigned bufferSize, char const *perFrameFileNamePrefix)
+	: FileSink(env, fid, bufferSize, perFrameFileNamePrefix), fSamplingFrequency(samplingFrequency)
+	, fConfigStr(strDup(configStr)), fHaveWrittenFirstFrame(False), fHaveSeenEOF(False), fGranulePosition(0)
+	, fGranulePositionAdjustment(0), fPageSequenceNumber(0), fIsTheora(False), fGranuleIncrementPerFrame(1), fAltFrameSize(0), fAltNumTruncatedBytes(0)
 {
 	fAltBuffer = new unsigned char[bufferSize];
 
@@ -115,16 +108,13 @@ Boolean OggFileSink::continuePlaying()
 	if (fSource == NULL)
 		return False;
 
-	fSource->getNextFrame(fBuffer, fBufferSize,
-		FileSink::afterGettingFrame, this,
-		ourOnSourceClosure, this);
+	fSource->getNextFrame(fBuffer, fBufferSize, FileSink::afterGettingFrame, this, ourOnSourceClosure, this);
 	return True;
 }
 
 #define PAGE_DATA_MAX_SIZE (255*255)
 
-void OggFileSink::addData(unsigned char const *data, unsigned dataSize,
-	struct timeval presentationTime)
+void OggFileSink::addData(unsigned char const *data, unsigned dataSize, struct timeval presentationTime)
 {
 	if (dataSize == 0)
 		return;
@@ -143,11 +133,8 @@ void OggFileSink::addData(unsigned char const *data, unsigned dataSize,
 	}
 	else
 	{
-		double ptDiff
-			= (presentationTime.tv_sec - fFirstPresentationTime.tv_sec)
-				+ (presentationTime.tv_usec - fFirstPresentationTime.tv_usec) / 1000000.0;
-		int64_t newGranulePosition
-			= (int64_t)(fSamplingFrequency * ptDiff) + fGranulePositionAdjustment;
+		double ptDiff = (presentationTime.tv_sec - fFirstPresentationTime.tv_sec) + (presentationTime.tv_usec - fFirstPresentationTime.tv_usec) / 1000000.0;
+		int64_t newGranulePosition = (int64_t)(fSamplingFrequency * ptDiff) + fGranulePositionAdjustment;
 		if (newGranulePosition < fGranulePosition)
 		{
 			// Update "fGranulePositionAdjustment" so that "fGranulePosition" remains monotonic
@@ -188,8 +175,7 @@ void OggFileSink::addData(unsigned char const *data, unsigned dataSize,
 		{
 			// For pages where the frame does not end, set 'granule_position' in the header to -1:
 			fPageHeaderBytes[6] = fPageHeaderBytes[7] = fPageHeaderBytes[8] = fPageHeaderBytes[9] =
-							fPageHeaderBytes[10] = fPageHeaderBytes[11] = fPageHeaderBytes[12] = fPageHeaderBytes[13]
-										= 0xFF;
+				fPageHeaderBytes[10] = fPageHeaderBytes[11] = fPageHeaderBytes[12] = fPageHeaderBytes[13] = 0xFF;
 		}
 		else
 		{
@@ -271,11 +257,7 @@ void OggFileSink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedByt
 			u_int8_t *setupHdr;
 			unsigned setupHdrSize;
 			u_int32_t identField;
-			parseVorbisOrTheoraConfigStr(fConfigStr,
-				identificationHdr, identificationHdrSize,
-				commentHdr, commentHdrSize,
-				setupHdr, setupHdrSize,
-				identField);
+			parseVorbisOrTheoraConfigStr(fConfigStr, identificationHdr, identificationHdrSize, commentHdr, commentHdrSize, setupHdr, setupHdrSize, identField);
 			if (identificationHdrSize >= 42
 				&& strncmp((const char *)&identificationHdr[1], "theora", 6) == 0)
 			{

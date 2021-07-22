@@ -24,11 +24,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// DVVideoStreamFramer implementation //////////
 
-DVVideoStreamFramer::DVVideoStreamFramer(UsageEnvironment &env, FramedSource *inputSource,
-	Boolean sourceIsSeekable, Boolean leavePresentationTimesUnmodified)
-	: FramedFilter(env, inputSource),
-	  fLeavePresentationTimesUnmodified(leavePresentationTimesUnmodified),
-	  fOurProfile(NULL), fInitialBlocksPresent(False), fSourceIsSeekable(sourceIsSeekable)
+DVVideoStreamFramer::DVVideoStreamFramer(UsageEnvironment &env, FramedSource *inputSource, Boolean sourceIsSeekable, Boolean leavePresentationTimesUnmodified)
+	: FramedFilter(env, inputSource), fLeavePresentationTimesUnmodified(leavePresentationTimesUnmodified)
+	, fOurProfile(NULL), fInitialBlocksPresent(False), fSourceIsSeekable(sourceIsSeekable)
 {
 	fTo = NULL; // hack used when reading "fSavedInitialBlocks"
 	// Use the current wallclock time as the initial 'presentation time':
@@ -39,8 +37,7 @@ DVVideoStreamFramer::~DVVideoStreamFramer()
 {
 }
 
-DVVideoStreamFramer *DVVideoStreamFramer::createNew(UsageEnvironment &env, FramedSource *inputSource,
-	Boolean sourceIsSeekable, Boolean leavePresentationTimesUnmodified)
+DVVideoStreamFramer *DVVideoStreamFramer::createNew(UsageEnvironment &env, FramedSource *inputSource, Boolean sourceIsSeekable, Boolean leavePresentationTimesUnmodified)
 {
 	return new DVVideoStreamFramer(env, inputSource, sourceIsSeekable, leavePresentationTimesUnmodified);
 }
@@ -96,8 +93,7 @@ Boolean DVVideoStreamFramer::getFrameParameters(unsigned &frameSize, double &fra
 void DVVideoStreamFramer::getProfile()
 {
 	// To determine the stream's profile, we need to first read a chunk of data that we can parse:
-	fInputSource->getNextFrame(fSavedInitialBlocks, DV_SAVED_INITIAL_BLOCKS_SIZE,
-		afterGettingFrame, this, FramedSource::handleClosure, this);
+	fInputSource->getNextFrame(fSavedInitialBlocks, DV_SAVED_INITIAL_BLOCKS_SIZE, afterGettingFrame, this, FramedSource::handleClosure, this);
 
 	// Handle events until the requested data arrives:
 	envir().taskScheduler().doEventLoop(&fInitialBlocksPresent);
@@ -139,8 +135,7 @@ void DVVideoStreamFramer::doGetNextFrame()
 
 void DVVideoStreamFramer::getAndDeliverData()
 {
-	unsigned const totFrameSize
-		= fOurProfile != NULL ? ((DVVideoProfile const *)fOurProfile)->dvFrameSize : DV_SMALLEST_POSSIBLE_FRAME_SIZE;
+	unsigned const totFrameSize = fOurProfile != NULL ? ((DVVideoProfile const *)fOurProfile)->dvFrameSize : DV_SMALLEST_POSSIBLE_FRAME_SIZE;
 	unsigned totBytesToDeliver = totFrameSize < fMaxSize ? totFrameSize : fMaxSize;
 	unsigned numBytesToRead = totBytesToDeliver - fFrameSize;
 
@@ -148,8 +143,7 @@ void DVVideoStreamFramer::getAndDeliverData()
 }
 
 void DVVideoStreamFramer::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime, unsigned /*durationInMicroseconds*/)
+	unsigned numTruncatedBytes, struct timeval presentationTime, unsigned /*durationInMicroseconds*/)
 {
 	DVVideoStreamFramer *source = (DVVideoStreamFramer *)clientData;
 	source->afterGettingFrame(frameSize, numTruncatedBytes, presentationTime);
@@ -208,8 +202,7 @@ void DVVideoStreamFramer::afterGettingFrame(unsigned frameSize, unsigned numTrun
 
 	if (fTo != NULL)   // There is a downstream object; complete delivery to it (or read more data, if necessary)
 	{
-		unsigned const totFrameSize
-			= fOurProfile != NULL ? ((DVVideoProfile const *)fOurProfile)->dvFrameSize : DV_SMALLEST_POSSIBLE_FRAME_SIZE;
+		unsigned const totFrameSize = fOurProfile != NULL ? ((DVVideoProfile const *)fOurProfile)->dvFrameSize : DV_SMALLEST_POSSIBLE_FRAME_SIZE;
 		fFrameSize += frameSize;
 		fTo += frameSize;
 		fPresentationTime = presentationTime; // by default; may get changed below

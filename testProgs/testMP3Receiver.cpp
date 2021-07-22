@@ -110,8 +110,7 @@ int main(int argc, char **argv)
 #else
 	// Create the data source: a "MP3 *ADU* RTP source"
 	unsigned char rtpPayloadFormat = 96; // a dynamic payload type
-	rtpSource
-		= MP3ADURTPSource::createNew(*env, &rtpGroupsock, rtpPayloadFormat);
+	rtpSource = MP3ADURTPSource::createNew(*env, &rtpGroupsock, rtpPayloadFormat);
 #endif
 
 	// Create (and start) a 'RTCP instance' for the RTP source:
@@ -120,17 +119,13 @@ int main(int argc, char **argv)
 	unsigned char CNAME[maxCNAMElen + 1];
 	gethostname((char *)CNAME, maxCNAMElen);
 	CNAME[maxCNAMElen] = '\0'; // just in case
-	sessionState.rtcpInstance
-		= RTCPInstance::createNew(*env, &rtcpGroupsock,
-				estimatedSessionBandwidth, CNAME,
-				NULL /* we're a client */, rtpSource);
+	sessionState.rtcpInstance = RTCPInstance::createNew(*env, &rtcpGroupsock, estimatedSessionBandwidth, CNAME, NULL /* we're a client */, rtpSource);
 	// Note: This starts RTCP running automatically
 
 	sessionState.source = rtpSource;
 #ifdef STREAM_USING_ADUS
 	// Add a filter that deinterleaves the ADUs after depacketizing them:
-	sessionState.source
-		= MP3ADUdeinterleaver::createNew(*env, sessionState.source);
+	sessionState.source = MP3ADUdeinterleaver::createNew(*env, sessionState.source);
 	if (sessionState.source == NULL)
 	{
 		*env << "Unable to create an ADU deinterleaving filter for the source\n";
@@ -138,8 +133,7 @@ int main(int argc, char **argv)
 	}
 
 	// Add another filter that converts these ADUs to MP3s:
-	sessionState.source
-		= MP3FromADUSource::createNew(*env, sessionState.source);
+	sessionState.source = MP3FromADUSource::createNew(*env, sessionState.source);
 	if (sessionState.source == NULL)
 	{
 		*env << "Unable to create an ADU->MP3 filter for the source\n";
@@ -152,7 +146,6 @@ int main(int argc, char **argv)
 	sessionState.sink->startPlaying(*sessionState.source, afterPlaying, NULL);
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 

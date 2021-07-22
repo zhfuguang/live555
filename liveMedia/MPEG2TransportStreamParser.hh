@@ -90,16 +90,14 @@ public:
 	char const *filenameSuffix;
 
 public:
-	StreamType(char const *description = "unknown", enum dataType dataType = UNKNOWN,
-		char const *filenameSuffix = "");
+	StreamType(char const *description = "unknown", enum dataType dataType = UNKNOWN, char const *filenameSuffix = "");
 };
 
 
-class MPEG2TransportStreamParser: public StreamParser
+class MPEG2TransportStreamParser : public StreamParser
 {
 public:
-	MPEG2TransportStreamParser(FramedSource *inputSource,
-		FramedSource::onCloseFunc *onEndFunc, void *onEndClientData);
+	MPEG2TransportStreamParser(FramedSource *inputSource, FramedSource::onCloseFunc *onEndFunc, void *onEndClientData);
 	virtual ~MPEG2TransportStreamParser();
 
 	UsageEnvironment &envir();

@@ -47,7 +47,6 @@ void getSDPDescription(RTSPClient::responseHandler *afterFunc)
 
 void setupSubsession(MediaSubsession *subsession, Boolean streamUsingTCP, Boolean forceMulticastOnUnspecified, RTSPClient::responseHandler *afterFunc)
 {
-
 	ourRTSPClient->sendSetupCommand(*subsession, afterFunc, False, streamUsingTCP, forceMulticastOnUnspecified, ourAuthenticator);
 }
 

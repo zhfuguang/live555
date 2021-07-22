@@ -25,11 +25,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedFileSource.hh"
 #endif
 
-class ADTSAudioFileSource: public FramedFileSource
+class ADTSAudioFileSource : public FramedFileSource
 {
 public:
-	static ADTSAudioFileSource *createNew(UsageEnvironment &env,
-		char const *fileName);
+	static ADTSAudioFileSource *createNew(UsageEnvironment &env, char const *fileName);
 
 	unsigned samplingFrequency() const
 	{
@@ -46,8 +45,7 @@ public:
 	// returns the 'AudioSpecificConfig' for this stream (in ASCII form)
 
 private:
-	ADTSAudioFileSource(UsageEnvironment &env, FILE *fid, u_int8_t profile,
-		u_int8_t samplingFrequencyIndex, u_int8_t channelConfiguration);
+	ADTSAudioFileSource(UsageEnvironment &env, FILE *fid, u_int8_t profile, u_int8_t samplingFrequencyIndex, u_int8_t channelConfiguration);
 	// called only by createNew()
 
 	virtual ~ADTSAudioFileSource();

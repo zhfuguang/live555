@@ -24,8 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// MultiFramedRTPSink //////////
 
-void MultiFramedRTPSink::setPacketSizes(unsigned preferredPacketSize,
-	unsigned maxPacketSize)
+void MultiFramedRTPSink::setPacketSizes(unsigned preferredPacketSize, unsigned maxPacketSize)
 {
 	if (preferredPacketSize > maxPacketSize || preferredPacketSize == 0)
 		return;
@@ -45,16 +44,10 @@ void MultiFramedRTPSink::setPacketSizes(unsigned preferredPacketSize,
 #define RTP_PAYLOAD_PREFERRED_SIZE ((RTP_PAYLOAD_MAX_SIZE) < 1000 ? (RTP_PAYLOAD_MAX_SIZE) : 1000)
 #endif
 
-MultiFramedRTPSink::MultiFramedRTPSink(UsageEnvironment &env,
-	Groupsock *rtpGS,
-	unsigned char rtpPayloadType,
-	unsigned rtpTimestampFrequency,
-	char const *rtpPayloadFormatName,
-	unsigned numChannels)
-	: RTPSink(env, rtpGS, rtpPayloadType, rtpTimestampFrequency,
-		  rtpPayloadFormatName, numChannels),
-	  fOutBuf(NULL), fCurFragmentationOffset(0), fPreviousFrameEndedFragmentation(False),
-	  fOnSendErrorFunc(NULL), fOnSendErrorData(NULL)
+MultiFramedRTPSink::MultiFramedRTPSink(UsageEnvironment &env, Groupsock *rtpGS,
+	unsigned char rtpPayloadType, unsigned rtpTimestampFrequency, char const *rtpPayloadFormatName, unsigned numChannels)
+	: RTPSink(env, rtpGS, rtpPayloadType, rtpTimestampFrequency, rtpPayloadFormatName, numChannels)
+	, fOutBuf(NULL), fCurFragmentationOffset(0), fPreviousFrameEndedFragmentation(False), fOnSendErrorFunc(NULL), fOnSendErrorData(NULL)
 {
 	setPacketSizes((RTP_PAYLOAD_PREFERRED_SIZE), (RTP_PAYLOAD_MAX_SIZE));
 }
@@ -64,12 +57,8 @@ MultiFramedRTPSink::~MultiFramedRTPSink()
 	delete fOutBuf;
 }
 
-void MultiFramedRTPSink
-::doSpecialFrameHandling(unsigned /*fragmentationOffset*/,
-	unsigned char * /*frameStart*/,
-	unsigned /*numBytesInFrame*/,
-	struct timeval framePresentationTime,
-	unsigned /*numRemainingBytes*/)
+void MultiFramedRTPSink::doSpecialFrameHandling(unsigned /*fragmentationOffset*/,
+	unsigned char * /*frameStart*/, unsigned /*numBytesInFrame*/, struct timeval framePresentationTime, unsigned /*numRemainingBytes*/)
 {
 	// default implementation: If this is the first frame in the packet,
 	// use its presentationTime for the RTP timestamp:
@@ -89,9 +78,7 @@ Boolean MultiFramedRTPSink::allowOtherFramesAfterLastFragment() const
 	return False; // by default
 }
 
-Boolean MultiFramedRTPSink
-::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/,
-	unsigned /*numBytesInFrame*/) const
+Boolean MultiFramedRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/, unsigned /*numBytesInFrame*/) const
 {
 	return True; // by default
 }
@@ -130,28 +117,22 @@ void MultiFramedRTPSink::setTimestamp(struct timeval framePresentationTime)
 	fOutBuf->insertWord(fCurrentTimestamp, fTimestampPosition);
 }
 
-void MultiFramedRTPSink::setSpecialHeaderWord(unsigned word,
-	unsigned wordPosition)
+void MultiFramedRTPSink::setSpecialHeaderWord(unsigned word, unsigned wordPosition)
 {
 	fOutBuf->insertWord(word, fSpecialHeaderPosition + 4 * wordPosition);
 }
 
-void MultiFramedRTPSink::setSpecialHeaderBytes(unsigned char const *bytes,
-	unsigned numBytes,
-	unsigned bytePosition)
+void MultiFramedRTPSink::setSpecialHeaderBytes(unsigned char const *bytes, unsigned numBytes, unsigned bytePosition)
 {
 	fOutBuf->insert(bytes, numBytes, fSpecialHeaderPosition + bytePosition);
 }
 
-void MultiFramedRTPSink::setFrameSpecificHeaderWord(unsigned word,
-	unsigned wordPosition)
+void MultiFramedRTPSink::setFrameSpecificHeaderWord(unsigned word, unsigned wordPosition)
 {
 	fOutBuf->insertWord(word, fCurFrameSpecificHeaderPosition + 4 * wordPosition);
 }
 
-void MultiFramedRTPSink::setFrameSpecificHeaderBytes(unsigned char const *bytes,
-	unsigned numBytes,
-	unsigned bytePosition)
+void MultiFramedRTPSink::setFrameSpecificHeaderBytes(unsigned char const *bytes, unsigned numBytes, unsigned bytePosition)
 {
 	fOutBuf->insert(bytes, numBytes, fCurFrameSpecificHeaderPosition + bytePosition);
 }
@@ -248,26 +229,18 @@ void MultiFramedRTPSink::packFrame()
 		// Normal case: we need to read a new frame from the source
 		if (fSource == NULL)
 			return;
-		fSource->getNextFrame(fOutBuf->curPtr(), fOutBuf->totalBytesAvailable(),
-			afterGettingFrame, this, ourHandleClosure, this);
+		fSource->getNextFrame(fOutBuf->curPtr(), fOutBuf->totalBytesAvailable(), afterGettingFrame, this, ourHandleClosure, this);
 	}
 }
 
-void MultiFramedRTPSink
-::afterGettingFrame(void *clientData, unsigned numBytesRead,
-	unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void MultiFramedRTPSink::afterGettingFrame(void *clientData, unsigned numBytesRead,
+	unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	MultiFramedRTPSink *sink = (MultiFramedRTPSink *)clientData;
-	sink->afterGettingFrame1(numBytesRead, numTruncatedBytes,
-		presentationTime, durationInMicroseconds);
+	sink->afterGettingFrame1(numBytesRead, numTruncatedBytes, presentationTime, durationInMicroseconds);
 }
 
-void MultiFramedRTPSink
-::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes,
-	struct timeval presentationTime,
-	unsigned durationInMicroseconds)
+void MultiFramedRTPSink::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	if (fIsFirstPacket)
 	{
@@ -300,14 +273,12 @@ void MultiFramedRTPSink
 	// new frame; that check comes later.)
 	if (fNumFramesUsedSoFar > 0)
 	{
-		if ((fPreviousFrameEndedFragmentation
-				&& !allowOtherFramesAfterLastFragment())
+		if ((fPreviousFrameEndedFragmentation && !allowOtherFramesAfterLastFragment())
 			|| !frameCanAppearAfterPacketStart(fOutBuf->curPtr(), frameSize))
 		{
 			// Save away this frame for next time:
 			numFrameBytesToUse = 0;
-			fOutBuf->setOverflowData(fOutBuf->curPacketSize(), frameSize,
-				presentationTime, durationInMicroseconds);
+			fOutBuf->setOverflowData(fOutBuf->curPacketSize(), frameSize, presentationTime, durationInMicroseconds);
 		}
 	}
 	fPreviousFrameEndedFragmentation = False;
@@ -321,8 +292,7 @@ void MultiFramedRTPSink
 			// send it in the next packet instead.  However, if the frame is too
 			// big to fit in a packet by itself, then we need to fragment it (and
 			// use some of it in this packet, if the payload format permits this.)
-			if (isTooBigForAPacket(frameSize)
-				&& (fNumFramesUsedSoFar == 0 || allowFragmentationAfterStart()))
+			if (isTooBigForAPacket(frameSize) && (fNumFramesUsedSoFar == 0 || allowFragmentationAfterStart()))
 			{
 				// We need to fragment this frame, and use some of it now:
 				overflowBytes = computeOverflowForNewFrame(frameSize);
@@ -335,8 +305,7 @@ void MultiFramedRTPSink
 				overflowBytes = frameSize;
 				numFrameBytesToUse = 0;
 			}
-			fOutBuf->setOverflowData(fOutBuf->curPacketSize() + numFrameBytesToUse,
-				overflowBytes, presentationTime, durationInMicroseconds);
+			fOutBuf->setOverflowData(fOutBuf->curPacketSize() + numFrameBytesToUse, overflowBytes, presentationTime, durationInMicroseconds);
 		}
 		else if (fCurFragmentationOffset > 0)
 		{
@@ -360,9 +329,7 @@ void MultiFramedRTPSink
 		// do this now, in case "doSpecialFrameHandling()" calls "setFramePadding()" to append padding bytes
 
 		// Here's where any payload format specific processing gets done:
-		doSpecialFrameHandling(curFragmentationOffset, frameStart,
-			numFrameBytesToUse, presentationTime,
-			overflowBytes);
+		doSpecialFrameHandling(curFragmentationOffset, frameStart, numFrameBytesToUse, presentationTime, overflowBytes);
 
 		++fNumFramesUsedSoFar;
 
@@ -385,10 +352,8 @@ void MultiFramedRTPSink
 		// (iv) only one frame per packet is allowed:
 		if (fOutBuf->isPreferredSize()
 			|| fOutBuf->wouldOverflow(numFrameBytesToUse)
-			|| (fPreviousFrameEndedFragmentation &&
-				!allowOtherFramesAfterLastFragment())
-			|| !frameCanAppearAfterPacketStart(fOutBuf->curPtr() - frameSize,
-				frameSize))
+			|| (fPreviousFrameEndedFragmentation && !allowOtherFramesAfterLastFragment())
+			|| !frameCanAppearAfterPacketStart(fOutBuf->curPtr() - frameSize, frameSize))
 		{
 			// The packet is ready to be sent now
 			sendPacketIfNecessary();
@@ -428,21 +393,18 @@ void MultiFramedRTPSink::sendPacketIfNecessary()
 			}
 		++fPacketCount;
 		fTotalOctetCount += fOutBuf->curPacketSize();
-		fOctetCount += fOutBuf->curPacketSize()
-			- rtpHeaderSize - fSpecialHeaderSize - fTotalFrameSpecificHeaderSizes;
+		fOctetCount += fOutBuf->curPacketSize() - rtpHeaderSize - fSpecialHeaderSize - fTotalFrameSpecificHeaderSizes;
 
 		++fSeqNo; // for next time
-	}
+			}
 
-	if (fOutBuf->haveOverflowData()
-		&& fOutBuf->totalBytesAvailable() > fOutBuf->totalBufferSize() / 2)
+	if (fOutBuf->haveOverflowData() && fOutBuf->totalBytesAvailable() > fOutBuf->totalBufferSize() / 2)
 	{
 		// Efficiency hack: Reset the packet start pointer to just in front of
 		// the overflow data (allowing for the RTP header and special headers),
 		// so that we probably don't have to "memmove()" the overflow data
 		// into place when building the next packet:
-		unsigned newPacketStart = fOutBuf->curPacketSize()
-			- (rtpHeaderSize + fSpecialHeaderSize + frameSpecificHeaderSize());
+		unsigned newPacketStart = fOutBuf->curPacketSize() - (rtpHeaderSize + fSpecialHeaderSize + frameSpecificHeaderSize());
 		fOutBuf->adjustPacketStart(newPacketStart);
 	}
 	else
@@ -475,7 +437,7 @@ void MultiFramedRTPSink::sendPacketIfNecessary()
 		// Delay this amount of time:
 		nextTask() = envir().taskScheduler().scheduleDelayedTask(uSecondsToGo, (TaskFunc *)sendNext, this);
 	}
-}
+	}
 
 // The following is called after each delay between packet sends:
 void MultiFramedRTPSink::sendNext(void *firstArg)

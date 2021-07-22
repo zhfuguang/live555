@@ -25,30 +25,22 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "VideoRTPSink.hh"
 #endif
 
-class H263plusVideoRTPSink: public VideoRTPSink
+class H263plusVideoRTPSink : public VideoRTPSink
 {
 public:
-	static H263plusVideoRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		u_int32_t rtpTimestampFrequency = 90000);
+	static H263plusVideoRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, u_int32_t rtpTimestampFrequency = 90000);
 
 protected:
-	H263plusVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		u_int32_t rtpTimestampFrequency);
+	H263plusVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, u_int32_t rtpTimestampFrequency);
 	// called only by createNew()
 
 	virtual ~H263plusVideoRTPSink();
 
 private: // redefined virtual functions:
-	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
+	virtual void doSpecialFrameHandling(unsigned fragmentationOffset, unsigned char *frameStart,
+		unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
 	virtual
-	Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart,
-		unsigned numBytesInFrame) const;
+		Boolean frameCanAppearAfterPacketStart(unsigned char const *frameStart, unsigned numBytesInFrame) const;
 	virtual unsigned specialHeaderSize() const;
 };
 

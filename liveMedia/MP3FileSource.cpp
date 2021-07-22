@@ -25,8 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 ////////// MP3FileSource //////////
 
 MP3FileSource::MP3FileSource(UsageEnvironment &env, FILE *fid)
-	: FramedFileSource(env, fid),
-	  fStreamState(new MP3StreamState(env))
+	: FramedFileSource(env, fid), fStreamState(new MP3StreamState(env))
 {
 }
 
@@ -147,8 +146,7 @@ void MP3FileSource::doGetNextFrame()
 	// uses. #####
 	afterGetting(this);
 #else
-	nextTask() = envir().taskScheduler().scheduleDelayedTask(0,
-			(TaskFunc *)afterGetting, this);
+	nextTask() = envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc *)afterGetting, this);
 #endif
 }
 
@@ -171,9 +169,7 @@ Boolean MP3FileSource::doGetNextFrame1()
 	if (!fStreamState->readFrame(fTo, fMaxSize, fFrameSize, fDurationInMicroseconds))
 	{
 		char tmp[200];
-		sprintf(tmp,
-			"Insufficient buffer size %d for reading MPEG audio frame (needed %d)\n",
-			fMaxSize, fFrameSize);
+		sprintf(tmp, "Insufficient buffer size %d for reading MPEG audio frame (needed %d)\n", fMaxSize, fFrameSize);
 		envir().setResultMsg(tmp);
 		fFrameSize = fMaxSize;
 		return False;

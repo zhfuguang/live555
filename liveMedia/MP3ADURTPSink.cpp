@@ -20,8 +20,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "MP3ADURTPSink.hh"
 
-MP3ADURTPSink::MP3ADURTPSink(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char RTPPayloadType)
+MP3ADURTPSink::MP3ADURTPSink(UsageEnvironment &env, Groupsock *RTPgs, unsigned char RTPPayloadType)
 	: AudioRTPSink(env, RTPgs, RTPPayloadType, 90000, "MPA-ROBUST")
 {
 }
@@ -30,23 +29,18 @@ MP3ADURTPSink::~MP3ADURTPSink()
 {
 }
 
-MP3ADURTPSink *MP3ADURTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char RTPPayloadType)
+MP3ADURTPSink *MP3ADURTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char RTPPayloadType)
 {
 	return new MP3ADURTPSink(env, RTPgs, RTPPayloadType);
 }
 
 static void badDataSize(UsageEnvironment &env, unsigned numBytesInFrame)
 {
-	env << "MP3ADURTPSink::doSpecialFrameHandling(): invalid size ("
-		<< numBytesInFrame << ") of non-fragmented input ADU!\n";
+	env << "MP3ADURTPSink::doSpecialFrameHandling(): invalid size (" << numBytesInFrame << ") of non-fragmented input ADU!\n";
 }
 
 void MP3ADURTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
-	unsigned char *frameStart,
-	unsigned numBytesInFrame,
-	struct timeval framePresentationTime,
-	unsigned numRemainingBytes)
+	unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes)
 {
 	// If this is the first (or only) fragment of an ADU, then
 	// check the "ADU descriptor" (that should be at the front) for validity:
@@ -85,17 +79,12 @@ void MP3ADURTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
 
 		// Now, check whether the ADU size in the ADU descriptor is consistent
 		// with the total data size of (all fragments of) the input frame:
-		unsigned expectedADUSize =
-			fragmentationOffset + numBytesInFrame + numRemainingBytes
-			- aduDescriptorSize;
+		unsigned expectedADUSize = fragmentationOffset + numBytesInFrame + numRemainingBytes - aduDescriptorSize;
 		if (fCurADUSize != expectedADUSize)
 		{
-			envir() << "MP3ADURTPSink::doSpecialFrameHandling(): Warning: Input ADU size "
-				<< expectedADUSize << " (=" << fragmentationOffset
-				<< "+" << numBytesInFrame << "+" << numRemainingBytes
-				<< "-" << aduDescriptorSize
-				<< ") did not match the value (" << fCurADUSize
-				<< ") in the ADU descriptor!\n";
+			envir() << "MP3ADURTPSink::doSpecialFrameHandling(): Warning: Input ADU size " << expectedADUSize
+				<< " (=" << fragmentationOffset << "+" << numBytesInFrame << "+" << numRemainingBytes
+				<< "-" << aduDescriptorSize << ") did not match the value (" << fCurADUSize << ") in the ADU descriptor!\n";
 			fCurADUSize = expectedADUSize;
 		}
 	}
@@ -111,10 +100,7 @@ void MP3ADURTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
 
 	// Important: Also call our base class's doSpecialFrameHandling(),
 	// to set the packet's timestamp:
-	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset,
-		frameStart, numBytesInFrame,
-		framePresentationTime,
-		numRemainingBytes);
+	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset, frameStart, numBytesInFrame, framePresentationTime, numRemainingBytes);
 }
 
 unsigned MP3ADURTPSink::specialHeaderSize() const

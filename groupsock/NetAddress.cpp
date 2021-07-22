@@ -225,7 +225,7 @@ NetAddressList::NetAddressList(char const *hostname, int addressFamily)
 	if (addressFamily != AF_INET6 && inet_pton(AF_INET, hostname, (u_int8_t *)&addr4) == 1)
 	{
 		fNumAddresses = 1;
-		fAddressArray = new NetAddress*[fNumAddresses];
+		fAddressArray = new NetAddress * [fNumAddresses];
 		if (fAddressArray == NULL)
 			return;
 
@@ -237,7 +237,7 @@ NetAddressList::NetAddressList(char const *hostname, int addressFamily)
 	if (addressFamily != AF_INET && inet_pton(AF_INET6, hostname, (u_int8_t *)&addr6) == 1)
 	{
 		fNumAddresses = 1;
-		fAddressArray = new NetAddress*[fNumAddresses];
+		fAddressArray = new NetAddress * [fNumAddresses];
 		if (fAddressArray == NULL)
 			return;
 
@@ -268,7 +268,7 @@ NetAddressList::NetAddressList(char const *hostname, int addressFamily)
 	}
 
 	// Next, set up the list:
-	fAddressArray = new NetAddress*[fNumAddresses];
+	fAddressArray = new NetAddress * [fNumAddresses];
 	if (fAddressArray == NULL)
 		return;
 
@@ -316,7 +316,7 @@ NetAddressList::NetAddressList(char const *hostname, int addressFamily)
 	}
 
 	// Next, set up the list:
-	fAddressArray = new NetAddress*[fNumAddresses];
+	fAddressArray = new NetAddress * [fNumAddresses];
 	if (fAddressArray == NULL)
 		return;
 
@@ -336,11 +336,11 @@ NetAddressList::NetAddressList(char const *hostname, int addressFamily)
 
 		if (p->ai_family == AF_INET)   // IPv4
 		{
-			fAddressArray[i++] = new NetAddress((u_int8_t const *) & (((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr), sizeof(ipv4AddressBits));
+			fAddressArray[i++] = new NetAddress((u_int8_t const *)&(((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr), sizeof(ipv4AddressBits));
 		}
 		else     // IPv6
 		{
-			fAddressArray[i++] = new NetAddress((u_int8_t const *) & (((struct sockaddr_in6 *)p->ai_addr)->sin6_addr.s6_addr), sizeof(ipv6AddressBits));
+			fAddressArray[i++] = new NetAddress((u_int8_t const *)&(((struct sockaddr_in6 *)p->ai_addr)->sin6_addr.s6_addr), sizeof(ipv6AddressBits));
 		}
 		p = p->ai_next;
 	}
@@ -372,7 +372,7 @@ NetAddressList::~NetAddressList()
 
 void NetAddressList::assign(unsigned numAddresses, NetAddress **addressArray)
 {
-	fAddressArray = new NetAddress*[numAddresses];
+	fAddressArray = new NetAddress * [numAddresses];
 	if (fAddressArray == NULL)
 	{
 		fNumAddresses = 0;
@@ -406,7 +406,9 @@ NetAddress const *NetAddressList::firstAddress() const
 
 ////////// NetAddressList::Iterator //////////
 NetAddressList::Iterator::Iterator(NetAddressList const &addressList)
-	: fAddressList(addressList), fNextIndex(0) {}
+	: fAddressList(addressList), fNextIndex(0)
+{
+}
 
 NetAddress const *NetAddressList::Iterator::nextAddress()
 {
@@ -476,27 +478,21 @@ static void setKey(int *key,
 	*key = (int)port.num();
 }
 
-void *AddressPortLookupTable::Add(struct sockaddr_storage const &address1,
-	struct sockaddr_storage const &address2,
-	Port port, void *value)
+void *AddressPortLookupTable::Add(struct sockaddr_storage const &address1, struct sockaddr_storage const &address2, Port port, void *value)
 {
 	int key[NUM_RECORDS_IN_KEY_TOTAL];
 	setKey(key, address1, address2, port);
 	return fTable->Add((char *)key, value);
 }
 
-void *AddressPortLookupTable::Lookup(struct sockaddr_storage const &address1,
-	struct sockaddr_storage const &address2,
-	Port port)
+void *AddressPortLookupTable::Lookup(struct sockaddr_storage const &address1, struct sockaddr_storage const &address2, Port port)
 {
 	int key[NUM_RECORDS_IN_KEY_TOTAL];
 	setKey(key, address1, address2, port);
 	return fTable->Lookup((char *)key);
 }
 
-Boolean AddressPortLookupTable::Remove(struct sockaddr_storage const &address1,
-	struct sockaddr_storage const &address2,
-	Port port)
+Boolean AddressPortLookupTable::Remove(struct sockaddr_storage const &address1, struct sockaddr_storage const &address2, Port port)
 {
 	int key[NUM_RECORDS_IN_KEY_TOTAL];
 	setKey(key, address1, address2, port);
@@ -528,12 +524,10 @@ Boolean IsMulticastAddress(struct sockaddr_storage const &address)
 	{
 		case AF_INET:
 		{
-			ipv4AddressBits addressInNetworkOrder
-				= htonl(((sockaddr_in const &)address).sin_addr.s_addr);
+			ipv4AddressBits addressInNetworkOrder = htonl(((sockaddr_in const &)address).sin_addr.s_addr);
 			// Note: We return False for addresses in the range 224.0.0.0
 			// through 224.0.0.255, because these are non-routable
-			return addressInNetworkOrder >  0xE00000FF &&
-				addressInNetworkOrder <= 0xEFFFFFFF;
+			return addressInNetworkOrder > 0xE00000FF && addressInNetworkOrder <= 0xEFFFFFFF;
 		}
 		case AF_INET6:
 		{

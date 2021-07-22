@@ -22,26 +22,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Base64.hh"
 #include "VorbisAudioRTPSource.hh" // for parseVorbisOrTheoraConfigStr()
 
-VorbisAudioRTPSink *VorbisAudioRTPSink
-::createNew(UsageEnvironment &env, Groupsock *RTPgs,
+VorbisAudioRTPSink *VorbisAudioRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs,
 	u_int8_t rtpPayloadFormat, u_int32_t rtpTimestampFrequency, unsigned numChannels,
 	u_int8_t *identificationHeader, unsigned identificationHeaderSize,
 	u_int8_t *commentHeader, unsigned commentHeaderSize,
 	u_int8_t *setupHeader, unsigned setupHeaderSize,
 	u_int32_t identField)
 {
-	return new VorbisAudioRTPSink(env, RTPgs,
-			rtpPayloadFormat, rtpTimestampFrequency, numChannels,
-			identificationHeader, identificationHeaderSize,
-			commentHeader, commentHeaderSize,
-			setupHeader, setupHeaderSize,
-			identField);
+	return new VorbisAudioRTPSink(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, numChannels,
+		identificationHeader, identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize, identField);
 }
 
-VorbisAudioRTPSink *VorbisAudioRTPSink
-::createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
-	u_int32_t rtpTimestampFrequency, unsigned numChannels,
-	char const *configStr)
+VorbisAudioRTPSink *VorbisAudioRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs,
+	u_int8_t rtpPayloadFormat, u_int32_t rtpTimestampFrequency, unsigned numChannels, char const *configStr)
 {
 	// Begin by decoding and unpacking the configuration string:
 	u_int8_t *identificationHeader;
@@ -52,18 +45,11 @@ VorbisAudioRTPSink *VorbisAudioRTPSink
 	unsigned setupHeaderSize;
 	u_int32_t identField;
 
-	parseVorbisOrTheoraConfigStr(configStr,
-		identificationHeader, identificationHeaderSize,
-		commentHeader, commentHeaderSize,
-		setupHeader, setupHeaderSize,
-		identField);
+	parseVorbisOrTheoraConfigStr(configStr, identificationHeader,
+		identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize, identField);
 
-	VorbisAudioRTPSink *resultSink
-		= new VorbisAudioRTPSink(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, numChannels,
-		identificationHeader, identificationHeaderSize,
-		commentHeader, commentHeaderSize,
-		setupHeader, setupHeaderSize,
-		identField);
+	VorbisAudioRTPSink *resultSink = new VorbisAudioRTPSink(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, numChannels,
+		identificationHeader, identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize, identField);
 	delete[] identificationHeader;
 	delete[] commentHeader;
 	delete[] setupHeader;
@@ -71,15 +57,13 @@ VorbisAudioRTPSink *VorbisAudioRTPSink
 	return resultSink;
 }
 
-VorbisAudioRTPSink
-::VorbisAudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
+VorbisAudioRTPSink::VorbisAudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
 	u_int32_t rtpTimestampFrequency, unsigned numChannels,
 	u_int8_t *identificationHeader, unsigned identificationHeaderSize,
 	u_int8_t *commentHeader, unsigned commentHeaderSize,
 	u_int8_t *setupHeader, unsigned setupHeaderSize,
 	u_int32_t identField)
-	: AudioRTPSink(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, "VORBIS", numChannels),
-	  fIdent(identField), fFmtpSDPLine(NULL)
+	: AudioRTPSink(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, "VORBIS", numChannels), fIdent(identField), fFmtpSDPLine(NULL)
 {
 	if (identificationHeaderSize >= 28)
 	{
@@ -105,20 +89,16 @@ VorbisAudioRTPSink
 		if (bitrate_minimum < 0)
 			bitrate_minimum = 0;
 
-		int bitrate
-			= bitrate_nominal > 0 ? bitrate_nominal
-				: bitrate_maximum > 0 ? bitrate_maximum
-				: bitrate_minimum > 0 ? bitrate_minimum : 0;
+		int bitrate = bitrate_nominal > 0 ? bitrate_nominal
+			: bitrate_maximum > 0 ? bitrate_maximum
+			: bitrate_minimum > 0 ? bitrate_minimum : 0;
 		if (bitrate > 0)
 			estimatedBitrate() = ((unsigned)bitrate) / 1000;
 	}
 
 	// Generate a 'config' string from the supplied configuration headers:
-	char *base64PackedHeaders
-		= generateVorbisOrTheoraConfigStr(identificationHeader, identificationHeaderSize,
-				commentHeader, commentHeaderSize,
-				setupHeader, setupHeaderSize,
-				identField);
+	char *base64PackedHeaders = generateVorbisOrTheoraConfigStr(identificationHeader,
+		identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize, identField);
 	if (base64PackedHeaders == NULL)
 		return;
 
@@ -139,12 +119,8 @@ char const *VorbisAudioRTPSink::auxSDPLine()
 	return fFmtpSDPLine;
 }
 
-void VorbisAudioRTPSink
-::doSpecialFrameHandling(unsigned fragmentationOffset,
-	unsigned char *frameStart,
-	unsigned numBytesInFrame,
-	struct timeval framePresentationTime,
-	unsigned numRemainingBytes)
+void VorbisAudioRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
+	unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes)
 {
 	// Set the 4-byte "payload header", as defined in RFC 5215, section 2.2:
 	u_int8_t header[4];
@@ -192,14 +168,10 @@ void VorbisAudioRTPSink
 
 	// Important: Also call our base class's doSpecialFrameHandling(),
 	// to set the packet's timestamp:
-	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset,
-		frameStart, numBytesInFrame,
-		framePresentationTime,
-		numRemainingBytes);
+	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset, frameStart, numBytesInFrame, framePresentationTime, numRemainingBytes);
 }
 
-Boolean VorbisAudioRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/,
-	unsigned /*numBytesInFrame*/) const
+Boolean VorbisAudioRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/, unsigned /*numBytesInFrame*/) const
 {
 	// We allow more than one frame to be packed into an outgoing RTP packet, but no more than 15:
 	return numFramesUsedSoFar() <= 15;
@@ -219,9 +191,7 @@ unsigned VorbisAudioRTPSink::frameSpecificHeaderSize() const
 ////////// generateVorbisOrTheoraConfigStr() implementation //////////
 
 char *generateVorbisOrTheoraConfigStr(u_int8_t *identificationHeader, unsigned identificationHeaderSize,
-	u_int8_t *commentHeader, unsigned commentHeaderSize,
-	u_int8_t *setupHeader, unsigned setupHeaderSize,
-	u_int32_t identField)
+	u_int8_t *commentHeader, unsigned commentHeaderSize, u_int8_t *setupHeader, unsigned setupHeaderSize, u_int32_t identField)
 {
 	// First, count how many headers (<=3) are included, and how many bytes will be used
 	// to encode these headers' sizes:
@@ -256,11 +226,11 @@ char *generateVorbisOrTheoraConfigStr(u_int8_t *identificationHeader, unsigned i
 		return NULL; // too big for a 16-bit field; we can't handle this
 	unsigned packedHeadersSize
 		= 4 // "Number of packed headers" field
-			+ 3 // "ident" field
-			+ 2 // "length" field
-			+ 1 // "n. of headers" field
-			+ sizeSize[0] + sizeSize[1] // "length1" and "length2" (if present) fields
-			+ length;
+		+ 3 // "ident" field
+		+ 2 // "length" field
+		+ 1 // "n. of headers" field
+		+ sizeSize[0] + sizeSize[1] // "length1" and "length2" (if present) fields
+		+ length;
 	u_int8_t *packedHeaders = new u_int8_t[packedHeadersSize];
 	if (packedHeaders == NULL)
 		return NULL;

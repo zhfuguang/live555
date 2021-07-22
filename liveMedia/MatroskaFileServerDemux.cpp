@@ -22,14 +22,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MP3AudioMatroskaFileServerMediaSubsession.hh"
 #include "MatroskaFileServerMediaSubsession.hh"
 
-void MatroskaFileServerDemux
-::createNew(UsageEnvironment &env, char const *fileName,
-	onCreationFunc *onCreation, void *onCreationClientData,
-	char const *preferredLanguage)
+void MatroskaFileServerDemux::createNew(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData, char const *preferredLanguage)
 {
-	(void)new MatroskaFileServerDemux(env, fileName,
-		onCreation, onCreationClientData,
-		preferredLanguage);
+	(void)new MatroskaFileServerDemux(env, fileName, onCreation, onCreationClientData, preferredLanguage);
 }
 
 ServerMediaSubsession *MatroskaFileServerDemux::newServerMediaSubsession()
@@ -38,8 +33,7 @@ ServerMediaSubsession *MatroskaFileServerDemux::newServerMediaSubsession()
 	return newServerMediaSubsession(dummyResultTrackNumber);
 }
 
-ServerMediaSubsession *MatroskaFileServerDemux
-::newServerMediaSubsession(unsigned &resultTrackNumber)
+ServerMediaSubsession *MatroskaFileServerDemux::newServerMediaSubsession(unsigned &resultTrackNumber)
 {
 	ServerMediaSubsession *result;
 	resultTrackNumber = 0;
@@ -59,8 +53,7 @@ ServerMediaSubsession *MatroskaFileServerDemux
 	return result;
 }
 
-ServerMediaSubsession *MatroskaFileServerDemux
-::newServerMediaSubsessionByTrackNumber(unsigned trackNumber)
+ServerMediaSubsession *MatroskaFileServerDemux::newServerMediaSubsessionByTrackNumber(unsigned trackNumber)
 {
 	MatroskaTrack *track = fOurMatroskaFile->lookup(trackNumber);
 	if (track == NULL)
@@ -111,13 +104,10 @@ FramedSource *MatroskaFileServerDemux::newDemuxedTrack(unsigned clientSessionId,
 	return demuxToUse->newDemuxedTrackByTrackNumber(trackNumber);
 }
 
-MatroskaFileServerDemux
-::MatroskaFileServerDemux(UsageEnvironment &env, char const *fileName,
-	onCreationFunc *onCreation, void *onCreationClientData,
-	char const *preferredLanguage)
-	: Medium(env),
-	  fFileName(fileName), fOnCreation(onCreation), fOnCreationClientData(onCreationClientData),
-	  fNextTrackTypeToCheck(0x1), fLastClientSessionId(0), fLastCreatedDemux(NULL)
+MatroskaFileServerDemux::MatroskaFileServerDemux(UsageEnvironment &env,
+	char const *fileName, onCreationFunc *onCreation, void *onCreationClientData, char const *preferredLanguage)
+	: Medium(env), fFileName(fileName), fOnCreation(onCreation), fOnCreationClientData(onCreationClientData)
+	, fNextTrackTypeToCheck(0x1), fLastClientSessionId(0), fLastCreatedDemux(NULL)
 {
 	MatroskaFile::createNew(env, fileName, onMatroskaFileCreation, this, preferredLanguage);
 }

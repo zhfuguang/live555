@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FileServerMediaSubsession.hh"
 #endif
 
-class MPEG4VideoFileServerMediaSubsession: public FileServerMediaSubsession
+class MPEG4VideoFileServerMediaSubsession : public FileServerMediaSubsession
 {
 public:
 	static MPEG4VideoFileServerMediaSubsession *createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource);
@@ -36,8 +36,7 @@ public:
 	void afterPlayingDummy1();
 
 protected:
-	MPEG4VideoFileServerMediaSubsession(UsageEnvironment &env,
-		char const *fileName, Boolean reuseFirstSource);
+	MPEG4VideoFileServerMediaSubsession(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource);
 	// called only by createNew();
 	virtual ~MPEG4VideoFileServerMediaSubsession();
 
@@ -47,13 +46,9 @@ protected:
 	}
 
 protected: // redefined virtual functions
-	virtual char const *getAuxSDPLine(RTPSink *rtpSink,
-		FramedSource *inputSource);
-	virtual FramedSource *createNewStreamSource(unsigned clientSessionId,
-		unsigned &estBitrate);
-	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock,
-		unsigned char rtpPayloadTypeIfDynamic,
-		FramedSource *inputSource);
+	virtual char const *getAuxSDPLine(RTPSink *rtpSink, FramedSource *inputSource);
+	virtual FramedSource *createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate);
+	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource *inputSource);
 
 private:
 	char *fAuxSDPLine;

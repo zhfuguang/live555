@@ -20,17 +20,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "MPEG4LATMAudioRTPSink.hh"
 
-MPEG4LATMAudioRTPSink
-::MPEG4LATMAudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
-	u_int8_t rtpPayloadFormat,
-	u_int32_t rtpTimestampFrequency,
-	char const *streamMuxConfigString,
-	unsigned numChannels,
-	Boolean allowMultipleFramesPerPacket)
-	: AudioRTPSink(env, RTPgs, rtpPayloadFormat,
-		  rtpTimestampFrequency, "MP4A-LATM", numChannels),
-	  fStreamMuxConfigString(strDup(streamMuxConfigString)),
-	  fAllowMultipleFramesPerPacket(allowMultipleFramesPerPacket)
+MPEG4LATMAudioRTPSink::MPEG4LATMAudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
+	u_int8_t rtpPayloadFormat, u_int32_t rtpTimestampFrequency, char const *streamMuxConfigString, unsigned numChannels, Boolean allowMultipleFramesPerPacket)
+	: AudioRTPSink(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, "MP4A-LATM", numChannels)
+	, fStreamMuxConfigString(strDup(streamMuxConfigString)), fAllowMultipleFramesPerPacket(allowMultipleFramesPerPacket)
 {
 	// Set up the "a=fmtp:" SDP line for this stream:
 	char const *fmtpFmt =
@@ -40,9 +33,7 @@ MPEG4LATMAudioRTPSink
 		+ 3 /* max char len */
 		+ strlen(fStreamMuxConfigString);
 	char *fmtp = new char[fmtpFmtSize];
-	sprintf(fmtp, fmtpFmt,
-		rtpPayloadType(),
-		fStreamMuxConfigString);
+	sprintf(fmtp, fmtpFmt, rtpPayloadType(), fStreamMuxConfigString);
 	fFmtpSDPLine = strDup(fmtp);
 	delete[] fmtp;
 }
@@ -54,31 +45,18 @@ MPEG4LATMAudioRTPSink::~MPEG4LATMAudioRTPSink()
 }
 
 MPEG4LATMAudioRTPSink *MPEG4LATMAudioRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	u_int8_t rtpPayloadFormat,
-	u_int32_t rtpTimestampFrequency,
-	char const *streamMuxConfigString,
-	unsigned numChannels,
-	Boolean allowMultipleFramesPerPacket)
+	u_int8_t rtpPayloadFormat, u_int32_t rtpTimestampFrequency, char const *streamMuxConfigString, unsigned numChannels, Boolean allowMultipleFramesPerPacket)
 {
-	return new MPEG4LATMAudioRTPSink(env, RTPgs, rtpPayloadFormat,
-			rtpTimestampFrequency, streamMuxConfigString,
-			numChannels,
-			allowMultipleFramesPerPacket);
+	return new MPEG4LATMAudioRTPSink(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, streamMuxConfigString, numChannels, allowMultipleFramesPerPacket);
 }
 
-Boolean MPEG4LATMAudioRTPSink
-::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/,
-	unsigned /*numBytesInFrame*/) const
+Boolean MPEG4LATMAudioRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/, unsigned /*numBytesInFrame*/) const
 {
 	return fAllowMultipleFramesPerPacket;
 }
 
-void MPEG4LATMAudioRTPSink
-::doSpecialFrameHandling(unsigned fragmentationOffset,
-	unsigned char *frameStart,
-	unsigned numBytesInFrame,
-	struct timeval framePresentationTime,
-	unsigned numRemainingBytes)
+void MPEG4LATMAudioRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
+	unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes)
 {
 	if (numRemainingBytes == 0)
 	{
@@ -89,10 +67,7 @@ void MPEG4LATMAudioRTPSink
 
 	// Important: Also call our base class's doSpecialFrameHandling(),
 	// to set the packet's timestamp:
-	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset,
-		frameStart, numBytesInFrame,
-		framePresentationTime,
-		numRemainingBytes);
+	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset, frameStart, numBytesInFrame, framePresentationTime, numRemainingBytes);
 }
 
 char const *MPEG4LATMAudioRTPSink::auxSDPLine()

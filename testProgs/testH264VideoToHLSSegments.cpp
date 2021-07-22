@@ -41,37 +41,29 @@ int main(int argc, char **argv)
 	FramedSource *inputSource = ByteStreamFileSource::createNew(*env, inputFileName);
 	if (inputSource == NULL)
 	{
-		*env << "Unable to open file \"" << inputFileName
-			<< "\" as a byte-stream file source\n";
+		*env << "Unable to open file \"" << inputFileName << "\" as a byte-stream file source\n";
 		exit(1);
 	}
 
 	// Create a 'framer' filter for this file source, to generate presentation times for each NAL unit:
-	H264VideoStreamFramer *framer
-		= H264VideoStreamFramer::createNew(*env, inputSource,
-				True/*includeStartCodeInOutput*/,
-				True/*insertAccessUnitDelimiters*/);
+	H264VideoStreamFramer *framer = H264VideoStreamFramer::createNew(*env, inputSource, True/*includeStartCodeInOutput*/, True/*insertAccessUnitDelimiters*/);
 
 	// Then create a filter that packs the H.264 video data into a Transport Stream:
 	MPEG2TransportStreamFromESSource *tsFrames = MPEG2TransportStreamFromESSource::createNew(*env);
 	tsFrames->addNewVideoSource(framer, 5/*mpegVersion: H.264*/);
 
 	// Create a 'HLS Segmenter' as the media sink:
-	MediaSink *outputSink
-		= HLSSegmenter::createNew(*env, OUR_HLS_SEGMENTATION_DURATION, OUR_HLS_FILENAME_PREFIX,
-				segmentationCallback);
+	MediaSink *outputSink = HLSSegmenter::createNew(*env, OUR_HLS_SEGMENTATION_DURATION, OUR_HLS_FILENAME_PREFIX, segmentationCallback);
 
 	// Finally, start playing:
 	*env << "Beginning to read...\n";
 	outputSink->startPlaying(*tsFrames, afterPlaying, NULL);
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 
-void segmentationCallback(void * /*clientData*/,
-	char const *segmentFileName, double segmentDuration)
+void segmentationCallback(void * /*clientData*/, char const *segmentFileName, double segmentDuration)
 {
 	if (ourM3U8Fid == NULL)
 	{
@@ -90,12 +82,7 @@ void segmentationCallback(void * /*clientData*/,
 	}
 
 	// Update our ".m3u8" file with information about this most recent segment:
-	fprintf(ourM3U8Fid,
-		"#EXTINF:%f,\n"
-		"%s\n",
-		segmentDuration,
-		segmentFileName);
-
+	fprintf(ourM3U8Fid, "#EXTINF:%f,\n""%s\n", segmentDuration, segmentFileName);
 	fprintf(stderr, "Wrote segment \"%s\" (duration: %f seconds)\n", segmentFileName, segmentDuration);
 }
 
@@ -105,7 +92,6 @@ void afterPlaying(void * /*clientData*/)
 
 	// Complete and close our ".m3u8" file:
 	fprintf(ourM3U8Fid, "#EXT-X-ENDLIST\n");
-
 	fprintf(stderr, "Wrote %s.m3u8\n", OUR_HLS_FILENAME_PREFIX);
 	exit(0);
 }

@@ -35,51 +35,31 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RTCP.hh"
 #endif
 
-class OnDemandServerMediaSubsession: public ServerMediaSubsession
+class OnDemandServerMediaSubsession : public ServerMediaSubsession
 {
 protected: // we're a virtual base class
-	OnDemandServerMediaSubsession(UsageEnvironment &env, Boolean reuseFirstSource,
-		portNumBits initialPortNum = 6970,
-		Boolean multiplexRTCPWithRTP = False);
+	OnDemandServerMediaSubsession(UsageEnvironment &env, Boolean reuseFirstSource, portNumBits initialPortNum = 6970, Boolean multiplexRTCPWithRTP = False);
 	virtual ~OnDemandServerMediaSubsession();
 
 protected: // redefined virtual functions
 	virtual char const *sdpLines(int addressFamily);
-	virtual void getStreamParameters(unsigned clientSessionId,
-		struct sockaddr_storage const &clientAddress,
-		Port const &clientRTPPort,
-		Port const &clientRTCPPort,
-		int tcpSocketNum,
-		unsigned char rtpChannelId,
-		unsigned char rtcpChannelId,
-		struct sockaddr_storage &destinationAddress,
-		u_int8_t &destinationTTL,
-		Boolean &isMulticast,
-		Port &serverRTPPort,
-		Port &serverRTCPPort,
-		void *&streamToken);
-	virtual void startStream(unsigned clientSessionId, void *streamToken,
-		TaskFunc *rtcpRRHandler,
-		void *rtcpRRHandlerClientData,
-		unsigned short &rtpSeqNum,
-		unsigned &rtpTimestamp,
-		ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler,
-		void *serverRequestAlternativeByteHandlerClientData);
+	virtual void getStreamParameters(unsigned clientSessionId, struct sockaddr_storage const &clientAddress,
+		Port const &clientRTPPort, Port const &clientRTCPPort, int tcpSocketNum, unsigned char rtpChannelId, unsigned char rtcpChannelId,
+		struct sockaddr_storage &destinationAddress, u_int8_t &destinationTTL, Boolean &isMulticast, Port &serverRTPPort, Port &serverRTCPPort, void *&streamToken);
+	virtual void startStream(unsigned clientSessionId, void *streamToken, TaskFunc *rtcpRRHandler, void *rtcpRRHandlerClientData, unsigned short &rtpSeqNum,
+		unsigned &rtpTimestamp, ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler, void *serverRequestAlternativeByteHandlerClientData);
 	virtual void pauseStream(unsigned clientSessionId, void *streamToken);
 	virtual void seekStream(unsigned clientSessionId, void *streamToken, double &seekNPT, double streamDuration, u_int64_t &numBytes);
 	virtual void seekStream(unsigned clientSessionId, void *streamToken, char *&absStart, char *&absEnd);
-	virtual void nullSeekStream(unsigned clientSessionId, void *streamToken,
-		double streamEndTime, u_int64_t &numBytes);
+	virtual void nullSeekStream(unsigned clientSessionId, void *streamToken, double streamEndTime, u_int64_t &numBytes);
 	virtual void setStreamScale(unsigned clientSessionId, void *streamToken, float scale);
 	virtual float getCurrentNPT(void *streamToken);
 	virtual FramedSource *getStreamSource(void *streamToken);
-	virtual void getRTPSinkandRTCP(void *streamToken,
-		RTPSink const *&rtpSink, RTCPInstance const *&rtcp);
+	virtual void getRTPSinkandRTCP(void *streamToken, RTPSink const *&rtpSink, RTCPInstance const *&rtcp);
 	virtual void deleteStream(unsigned clientSessionId, void *&streamToken);
 
 protected: // new virtual functions, possibly redefined by subclasses
-	virtual char const *getAuxSDPLine(RTPSink *rtpSink,
-		FramedSource *inputSource);
+	virtual char const *getAuxSDPLine(RTPSink *rtpSink, FramedSource *inputSource);
 	virtual void seekStreamSource(FramedSource *inputSource, double &seekNPT, double streamDuration, u_int64_t &numBytes);
 	// This routine is used to seek by relative (i.e., NPT) time.
 	// "streamDuration", if >0.0, specifies how much data to stream, past "seekNPT".  (If <=0.0, all remaining data is streamed.)
@@ -94,17 +74,13 @@ protected: // new virtual functions, possibly redefined by subclasses
 	virtual void closeStreamSource(FramedSource *inputSource);
 
 protected: // new virtual functions, defined by all subclasses
-	virtual FramedSource *createNewStreamSource(unsigned clientSessionId,
-		unsigned &estBitrate) = 0;
+	virtual FramedSource *createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate) = 0;
 	// "estBitrate" is the stream's estimated bitrate, in kbps
-	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock,
-		unsigned char rtpPayloadTypeIfDynamic,
-		FramedSource *inputSource) = 0;
+	virtual RTPSink *createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource *inputSource) = 0;
 
 protected: // new virtual functions, may be redefined by a subclass:
 	virtual Groupsock *createGroupsock(struct sockaddr_storage const &addr, Port port);
-	virtual RTCPInstance *createRTCP(Groupsock *RTCPgs, unsigned totSessionBW, /* in kbps */
-		unsigned char const *cname, RTPSink *sink);
+	virtual RTCPInstance *createRTCP(Groupsock *RTCPgs, unsigned totSessionBW, /* in kbps */unsigned char const *cname, RTPSink *sink);
 
 public:
 	void multiplexRTCPWithRTP()
@@ -119,8 +95,7 @@ public:
 	// handled by whatever handler existed when the client sent its first RTSP "PLAY" command.)
 	// (Call with (NULL, NULL) to remove an existing handler - for future clients only)
 
-	void sendRTCPAppPacket(u_int8_t subtype, char const *name,
-		u_int8_t *appDependentData, unsigned appDependentDataSize);
+	void sendRTCPAppPacket(u_int8_t subtype, char const *name, u_int8_t *appDependentData, unsigned appDependentDataSize);
 	// Sends a custom RTCP "APP" packet to the most recent client (if "reuseFirstSource" was False),
 	// or to all current clients (if "reuseFirstSource" was True).
 	// The parameters correspond to their
@@ -130,8 +105,7 @@ public:
 	// then the remaining bytes are '\0'.)
 
 protected:
-	void setSDPLinesFromRTPSink(RTPSink *rtpSink, FramedSource *inputSource,
-		unsigned estBitrate);
+	void setSDPLinesFromRTPSink(RTPSink *rtpSink, FramedSource *inputSource, unsigned estBitrate);
 	// used to implement "sdpLines()"
 
 protected:
@@ -165,7 +139,7 @@ public:
 	}
 	Destinations(int tcpSockNum, unsigned char rtpChanId, unsigned char rtcpChanId)
 		: isTCP(True), rtpPort(0) /*dummy*/, rtcpPort(0) /*dummy*/,
-		  tcpSocketNum(tcpSockNum), rtpChannelId(rtpChanId), rtcpChannelId(rtcpChanId)
+		tcpSocketNum(tcpSockNum), rtpChannelId(rtpChanId), rtcpChannelId(rtcpChanId)
 	{
 	}
 

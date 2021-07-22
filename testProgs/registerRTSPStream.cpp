@@ -105,12 +105,9 @@ int main(int argc, char const **argv)
 	// We have the command-line arguments.  Send the command:
 
 	RTSPRegisterSender::createNew(*env, remoteClientNameOrAddress, remoteClientPortNum, rtspURLToRegister,
-		registerResponseHandler, ourAuthenticator,
-		requestStreamingViaTCP, proxyURLSuffix, False/*reuseConnection*/,
-		1/*verbosityLevel*/, programName);
+		registerResponseHandler, ourAuthenticator, requestStreamingViaTCP, proxyURLSuffix, False/*reuseConnection*/, 1/*verbosityLevel*/, programName);
 	// Note: This object will be deleted later, by the response handler
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }

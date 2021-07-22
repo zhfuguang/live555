@@ -47,9 +47,7 @@ public:
 	void assignStream(FILE *fid, unsigned fileSize);
 
 	unsigned findNextHeader(struct timeval &presentationTime);
-	Boolean readFrame(unsigned char *outBuf, unsigned outBufSize,
-		unsigned &resultFrameSize,
-		unsigned &resultDurationInMicroseconds);
+	Boolean readFrame(unsigned char *outBuf, unsigned outBufSize, unsigned &resultFrameSize, unsigned &resultDurationInMicroseconds);
 	// called after findNextHeader()
 
 	void getAttributes(char *buffer, unsigned bufferSize) const;

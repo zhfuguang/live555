@@ -83,8 +83,7 @@ AMRAudioFileSource *AMRAudioFileSource::createNew(UsageEnvironment &env, char co
 		magicNumberOK = True;
 
 #ifdef DEBUG
-		fprintf(stderr, "isWideband: %d, numChannels: %d\n",
-			isWideband, numChannels);
+		fprintf(stderr, "isWideband: %d, numChannels: %d\n", isWideband, numChannels);
 #endif
 		return new AMRAudioFileSource(env, fid, isWideband, numChannels);
 	} while (0);
@@ -98,11 +97,8 @@ AMRAudioFileSource *AMRAudioFileSource::createNew(UsageEnvironment &env, char co
 	return NULL;
 }
 
-AMRAudioFileSource
-::AMRAudioFileSource(UsageEnvironment &env, FILE *fid,
-	Boolean isWideband, unsigned numChannels)
-	: AMRAudioSource(env, isWideband, numChannels),
-	  fFid(fid)
+AMRAudioFileSource::AMRAudioFileSource(UsageEnvironment &env, FILE *fid, Boolean isWideband, unsigned numChannels)
+	: AMRAudioSource(env, isWideband, numChannels), fFid(fid)
 {
 }
 
@@ -160,8 +156,7 @@ void AMRAudioFileSource::doGetNextFrame()
 			if (fFrameSize == FT_INVALID)
 			{
 #ifdef DEBUG
-				fprintf(stderr, "Invalid FT field %d (from frame header 0x%02x)\n",
-					ft, fLastFrameHeader);
+				fprintf(stderr, "Invalid FT field %d (from frame header 0x%02x)\n", ft, fLastFrameHeader);
 #endif
 			}
 			else
@@ -172,8 +167,8 @@ void AMRAudioFileSource::doGetNextFrame()
 #endif
 				break;
 			}
+			}
 		}
-	}
 
 	// Next, read the frame-block into the buffer provided:
 	fFrameSize *= fNumChannels; // because multiple channels make up a frame-block
@@ -193,7 +188,7 @@ void AMRAudioFileSource::doGetNextFrame()
 	else
 	{
 		// Increment by the play time of the previous frame (20 ms)
-		unsigned uSeconds	= fPresentationTime.tv_usec + 20000;
+		unsigned uSeconds = fPresentationTime.tv_usec + 20000;
 		fPresentationTime.tv_sec += uSeconds / 1000000;
 		fPresentationTime.tv_usec = uSeconds % 1000000;
 	}
@@ -201,6 +196,5 @@ void AMRAudioFileSource::doGetNextFrame()
 	fDurationInMicroseconds = 20000; // each frame is 20 ms
 
 	// Switch to another task, and inform the reader that he has data:
-	nextTask() = envir().taskScheduler().scheduleDelayedTask(0,
-			(TaskFunc *)FramedSource::afterGetting, this);
-}
+	nextTask() = envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc *)FramedSource::afterGetting, this);
+	}

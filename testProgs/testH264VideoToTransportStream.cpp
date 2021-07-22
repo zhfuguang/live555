@@ -37,8 +37,7 @@ int main(int argc, char **argv)
 	FramedSource *inputSource = ByteStreamFileSource::createNew(*env, inputFileName);
 	if (inputSource == NULL)
 	{
-		*env << "Unable to open file \"" << inputFileName
-			<< "\" as a byte-stream file source\n";
+		*env << "Unable to open file \"" << inputFileName << "\" as a byte-stream file source\n";
 		exit(1);
 	}
 
@@ -62,7 +61,6 @@ int main(int argc, char **argv)
 	outputSink->startPlaying(*tsFrames, afterPlaying, NULL);
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 

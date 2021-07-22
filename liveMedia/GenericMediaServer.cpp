@@ -41,11 +41,8 @@ void GenericMediaServer::addServerMediaSession(ServerMediaSession *serverMediaSe
 	fServerMediaSessions->Add(sessionName, (void *)serverMediaSession);
 }
 
-void GenericMediaServer
-::lookupServerMediaSession(char const *streamName,
-	lookupServerMediaSessionCompletionFunc *completionFunc,
-	void *completionClientData,
-	Boolean /*isFirstLookupInSession*/)
+void GenericMediaServer::lookupServerMediaSession(char const *streamName,
+	lookupServerMediaSessionCompletionFunc *completionFunc, void *completionClientData, Boolean /*isFirstLookupInSession*/)
 {
 	// Default implementation: Do a synchronous lookup, and call the completion function:
 	if (completionFunc != NULL)
@@ -57,7 +54,7 @@ void GenericMediaServer
 struct lsmsMemberFunctionRecord
 {
 	GenericMediaServer *fServer;
-	void (GenericMediaServer::*fMemberFunc)(ServerMediaSession *);
+	void (GenericMediaServer:: *fMemberFunc)(ServerMediaSession *);
 };
 
 static void lsmsMemberFunctionCompletionFunc(void *clientData, ServerMediaSession *sessionLookedUp)
@@ -67,17 +64,13 @@ static void lsmsMemberFunctionCompletionFunc(void *clientData, ServerMediaSessio
 	delete memberFunctionRecord;
 }
 
-void GenericMediaServer
-::lookupServerMediaSession(char const *streamName,
-	void (GenericMediaServer::*memberFunc)(ServerMediaSession *))
+void GenericMediaServer::lookupServerMediaSession(char const *streamName, void (GenericMediaServer:: *memberFunc)(ServerMediaSession *))
 {
 	struct lsmsMemberFunctionRecord *memberFunctionRecord = new struct lsmsMemberFunctionRecord;
 	memberFunctionRecord->fServer = this;
 	memberFunctionRecord->fMemberFunc = memberFunc;
 
-	GenericMediaServer
-	::lookupServerMediaSession(streamName,
-		lsmsMemberFunctionCompletionFunc, memberFunctionRecord);
+	GenericMediaServer::lookupServerMediaSession(streamName, lsmsMemberFunctionCompletionFunc, memberFunctionRecord);
 }
 
 void GenericMediaServer::removeServerMediaSession(ServerMediaSession *serverMediaSession)
@@ -121,8 +114,7 @@ void GenericMediaServer::closeAllClientSessionsForServerMediaSession(ServerMedia
 
 void GenericMediaServer::closeAllClientSessionsForServerMediaSession(char const *streamName)
 {
-	lookupServerMediaSession(streamName,
-		&GenericMediaServer::closeAllClientSessionsForServerMediaSession);
+	lookupServerMediaSession(streamName, &GenericMediaServer::closeAllClientSessionsForServerMediaSession);
 }
 
 void GenericMediaServer::deleteServerMediaSession(ServerMediaSession *serverMediaSession)
@@ -139,16 +131,13 @@ void GenericMediaServer::deleteServerMediaSession(char const *streamName)
 	lookupServerMediaSession(streamName, &GenericMediaServer::deleteServerMediaSession);
 }
 
-GenericMediaServer
-::GenericMediaServer(UsageEnvironment &env, int ourSocketIPv4, int ourSocketIPv6, Port ourPort,
-	unsigned reclamationSeconds)
-	: Medium(env),
-	  fServerSocketIPv4(ourSocketIPv4), fServerSocketIPv6(ourSocketIPv6),
-	  fServerPort(ourPort), fReclamationSeconds(reclamationSeconds),
-	  fServerMediaSessions(HashTable::create(STRING_HASH_KEYS)),
-	  fClientConnections(HashTable::create(ONE_WORD_HASH_KEYS)),
-	  fClientSessions(HashTable::create(STRING_HASH_KEYS)),
-	  fPreviousClientSessionId(0)
+GenericMediaServer::GenericMediaServer(UsageEnvironment &env, int ourSocketIPv4, int ourSocketIPv6, Port ourPort, unsigned reclamationSeconds)
+	: Medium(env), fServerSocketIPv4(ourSocketIPv4), fServerSocketIPv6(ourSocketIPv6)
+	, fServerPort(ourPort), fReclamationSeconds(reclamationSeconds)
+	, fServerMediaSessions(HashTable::create(STRING_HASH_KEYS))
+	, fClientConnections(HashTable::create(ONE_WORD_HASH_KEYS))
+	, fClientSessions(HashTable::create(STRING_HASH_KEYS))
+	, fPreviousClientSessionId(0)
 {
 	ignoreSigPipeOnSocket(fServerSocketIPv4); // so that clients on the same host that are killed don't also kill us
 	ignoreSigPipeOnSocket(fServerSocketIPv6); // ditto
@@ -294,8 +283,7 @@ void GenericMediaServer::incomingConnectionHandlerOnSocket(int serverSocket)
 
 ////////// GenericMediaServer::ClientConnection implementation //////////
 
-GenericMediaServer::ClientConnection
-::ClientConnection(GenericMediaServer &ourServer, int clientSocket, struct sockaddr_storage const &clientAddr)
+GenericMediaServer::ClientConnection::ClientConnection(GenericMediaServer &ourServer, int clientSocket, struct sockaddr_storage const &clientAddr)
 	: fOurServer(ourServer), fOurSocket(clientSocket), fClientAddr(clientAddr)
 {
 	// Add ourself to our 'client connections' table:
@@ -303,15 +291,13 @@ GenericMediaServer::ClientConnection
 
 	// Arrange to handle incoming requests:
 	resetRequestBuffer();
-	envir().taskScheduler()
-	.setBackgroundHandling(fOurSocket, SOCKET_READABLE | SOCKET_EXCEPTION, incomingRequestHandler, this);
+	envir().taskScheduler().setBackgroundHandling(fOurSocket, SOCKET_READABLE | SOCKET_EXCEPTION, incomingRequestHandler, this);
 }
 
 GenericMediaServer::ClientConnection::~ClientConnection()
 {
 	// Remove ourself from the server's 'client connections' hash table before we go:
 	fOurServer.fClientConnections->Remove((char const *)this);
-
 	closeSockets();
 }
 
@@ -334,7 +320,6 @@ void GenericMediaServer::ClientConnection::incomingRequestHandler(void *instance
 void GenericMediaServer::ClientConnection::incomingRequestHandler()
 {
 	struct sockaddr_storage dummy; // 'from' address, meaningless in this case
-
 	int bytesRead = readSocket(envir(), fOurSocket, &fRequestBuffer[fRequestBytesAlreadySeen], fRequestBufferBytesLeft, dummy);
 	handleRequestBytes(bytesRead);
 }
@@ -348,10 +333,8 @@ void GenericMediaServer::ClientConnection::resetRequestBuffer()
 
 ////////// GenericMediaServer::ClientSession implementation //////////
 
-GenericMediaServer::ClientSession
-::ClientSession(GenericMediaServer &ourServer, u_int32_t sessionId)
-	: fOurServer(ourServer), fOurSessionId(sessionId), fOurServerMediaSession(NULL),
-	  fLivenessCheckTask(NULL)
+GenericMediaServer::ClientSession::ClientSession(GenericMediaServer &ourServer, u_int32_t sessionId)
+	: fOurServer(ourServer), fOurSessionId(sessionId), fOurServerMediaSession(NULL), fLivenessCheckTask(NULL)
 {
 	noteLiveness();
 }
@@ -369,8 +352,7 @@ GenericMediaServer::ClientSession::~ClientSession()
 	if (fOurServerMediaSession != NULL)
 	{
 		fOurServerMediaSession->decrementReferenceCount();
-		if (fOurServerMediaSession->referenceCount() == 0
-			&& fOurServerMediaSession->deleteWhenUnreferenced())
+		if (fOurServerMediaSession->referenceCount() == 0 && fOurServerMediaSession->deleteWhenUnreferenced())
 		{
 			fOurServer.removeServerMediaSession(fOurServerMediaSession);
 			fOurServerMediaSession = NULL;
@@ -381,19 +363,15 @@ GenericMediaServer::ClientSession::~ClientSession()
 void GenericMediaServer::ClientSession::noteLiveness()
 {
 #ifdef DEBUG
-	char const *streamName
-		= (fOurServerMediaSession == NULL) ? "???" : fOurServerMediaSession->streamName();
-	fprintf(stderr, "Client session (id \"%08X\", stream name \"%s\"): Liveness indication\n",
-		fOurSessionId, streamName);
+	char const *streamName = (fOurServerMediaSession == NULL) ? "???" : fOurServerMediaSession->streamName();
+	fprintf(stderr, "Client session (id \"%08X\", stream name \"%s\"): Liveness indication\n", fOurSessionId, streamName);
 #endif
 	if (fOurServerMediaSession != NULL)
 		fOurServerMediaSession->noteLiveness();
 
 	if (fOurServer.fReclamationSeconds > 0)
 	{
-		envir().taskScheduler().rescheduleDelayedTask(fLivenessCheckTask,
-			fOurServer.fReclamationSeconds * 1000000,
-			(TaskFunc *)livenessTimeoutTask, this);
+		envir().taskScheduler().rescheduleDelayedTask(fLivenessCheckTask, fOurServer.fReclamationSeconds * 1000000, (TaskFunc *)livenessTimeoutTask, this);
 	}
 }
 
@@ -406,10 +384,8 @@ void GenericMediaServer::ClientSession::livenessTimeoutTask(ClientSession *clien
 {
 	// If this gets called, the client session is assumed to have timed out, so delete it:
 #ifdef DEBUG
-	char const *streamName
-		= (clientSession->fOurServerMediaSession == NULL) ? "???" : clientSession->fOurServerMediaSession->streamName();
-	fprintf(stderr, "Client session (id \"%08X\", stream name \"%s\") has timed out (due to inactivity)\n",
-		clientSession->fOurSessionId, streamName);
+	char const *streamName = (clientSession->fOurServerMediaSession == NULL) ? "???" : clientSession->fOurServerMediaSession->streamName();
+	fprintf(stderr, "Client session (id \"%08X\", stream name \"%s\") has timed out (due to inactivity)\n", clientSession->fOurSessionId, streamName);
 #endif
 	clientSession->fLivenessCheckTask = NULL;
 	delete clientSession;
@@ -428,8 +404,7 @@ GenericMediaServer::ClientSession *GenericMediaServer::createNewClientSessionWit
 	{
 		sessionId = (u_int32_t)our_random32();
 		snprintf(sessionIdStr, sizeof sessionIdStr, "%08X", sessionId);
-	} while (sessionId == 0 || sessionId == fPreviousClientSessionId
-		|| lookupClientSession(sessionIdStr) != NULL);
+	} while (sessionId == 0 || sessionId == fPreviousClientSessionId || lookupClientSession(sessionIdStr) != NULL);
 	fPreviousClientSessionId = sessionId;
 
 	ClientSession *clientSession = createNewClientSession(sessionId);
@@ -459,10 +434,8 @@ ServerMediaSession *GenericMediaServer::getServerMediaSession(char const *stream
 
 ////////// ServerMediaSessionIterator implementation //////////
 
-GenericMediaServer::ServerMediaSessionIterator
-::ServerMediaSessionIterator(GenericMediaServer &server)
-	: fOurIterator((server.fServerMediaSessions == NULL)
-		  ? NULL : HashTable::Iterator::create(*server.fServerMediaSessions))
+GenericMediaServer::ServerMediaSessionIterator::ServerMediaSessionIterator(GenericMediaServer &server)
+	: fOurIterator((server.fServerMediaSessions == NULL) ? NULL : HashTable::Iterator::create(*server.fServerMediaSessions))
 {
 }
 
@@ -483,11 +456,8 @@ ServerMediaSession *GenericMediaServer::ServerMediaSessionIterator::next()
 
 ////////// UserAuthenticationDatabase implementation //////////
 
-UserAuthenticationDatabase::UserAuthenticationDatabase(char const *realm,
-	Boolean passwordsAreMD5)
-	: fTable(HashTable::create(STRING_HASH_KEYS)),
-	  fRealm(strDup(realm == NULL ? "LIVE555 Streaming Media" : realm)),
-	  fPasswordsAreMD5(passwordsAreMD5)
+UserAuthenticationDatabase::UserAuthenticationDatabase(char const *realm, Boolean passwordsAreMD5)
+	: fTable(HashTable::create(STRING_HASH_KEYS)), fRealm(strDup(realm == NULL ? "LIVE555 Streaming Media" : realm)), fPasswordsAreMD5(passwordsAreMD5)
 {
 }
 
@@ -504,8 +474,7 @@ UserAuthenticationDatabase::~UserAuthenticationDatabase()
 	delete fTable;
 }
 
-void UserAuthenticationDatabase::addUserRecord(char const *username,
-	char const *password)
+void UserAuthenticationDatabase::addUserRecord(char const *username, char const *password)
 {
 	char *oldPassword = (char *)fTable->Add(username, (void *)(strDup(password)));
 	delete[] oldPassword; // if any

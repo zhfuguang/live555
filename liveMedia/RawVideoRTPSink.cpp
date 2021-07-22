@@ -20,32 +20,23 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "RawVideoRTPSink.hh"
 
-RawVideoRTPSink *RawVideoRTPSink
-::createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
-	unsigned width, unsigned height, unsigned depth,
-	char const *sampling, char const *colorimetry)
+RawVideoRTPSink *RawVideoRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs,
+	u_int8_t rtpPayloadFormat, unsigned width, unsigned height, unsigned depth, char const *sampling, char const *colorimetry)
 {
 	if (sampling == NULL || colorimetry == NULL)
 		return NULL;
 
-	return new RawVideoRTPSink(env, RTPgs,
-			rtpPayloadFormat,
-			width, height, depth,
-			sampling, colorimetry);
+	return new RawVideoRTPSink(env, RTPgs, rtpPayloadFormat, width, height, depth, sampling, colorimetry);
 }
 
-RawVideoRTPSink
-::RawVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat,
-	unsigned width, unsigned height, unsigned depth,
-	char const *sampling, char const *colorimetry)
-	: VideoRTPSink(env, RTPgs, rtpPayloadFormat, 90000, "RAW"),
-	  fLineIndex(0), fP(width, height, depth, sampling)
+RawVideoRTPSink::RawVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
+	u_int8_t rtpPayloadFormat, unsigned width, unsigned height, unsigned depth, char const *sampling, char const *colorimetry)
+	: VideoRTPSink(env, RTPgs, rtpPayloadFormat, 90000, "RAW"), fLineIndex(0), fP(width, height, depth, sampling)
 {
 
 	// Construct our "a=fmtp:" SDP line:
 	// ASSERT: sampling != NULL && colorimetry != NULL
-	unsigned const fmtpSDPLineMaxSize
-		= 200 + strlen(sampling) + strlen(colorimetry); // more than enough space
+	unsigned const fmtpSDPLineMaxSize = 200 + strlen(sampling) + strlen(colorimetry); // more than enough space
 	fFmtpSDPLine = new char[fmtpSDPLineMaxSize];
 	sprintf(fFmtpSDPLine, "a=fmtp:%d sampling=%s;width=%u;height=%u;depth=%u;colorimetry=%s\r\n",
 		rtpPayloadType(), sampling, width, height, depth, colorimetry);
@@ -61,12 +52,8 @@ char const *RawVideoRTPSink::auxSDPLine()
 	return fFmtpSDPLine;
 }
 
-void RawVideoRTPSink
-::doSpecialFrameHandling(unsigned fragmentationOffset,
-	unsigned char *frameStart,
-	unsigned numBytesInFrame,
-	struct timeval framePresentationTime,
-	unsigned numRemainingBytes)
+void RawVideoRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
+	unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes)
 {
 	u_int16_t *lengths;
 	u_int16_t *offsets;
@@ -120,8 +107,7 @@ void RawVideoRTPSink
 	delete[] offsets;
 }
 
-Boolean RawVideoRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/,
-	unsigned /*numBytesInFrame*/) const
+Boolean RawVideoRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/, unsigned /*numBytesInFrame*/) const
 {
 	// Only one frame per packet:
 	return False;
@@ -137,8 +123,7 @@ unsigned RawVideoRTPSink::specialHeaderSize() const
 	return 2 + (6 * numLines);
 }
 
-unsigned RawVideoRTPSink
-::getNumLinesInPacket(unsigned fragOffset, u_int16_t *&lengths, u_int16_t *&offsets) const
+unsigned RawVideoRTPSink::getNumLinesInPacket(unsigned fragOffset, u_int16_t *&lengths, u_int16_t *&offsets) const
 {
 	lengths = offsets = NULL; // initially
 
@@ -155,8 +140,8 @@ unsigned RawVideoRTPSink
 	}
 
 #define MAX_LINES_IN_PACKET 100
-	u_int16_t lengthArray[MAX_LINES_IN_PACKET] = {0};
-	u_int16_t offsetArray[MAX_LINES_IN_PACKET] = {0};
+	u_int16_t lengthArray[MAX_LINES_IN_PACKET] = { 0 };
+	u_int16_t offsetArray[MAX_LINES_IN_PACKET] = { 0 };
 	unsigned curDataTotalLength = 0;
 	unsigned offsetWithinLine = fragOffset % fP.scanLineSize;
 	unsigned remainingLineSize = fP.scanLineSize - offsetWithinLine;
@@ -219,8 +204,7 @@ unsigned RawVideoRTPSink::computeOverflowForNewFrame(unsigned newFrameSize) cons
 
 ///////// RawVideoFrameParameters implementation /////////
 
-RawVideoFrameParameters
-::RawVideoFrameParameters(unsigned width, unsigned height, unsigned depth, char const *sampling)
+RawVideoFrameParameters::RawVideoFrameParameters(unsigned width, unsigned height, unsigned depth, char const *sampling)
 {
 	scanLineIterationStep = 1; // by default; different for YCbCr-4:2:0
 	numPixelsInPgroup = 1; // by default
@@ -343,8 +327,7 @@ RawVideoFrameParameters
 		scanLineIterationStep = 2;
 	}
 
-	unsigned const numPgroupsPerScanLine
-		= (width * scanLineIterationStep + (numPixelsInPgroup - 1)) / numPixelsInPgroup;
+	unsigned const numPgroupsPerScanLine = (width * scanLineIterationStep + (numPixelsInPgroup - 1)) / numPixelsInPgroup;
 	// Note: This rounds up to the next 'pgroup'; see RFC 4175, section 4.3, paragraph 2
 
 	scanLineSize = numPgroupsPerScanLine * pgroupSize;

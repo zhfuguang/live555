@@ -39,8 +39,7 @@ Boolean MediaSink::isSink() const
 	return True;
 }
 
-Boolean MediaSink::lookupByName(UsageEnvironment &env, char const *sinkName,
-	MediaSink *&resultSink)
+Boolean MediaSink::lookupByName(UsageEnvironment &env, char const *sinkName, MediaSink *&resultSink)
 {
 	resultSink = NULL; // unless we succeed
 
@@ -64,9 +63,7 @@ Boolean MediaSink::sourceIsCompatibleWithUs(MediaSource &source)
 	return source.isFramedSource();
 }
 
-Boolean MediaSink::startPlaying(MediaSource &source,
-	afterPlayingFunc *afterFunc,
-	void *afterClientData)
+Boolean MediaSink::startPlaying(MediaSource &source, afterPlayingFunc *afterFunc, void *afterClientData)
 {
 	// Make sure we're not already being played:
 	if (fSource != NULL)
@@ -128,10 +125,8 @@ Boolean MediaSink::isRTPSink() const
 
 unsigned OutPacketBuffer::maxSize = 60000; // by default
 
-OutPacketBuffer
-::OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize, unsigned maxBufferSize)
-	: fPreferred(preferredPacketSize), fMax(maxPacketSize),
-	  fOverflowDataSize(0)
+OutPacketBuffer::OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize, unsigned maxBufferSize)
+	: fPreferred(preferredPacketSize), fMax(maxPacketSize), fOverflowDataSize(0)
 {
 	if (maxBufferSize == 0)
 		maxBufferSize = maxSize;
@@ -169,8 +164,7 @@ void OutPacketBuffer::enqueueWord(u_int32_t word)
 	enqueue((unsigned char *)&nWord, 4);
 }
 
-void OutPacketBuffer::insert(unsigned char const *from, unsigned numBytes,
-	unsigned toPosition)
+void OutPacketBuffer::insert(unsigned char const *from, unsigned numBytes, unsigned toPosition)
 {
 	unsigned realToPosition = fPacketStart + toPosition;
 	if (realToPosition + numBytes > fLimit)
@@ -193,8 +187,7 @@ void OutPacketBuffer::insertWord(u_int32_t word, unsigned toPosition)
 	insert((unsigned char *)&nWord, 4, toPosition);
 }
 
-void OutPacketBuffer::extract(unsigned char *to, unsigned numBytes,
-	unsigned fromPosition)
+void OutPacketBuffer::extract(unsigned char *to, unsigned numBytes, unsigned fromPosition)
 {
 	unsigned realFromPosition = fPacketStart + fromPosition;
 	if (realFromPosition + numBytes > fLimit)   // sanity check
@@ -224,11 +217,7 @@ void OutPacketBuffer::skipBytes(unsigned numBytes)
 	increment(numBytes);
 }
 
-void OutPacketBuffer
-::setOverflowData(unsigned overflowDataOffset,
-	unsigned overflowDataSize,
-	struct timeval const &presentationTime,
-	unsigned durationInMicroseconds)
+void OutPacketBuffer::setOverflowData(unsigned overflowDataOffset, unsigned overflowDataSize, struct timeval const &presentationTime, unsigned durationInMicroseconds)
 {
 	fOverflowDataOffset = overflowDataOffset;
 	fOverflowDataSize = overflowDataSize;

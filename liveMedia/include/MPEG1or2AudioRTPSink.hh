@@ -25,11 +25,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AudioRTPSink.hh"
 #endif
 
-class MPEG1or2AudioRTPSink: public AudioRTPSink
+class MPEG1or2AudioRTPSink : public AudioRTPSink
 {
 public:
-	static MPEG1or2AudioRTPSink *createNew(UsageEnvironment &env,
-		Groupsock *RTPgs);
+	static MPEG1or2AudioRTPSink *createNew(UsageEnvironment &env, Groupsock *RTPgs);
 
 protected:
 	MPEG1or2AudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs);
@@ -38,11 +37,8 @@ protected:
 	virtual ~MPEG1or2AudioRTPSink();
 
 private: // redefined virtual functions:
-	virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-		unsigned char *frameStart,
-		unsigned numBytesInFrame,
-		struct timeval framePresentationTime,
-		unsigned numRemainingBytes);
+	virtual void doSpecialFrameHandling(unsigned fragmentationOffset, unsigned char *frameStart,
+		unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes);
 	virtual unsigned specialHeaderSize() const;
 };
 

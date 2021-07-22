@@ -31,12 +31,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class OggTrack; // forward
 class OggDemux; // forward
 
-class OggFile: public Medium
+class OggFile : public Medium
 {
 public:
 	typedef void (onCreationFunc)(OggFile *newFile, void *clientData);
-	static void createNew(UsageEnvironment &env, char const *fileName,
-		onCreationFunc *onCreation, void *onCreationClientData);
+	static void createNew(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData);
 	// Note: Unlike most "createNew()" functions, this one doesn't return a new object
 	// immediately.  Instead, because this class requires file reading (to parse the
 	// Ogg track headers) before a new object can be initialized, the creation of a new object
@@ -55,13 +54,11 @@ public:
 	}
 	unsigned numTracks() const;
 
-	FramedSource *createSourceForStreaming(FramedSource *baseSource, u_int32_t trackNumber,
-		unsigned &estBitrate, unsigned &numFiltersInFrontOfTrack);
+	FramedSource *createSourceForStreaming(FramedSource *baseSource, u_int32_t trackNumber, unsigned &estBitrate, unsigned &numFiltersInFrontOfTrack);
 	// Takes a data source (which must be a demultiplexed track from this file) and returns
 	// a (possibly modified) data source that can be used for streaming.
 
-	RTPSink *createRTPSinkForTrackNumber(u_int32_t trackNumber, Groupsock *rtpGroupsock,
-		unsigned char rtpPayloadTypeIfDynamic);
+	RTPSink *createRTPSinkForTrackNumber(u_int32_t trackNumber, Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic);
 	// Creates a "RTPSink" object that would be appropriate for streaming the specified track,
 	// or NULL if no appropriate "RTPSink" exists
 
@@ -128,10 +125,7 @@ public:
 
 	Boolean weNeedHeaders() const
 	{
-		return
-			vtoHdrs.header[0] == NULL ||
-			vtoHdrs.header[1] == NULL ||
-			(vtoHdrs.header[2] == NULL && strcmp(mimeType, "audio/OPUS") != 0);
+		return vtoHdrs.header[0] == NULL || vtoHdrs.header[1] == NULL || (vtoHdrs.header[2] == NULL && strcmp(mimeType, "audio/OPUS") != 0);
 	}
 };
 
@@ -147,7 +141,7 @@ private:
 	HashTable::Iterator *fIter;
 };
 
-class OggDemux: public Medium
+class OggDemux : public Medium
 {
 public:
 	FramedSource *newDemuxedTrack(u_int32_t &resultTrackNumber);

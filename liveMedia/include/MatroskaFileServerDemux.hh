@@ -29,13 +29,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MatroskaFile.hh"
 #endif
 
-class MatroskaFileServerDemux: public Medium
+class MatroskaFileServerDemux : public Medium
 {
 public:
 	typedef void (onCreationFunc)(MatroskaFileServerDemux *newDemux, void *clientData);
-	static void createNew(UsageEnvironment &env, char const *fileName,
-		onCreationFunc *onCreation, void *onCreationClientData,
-		char const *preferredLanguage = "eng");
+	static void createNew(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData, char const *preferredLanguage = "eng");
 	// Note: Unlike most "createNew()" functions, this one doesn't return a new object immediately.  Instead, because this class
 	// requires file reading (to parse the Matroska 'Track' headers) before a new object can be initialized, the creation of a new
 	// object is signalled by calling - from the event loop - an 'onCreationFunc' that is passed as a parameter to "createNew()".
@@ -69,9 +67,7 @@ public:
 	// Used by the "ServerMediaSubsession" objects to implement their "createNewStreamSource()" virtual function.
 
 private:
-	MatroskaFileServerDemux(UsageEnvironment &env, char const *fileName,
-		onCreationFunc *onCreation, void *onCreationClientData,
-		char const *preferredLanguage);
+	MatroskaFileServerDemux(UsageEnvironment &env, char const *fileName, onCreationFunc *onCreation, void *onCreationClientData, char const *preferredLanguage);
 	// called only by createNew()
 	virtual ~MatroskaFileServerDemux();
 

@@ -29,8 +29,7 @@ JPEGVideoSource::~JPEGVideoSource()
 {
 }
 
-u_int8_t const *JPEGVideoSource::quantizationTables(u_int8_t &precision,
-	u_int16_t &length)
+u_int8_t const *JPEGVideoSource::quantizationTables(u_int8_t &precision, u_int16_t &length)
 {
 	// Default implementation
 	precision = 0;

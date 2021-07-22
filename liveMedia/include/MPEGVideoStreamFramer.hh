@@ -36,7 +36,7 @@ public:
 	unsigned days, hours, minutes, seconds, pictures;
 };
 
-class MPEGVideoStreamFramer: public FramedFilter
+class MPEGVideoStreamFramer : public FramedFilter
 {
 public:
 	Boolean &pictureEndMarker()
@@ -54,8 +54,7 @@ protected:
 
 	void computePresentationTime(unsigned numAdditionalPictures);
 	// sets "fPresentationTime"
-	void setTimeCode(unsigned hours, unsigned minutes, unsigned seconds,
-		unsigned pictures, unsigned picturesSinceLastGOP);
+	void setTimeCode(unsigned hours, unsigned minutes, unsigned seconds, unsigned pictures, unsigned picturesSinceLastGOP);
 
 protected: // redefined virtual functions
 	virtual void doGetNextFrame();
@@ -64,9 +63,7 @@ protected: // redefined virtual functions
 private:
 	void reset();
 
-	static void continueReadProcessing(void *clientData,
-		unsigned char *ptr, unsigned size,
-		struct timeval presentationTime);
+	static void continueReadProcessing(void *clientData, unsigned char *ptr, unsigned size, struct timeval presentationTime);
 	void continueReadProcessing();
 
 protected:

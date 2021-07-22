@@ -20,12 +20,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "AC3AudioRTPSink.hh"
 
-AC3AudioRTPSink::AC3AudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs,
-	u_int8_t rtpPayloadFormat,
-	u_int32_t rtpTimestampFrequency)
-	: AudioRTPSink(env, RTPgs, rtpPayloadFormat,
-		  rtpTimestampFrequency, "AC3"),
-	  fTotNumFragmentsUsed(0)
+AC3AudioRTPSink::AC3AudioRTPSink(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat, u_int32_t rtpTimestampFrequency)
+	: AudioRTPSink(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, "AC3"), fTotNumFragmentsUsed(0)
 {
 }
 
@@ -33,28 +29,19 @@ AC3AudioRTPSink::~AC3AudioRTPSink()
 {
 }
 
-AC3AudioRTPSink *AC3AudioRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	u_int8_t rtpPayloadFormat,
-	u_int32_t rtpTimestampFrequency)
+AC3AudioRTPSink *AC3AudioRTPSink::createNew(UsageEnvironment &env, Groupsock *RTPgs, u_int8_t rtpPayloadFormat, u_int32_t rtpTimestampFrequency)
 {
-	return new AC3AudioRTPSink(env, RTPgs,
-			rtpPayloadFormat, rtpTimestampFrequency);
+	return new AC3AudioRTPSink(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency);
 }
 
-Boolean AC3AudioRTPSink
-::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/,
-	unsigned /*numBytesInFrame*/) const
+Boolean AC3AudioRTPSink::frameCanAppearAfterPacketStart(unsigned char const * /*frameStart*/, unsigned /*numBytesInFrame*/) const
 {
 	// (For now) allow at most 1 frame in a single packet:
 	return False;
 }
 
-void AC3AudioRTPSink
-::doSpecialFrameHandling(unsigned fragmentationOffset,
-	unsigned char *frameStart,
-	unsigned numBytesInFrame,
-	struct timeval framePresentationTime,
-	unsigned numRemainingBytes)
+void AC3AudioRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
+	unsigned char *frameStart, unsigned numBytesInFrame, struct timeval framePresentationTime, unsigned numRemainingBytes)
 {
 	// Set the 2-byte "payload header", as defined in RFC 4184.
 	unsigned char headers[2];
@@ -97,10 +84,7 @@ void AC3AudioRTPSink
 
 	// Important: Also call our base class's doSpecialFrameHandling(),
 	// to set the packet's timestamp:
-	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset,
-		frameStart, numBytesInFrame,
-		framePresentationTime,
-		numRemainingBytes);
+	MultiFramedRTPSink::doSpecialFrameHandling(fragmentationOffset, frameStart, numBytesInFrame, framePresentationTime, numRemainingBytes);
 }
 
 unsigned AC3AudioRTPSink::specialHeaderSize() const

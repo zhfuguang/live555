@@ -41,8 +41,7 @@ static unsigned const live_tabsel[2][3][16] =
 };
 /* Note: live_tabsel[*][*][0 or 15] shouldn't occur; use dummy values there */
 
-static long const live_freqs[]
-	= { 44100, 48000, 32000, 22050, 24000, 16000, 11025, 12000, 8000, 0 };
+static long const live_freqs[] = { 44100, 48000, 32000, 22050, 24000, 16000, 11025, 12000, 8000, 0 };
 
 struct bandInfoStruct
 {
@@ -212,15 +211,15 @@ void MP3FrameParams::setParamsFromHeader()
 
 	hasCRC = (hdr & 0x10000) == 0;
 
-	padding   = ((hdr >> 9) & 0x1);
+	padding = ((hdr >> 9) & 0x1);
 	extension = ((hdr >> 8) & 0x1);
-	mode      = ((hdr >> 6) & 0x3);
-	mode_ext  = ((hdr >> 4) & 0x3);
+	mode = ((hdr >> 6) & 0x3);
+	mode_ext = ((hdr >> 4) & 0x3);
 	copyright = ((hdr >> 3) & 0x1);
-	original  = ((hdr >> 2) & 0x1);
-	emphasis  = hdr & 0x3;
+	original = ((hdr >> 2) & 0x1);
+	emphasis = hdr & 0x3;
 
-	stereo    = (mode == MPG_MD_MONO) ? 1 : 2;
+	stereo = (mode == MPG_MD_MONO) ? 1 : 2;
 
 	if (((hdr >> 10) & 0x3) == 0x3)
 	{
@@ -233,8 +232,7 @@ void MP3FrameParams::setParamsFromHeader()
 	samplingFreq = live_freqs[samplingFreqIndex];
 	isStereo = (stereo > 1);
 	isFreeFormat = (bitrateIndex == 0);
-	frameSize
-		= ComputeFrameSize(bitrate, samplingFreq, padding, isMPEG2, layer);
+	frameSize = ComputeFrameSize(bitrate, samplingFreq, padding, isMPEG2, layer);
 	sideInfoSize = computeSideInfoSize();
 }
 
@@ -259,9 +257,7 @@ unsigned MP3FrameParams::computeSideInfoSize()
 	return size;
 }
 
-unsigned ComputeFrameSize(unsigned bitrate, unsigned samplingFreq,
-	Boolean usePadding, Boolean isMPEG2,
-	unsigned char layer)
+unsigned ComputeFrameSize(unsigned bitrate, unsigned samplingFreq, Boolean usePadding, Boolean isMPEG2, unsigned char layer)
 {
 	if (samplingFreq == 0)
 		return 0;
@@ -277,16 +273,11 @@ unsigned ComputeFrameSize(unsigned bitrate, unsigned samplingFreq,
 
 #define TRUNC_FAIRLY
 static unsigned updateSideInfoSizes(MP3SideInfo &sideInfo, Boolean isMPEG2,
-	unsigned char const *mainDataPtr,
-	unsigned allowedNumBits,
-	unsigned &part23Length0a,
-	unsigned &part23Length0aTruncation,
-	unsigned &part23Length0b,
-	unsigned &part23Length0bTruncation,
-	unsigned &part23Length1a,
-	unsigned &part23Length1aTruncation,
-	unsigned &part23Length1b,
-	unsigned &part23Length1bTruncation)
+	unsigned char const *mainDataPtr, unsigned allowedNumBits,
+	unsigned &part23Length0a, unsigned &part23Length0aTruncation,
+	unsigned &part23Length0b, unsigned &part23Length0bTruncation,
+	unsigned &part23Length1a, unsigned &part23Length1aTruncation,
+	unsigned &part23Length1b, unsigned &part23Length1bTruncation)
 {
 	unsigned p23L0, p23L1 = 0, p23L0Trunc = 0, p23L1Trunc = 0;
 
@@ -328,19 +319,14 @@ static unsigned updateSideInfoSizes(MP3SideInfo &sideInfo, Boolean isMPEG2,
 	// The truncations computed above are still estimates.  We need to
 	// adjust them so that the new fields will continue to end on
 	// Huffman-encoded sample boundaries:
-	updateSideInfoForHuffman(sideInfo, isMPEG2, mainDataPtr,
-		p23L0, p23L1,
-		part23Length0a, part23Length0aTruncation,
-		part23Length0b, part23Length0bTruncation,
-		part23Length1a, part23Length1aTruncation,
-		part23Length1b, part23Length1bTruncation);
+	updateSideInfoForHuffman(sideInfo, isMPEG2, mainDataPtr, p23L0, p23L1, part23Length0a, part23Length0aTruncation,
+		part23Length0b, part23Length0bTruncation, part23Length1a, part23Length1aTruncation, part23Length1b, part23Length1bTruncation);
 	p23L0 = part23Length0a + part23Length0b;
 	p23L1 = part23Length1a + part23Length1b;
 
 	sideInfo.ch[0].gr[0].part2_3_length = p23L0;
 	sideInfo.ch[0].gr[1].part2_3_length = p23L1;
-	part23Length0bTruncation
-	+= sideInfo.ch[1].gr[0].part2_3_length; /* allow for stereo */
+	part23Length0bTruncation += sideInfo.ch[1].gr[0].part2_3_length; /* allow for stereo */
 	sideInfo.ch[1].gr[0].part2_3_length = 0; /* output mono */
 	sideInfo.ch[1].gr[1].part2_3_length = 0; /* output mono */
 
@@ -348,18 +334,14 @@ static unsigned updateSideInfoSizes(MP3SideInfo &sideInfo, Boolean isMPEG2,
 }
 
 
-Boolean GetADUInfoFromMP3Frame(unsigned char const *framePtr,
-	unsigned totFrameSize,
-	unsigned &hdr, unsigned &frameSize,
-	MP3SideInfo &sideInfo, unsigned &sideInfoSize,
-	unsigned &backpointer, unsigned &aduSize)
+Boolean GetADUInfoFromMP3Frame(unsigned char const *framePtr, unsigned totFrameSize, unsigned &hdr,
+	unsigned &frameSize, MP3SideInfo &sideInfo, unsigned &sideInfoSize, unsigned &backpointer, unsigned &aduSize)
 {
 	if (totFrameSize < 4)
 		return False; // there's not enough data
 
 	MP3FrameParams fr;
-	fr.hdr = ((unsigned)framePtr[0] << 24) | ((unsigned)framePtr[1] << 16)
-		| ((unsigned)framePtr[2] << 8) | (unsigned)framePtr[3];
+	fr.hdr = ((unsigned)framePtr[0] << 24) | ((unsigned)framePtr[1] << 16) | ((unsigned)framePtr[2] << 8) | (unsigned)framePtr[3];
 	fr.setParamsFromHeader();
 	fr.setBytePointer(framePtr + 4, totFrameSize - 4); // skip hdr
 
@@ -395,9 +377,7 @@ Boolean GetADUInfoFromMP3Frame(unsigned char const *framePtr,
 }
 
 
-static void getSideInfo1(MP3FrameParams &fr, MP3SideInfo &si,
-	int stereo, int ms_stereo, long sfreq,
-	int /*single*/)
+static void getSideInfo1(MP3FrameParams &fr, MP3SideInfo &si, int stereo, int ms_stereo, long sfreq, int /*single*/)
 {
 	int ch, gr;
 #if 0
@@ -454,8 +434,7 @@ static void getSideInfo1(MP3FrameParams &fr, MP3SideInfo &si,
 				for (i = 0; i < 3; i++)
 				{
 					gr_info.subblock_gain[i] = fr.getBits(3);
-					gr_info.full_gain[i]
-						= gr_info.pow2gain + ((gr_info.subblock_gain[i]) << 3);
+					gr_info.full_gain[i] = gr_info.pow2gain + ((gr_info.subblock_gain[i]) << 3);
 				}
 
 #ifdef DEBUG_ERRORS
@@ -477,7 +456,7 @@ static void getSideInfo1(MP3FrameParams &fr, MP3SideInfo &si,
 				}
 				r0c = gr_info.region0_count = fr.getBits(4);
 				r1c = gr_info.region1_count = fr.getBits(3);
-				gr_info.region1start = bandInfo[sfreq].longIdx[r0c + 1] >> 1 ;
+				gr_info.region1start = bandInfo[sfreq].longIdx[r0c + 1] >> 1;
 				gr_info.region2start = bandInfo[sfreq].longIdx[r0c + 1 + r1c + 1] >> 1;
 				gr_info.block_type = 0;
 				gr_info.mixed_block_flag = 0;
@@ -489,9 +468,7 @@ static void getSideInfo1(MP3FrameParams &fr, MP3SideInfo &si,
 	}
 }
 
-static void getSideInfo2(MP3FrameParams &fr, MP3SideInfo &si,
-	int stereo, int ms_stereo, long sfreq,
-	int /*single*/)
+static void getSideInfo2(MP3FrameParams &fr, MP3SideInfo &si, int stereo, int ms_stereo, long sfreq, int /*single*/)
 {
 	int ch;
 #if 0
@@ -542,8 +519,7 @@ static void getSideInfo2(MP3FrameParams &fr, MP3SideInfo &si,
 			for (i = 0; i < 3; i++)
 			{
 				gr_info.subblock_gain[i] = fr.getBits(3);
-				gr_info.full_gain[i]
-					= gr_info.pow2gain + ((gr_info.subblock_gain[i]) << 3);
+				gr_info.full_gain[i] = gr_info.pow2gain + ((gr_info.subblock_gain[i]) << 3);
 			}
 
 #ifdef DEBUG_ERRORS
@@ -571,7 +547,7 @@ static void getSideInfo2(MP3FrameParams &fr, MP3SideInfo &si,
 			}
 			r0c = gr_info.region0_count = fr.getBits(4);
 			r1c = gr_info.region1_count = fr.getBits(3);
-			gr_info.region1start = bandInfo[sfreq].longIdx[r0c + 1] >> 1 ;
+			gr_info.region1start = bandInfo[sfreq].longIdx[r0c + 1] >> 1;
 			gr_info.region2start = bandInfo[sfreq].longIdx[r0c + 1 + r1c + 1] >> 1;
 			gr_info.block_type = 0;
 			gr_info.mixed_block_flag = 0;
@@ -582,7 +558,7 @@ static void getSideInfo2(MP3FrameParams &fr, MP3SideInfo &si,
 }
 
 
-#define         MPG_MD_JOINT_STEREO     1
+#define MPG_MD_JOINT_STEREO 1
 
 void MP3FrameParams::getSideInfo(MP3SideInfo &si)
 {
@@ -600,7 +576,6 @@ void MP3FrameParams::getSideInfo(MP3SideInfo &si)
 	}
 
 	ms_stereo = (mode == MPG_MD_JOINT_STEREO) && (mode_ext & 0x2);
-
 	if (isMPEG2)
 	{
 		getSideInfo2(*this, si, stereo, ms_stereo, sfreq, single);
@@ -611,8 +586,7 @@ void MP3FrameParams::getSideInfo(MP3SideInfo &si)
 	}
 }
 
-static void putSideInfo1(BitVector &bv,
-	MP3SideInfo const &si, Boolean isStereo)
+static void putSideInfo1(BitVector &bv, MP3SideInfo const &si, Boolean isStereo)
 {
 	int ch, gr, i;
 	int stereo = isStereo ? 2 : 1;
@@ -663,8 +637,7 @@ static void putSideInfo1(BitVector &bv,
 	}
 }
 
-static void putSideInfo2(BitVector &bv,
-	MP3SideInfo const &si, Boolean isStereo)
+static void putSideInfo2(BitVector &bv, MP3SideInfo const &si, Boolean isStereo)
 {
 	int ch, i;
 	int stereo = isStereo ? 2 : 1;
@@ -706,9 +679,7 @@ static void putSideInfo2(BitVector &bv,
 	}
 }
 
-static void PutMP3SideInfoIntoFrame(MP3SideInfo const &si,
-	MP3FrameParams const &fr,
-	unsigned char *framePtr)
+static void PutMP3SideInfoIntoFrame(MP3SideInfo const &si, MP3FrameParams const &fr, unsigned char *framePtr)
 {
 	if (fr.hasCRC)
 		framePtr += 2; // skip CRC
@@ -726,15 +697,13 @@ static void PutMP3SideInfoIntoFrame(MP3SideInfo const &si,
 }
 
 
-Boolean ZeroOutMP3SideInfo(unsigned char *framePtr, unsigned totFrameSize,
-	unsigned newBackpointer)
+Boolean ZeroOutMP3SideInfo(unsigned char *framePtr, unsigned totFrameSize, unsigned newBackpointer)
 {
 	if (totFrameSize < 4)
 		return False; // there's not enough data
 
 	MP3FrameParams fr;
-	fr.hdr = ((unsigned)framePtr[0] << 24) | ((unsigned)framePtr[1] << 16)
-		| ((unsigned)framePtr[2] << 8) | (unsigned)framePtr[3];
+	fr.hdr = ((unsigned)framePtr[0] << 24) | ((unsigned)framePtr[1] << 16) | ((unsigned)framePtr[2] << 8) | (unsigned)framePtr[3];
 	fr.setParamsFromHeader();
 	fr.setBytePointer(framePtr + 4, totFrameSize - 4); // skip hdr
 
@@ -752,13 +721,11 @@ Boolean ZeroOutMP3SideInfo(unsigned char *framePtr, unsigned totFrameSize,
 	si.ch[1].gr[1].part2_3_length = si.ch[1].gr[1].big_values = 0;
 
 	PutMP3SideInfoIntoFrame(si, fr, framePtr + 4);
-
 	return True;
 }
 
 
-static unsigned MP3BitrateToBitrateIndex(unsigned bitrate /* in kbps */,
-	Boolean isMPEG2)
+static unsigned MP3BitrateToBitrateIndex(unsigned bitrate /* in kbps */, Boolean isMPEG2)
 {
 	for (unsigned i = 1; i < 15; ++i)
 	{
@@ -778,10 +745,7 @@ static void outputHeader(unsigned char *toPtr, unsigned hdr)
 	toPtr[3] = (unsigned char)(hdr);
 }
 
-static void assignADUBackpointer(MP3FrameParams const &fr,
-	unsigned aduSize,
-	MP3SideInfo &sideInfo,
-	unsigned &availableBytesForBackpointer)
+static void assignADUBackpointer(MP3FrameParams const &fr, unsigned aduSize, MP3SideInfo &sideInfo, unsigned &availableBytesForBackpointer)
 {
 	// Give the ADU as large a backpointer as possible:
 	unsigned maxBackpointerSize = fr.isMPEG2 ? 255 : 511;
@@ -796,8 +760,7 @@ static void assignADUBackpointer(MP3FrameParams const &fr,
 	sideInfo.main_data_begin = backpointerSize;
 
 	// Figure out how many bytes are available for the *next* ADU's backpointer:
-	availableBytesForBackpointer
-		= backpointerSize + fr.frameSize - fr.sideInfoSize ;
+	availableBytesForBackpointer = backpointerSize + fr.frameSize - fr.sideInfoSize;
 	if (availableBytesForBackpointer < aduSize)
 	{
 		availableBytesForBackpointer = 0;
@@ -809,16 +772,12 @@ static void assignADUBackpointer(MP3FrameParams const &fr,
 }
 
 unsigned TranscodeMP3ADU(unsigned char const *fromPtr, unsigned fromSize,
-	unsigned toBitrate,
-	unsigned char *toPtr, unsigned toMaxSize,
-	unsigned &availableBytesForBackpointer)
+	unsigned toBitrate, unsigned char *toPtr, unsigned toMaxSize, unsigned &availableBytesForBackpointer)
 {
 	// Begin by parsing the input ADU's parameters:
 	unsigned hdr, inFrameSize, inSideInfoSize, backpointer, inAduSize;
 	MP3SideInfo sideInfo;
-	if (!GetADUInfoFromMP3Frame(fromPtr, fromSize,
-			hdr, inFrameSize, sideInfo, inSideInfoSize,
-			backpointer, inAduSize))
+	if (!GetADUInfoFromMP3Frame(fromPtr, fromSize, hdr, inFrameSize, sideInfo, inSideInfoSize, backpointer, inAduSize))
 	{
 		return 0;
 	}
@@ -828,10 +787,10 @@ unsigned TranscodeMP3ADU(unsigned char const *fromPtr, unsigned fromSize,
 	// (different bitrate; mono; no CRC)
 	Boolean isMPEG2 = ((hdr & 0x00080000) == 0);
 	unsigned toBitrateIndex = MP3BitrateToBitrateIndex(toBitrate, isMPEG2);
-	hdr &= ~ 0xF000;
+	hdr &= ~0xF000;
 	hdr |= (toBitrateIndex << 12); // set bitrate index
 	hdr |= 0x10200; // turn on !error-prot and padding bits
-	hdr &= ~ 0xC0;
+	hdr &= ~0xC0;
 	hdr |= 0xC0; // set mode to 3 (mono)
 
 	// Set up the rest of the parameters of the new ADU:
@@ -860,13 +819,12 @@ unsigned TranscodeMP3ADU(unsigned char const *fromPtr, unsigned fromSize,
 	unsigned part23Length0b, part23Length0bTruncation;
 	unsigned part23Length1a, part23Length1aTruncation;
 	unsigned part23Length1b, part23Length1bTruncation;
-	unsigned numAduBits
-		= updateSideInfoSizes(sideInfo, outFr.isMPEG2,
-				fromPtr, 8 * desiredOutAduSize,
-				part23Length0a, part23Length0aTruncation,
-				part23Length0b, part23Length0bTruncation,
-				part23Length1a, part23Length1aTruncation,
-				part23Length1b, part23Length1bTruncation);
+	unsigned numAduBits = updateSideInfoSizes(sideInfo, outFr.isMPEG2,
+		fromPtr, 8 * desiredOutAduSize,
+		part23Length0a, part23Length0aTruncation,
+		part23Length0b, part23Length0bTruncation,
+		part23Length1a, part23Length1aTruncation,
+		part23Length1b, part23Length1bTruncation);
 #ifdef DEBUG
 	fprintf(stderr, "shrinkage %d->%d [(%d,%d),(%d,%d)] (trunc: [(%d,%d),(%d,%d)]) {%d}\n", inAduSize, (numAduBits + 7) / 8,
 		part23Length0a, part23Length0b, part23Length1a, part23Length1b,
@@ -914,8 +872,7 @@ unsigned TranscodeMP3ADU(unsigned char const *fromPtr, unsigned fromSize,
 
 	/* zero out any remaining bits (probably unnecessary, but...) */
 	unsigned char const zero = '\0';
-	shiftBits(toPtr, toBitOffset, &zero, 0,
-		actualOutAduSize * 8 - numAduBits);
+	shiftBits(toPtr, toBitOffset, &zero, 0, actualOutAduSize * 8 - numAduBits);
 
 	return 4 + outFr.sideInfoSize + actualOutAduSize;
 }

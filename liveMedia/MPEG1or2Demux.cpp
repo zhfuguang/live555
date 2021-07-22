@@ -33,7 +33,7 @@ enum MPEGParseState
 	PARSING_PES_PACKET
 };
 
-class MPEGProgramStreamParser: public StreamParser
+class MPEGProgramStreamParser : public StreamParser
 {
 public:
 	MPEGProgramStreamParser(MPEG1or2Demux *usingDemux, FramedSource *inputSource);
@@ -83,14 +83,9 @@ public:
 
 ////////// MPEG1or2Demux implementation //////////
 
-MPEG1or2Demux
-::MPEG1or2Demux(UsageEnvironment &env,
-	FramedSource *inputSource, Boolean reclaimWhenLastESDies)
-	: Medium(env),
-	  fInputSource(inputSource), fMPEGversion(0),
-	  fNextAudioStreamNumber(0), fNextVideoStreamNumber(0),
-	  fReclaimWhenLastESDies(reclaimWhenLastESDies), fNumOutstandingESs(0),
-	  fNumPendingReads(0), fHaveUndeliveredData(False)
+MPEG1or2Demux::MPEG1or2Demux(UsageEnvironment &env, FramedSource *inputSource, Boolean reclaimWhenLastESDies)
+	: Medium(env), fInputSource(inputSource), fMPEGversion(0), fNextAudioStreamNumber(0), fNextVideoStreamNumber(0)
+	, fReclaimWhenLastESDies(reclaimWhenLastESDies), fNumOutstandingESs(0), fNumPendingReads(0), fHaveUndeliveredData(False)
 {
 	fParser = new MPEGProgramStreamParser(this, inputSource);
 	for (unsigned i = 0; i < 256; ++i)
@@ -110,9 +105,7 @@ MPEG1or2Demux::~MPEG1or2Demux()
 	Medium::close(fInputSource);
 }
 
-MPEG1or2Demux *MPEG1or2Demux
-::createNew(UsageEnvironment &env,
-	FramedSource *inputSource, Boolean reclaimWhenLastESDies)
+MPEG1or2Demux *MPEG1or2Demux::createNew(UsageEnvironment &env, FramedSource *inputSource, Boolean reclaimWhenLastESDies)
 {
 	// Need to add source type checking here???  #####
 
@@ -124,8 +117,7 @@ MPEG1or2Demux::SCR::SCR()
 {
 }
 
-void MPEG1or2Demux
-::noteElementaryStreamDeletion(MPEG1or2DemuxedElementaryStream * /*es*/)
+void MPEG1or2Demux::noteElementaryStreamDeletion(MPEG1or2DemuxedElementaryStream * /*es*/)
 {
 	if (--fNumOutstandingESs == 0 && fReclaimWhenLastESDies)
 	{
@@ -167,12 +159,8 @@ MPEG1or2DemuxedElementaryStream *MPEG1or2Demux::newRawPESStream()
 	return newElementaryStream(RAW_PES);
 }
 
-void MPEG1or2Demux::registerReadInterest(u_int8_t streamIdTag,
-	unsigned char *to, unsigned maxSize,
-	FramedSource::afterGettingFunc *afterGettingFunc,
-	void *afterGettingClientData,
-	FramedSource::onCloseFunc *onCloseFunc,
-	void *onCloseClientData)
+void MPEG1or2Demux::registerReadInterest(u_int8_t streamIdTag, unsigned char *to, unsigned maxSize,
+	FramedSource::afterGettingFunc *afterGettingFunc, void *afterGettingClientData, FramedSource::onCloseFunc *onCloseFunc, void *onCloseClientData)
 {
 	struct OutputDescriptor &out = fOutput[streamIdTag];
 
@@ -196,10 +184,8 @@ void MPEG1or2Demux::registerReadInterest(u_int8_t streamIdTag,
 	++fNumPendingReads;
 }
 
-Boolean MPEG1or2Demux::useSavedData(u_int8_t streamIdTag,
-	unsigned char *to, unsigned maxSize,
-	FramedSource::afterGettingFunc *afterGettingFunc,
-	void *afterGettingClientData)
+Boolean MPEG1or2Demux::useSavedData(u_int8_t streamIdTag, unsigned char *to,
+	unsigned maxSize, FramedSource::afterGettingFunc *afterGettingFunc, void *afterGettingClientData)
 {
 	struct OutputDescriptor &out = fOutput[streamIdTag];
 	if (out.savedDataHead == NULL)
@@ -235,17 +221,12 @@ Boolean MPEG1or2Demux::useSavedData(u_int8_t streamIdTag,
 		struct timeval presentationTime;
 		presentationTime.tv_sec = 0;
 		presentationTime.tv_usec = 0; // should fix #####
-		(*afterGettingFunc)(afterGettingClientData, totNumBytesCopied,
-			0 /* numTruncatedBytes */, presentationTime,
-			0 /* durationInMicroseconds ?????#####*/);
+		(*afterGettingFunc)(afterGettingClientData, totNumBytesCopied, 0 /* numTruncatedBytes */, presentationTime, 0 /* durationInMicroseconds ?????#####*/);
 	}
 	return True;
 }
 
-void MPEG1or2Demux
-::continueReadProcessing(void *clientData,
-	unsigned char * /*ptr*/, unsigned /*size*/,
-	struct timeval /*presentationTime*/)
+void MPEG1or2Demux::continueReadProcessing(void *clientData, unsigned char * /*ptr*/, unsigned /*size*/, struct timeval /*presentationTime*/)
 {
 	MPEG1or2Demux *demux = (MPEG1or2Demux *)clientData;
 	demux->continueReadProcessing();
@@ -270,10 +251,8 @@ void MPEG1or2Demux::continueReadProcessing()
 			// source, we can call this directly, without risking infinite recursion.
 			if (newOut.fAfterGettingFunc != NULL)
 			{
-				(*newOut.fAfterGettingFunc)(newOut.afterGettingClientData,
-					newOut.frameSize, 0 /* numTruncatedBytes */,
-					newOut.presentationTime,
-					0 /* durationInMicroseconds ?????#####*/);
+				(*newOut.fAfterGettingFunc)(newOut.afterGettingClientData, newOut.frameSize,
+					0 /* numTruncatedBytes */, newOut.presentationTime, 0 /* durationInMicroseconds ?????#####*/);
 				--fNumPendingReads;
 			}
 		}
@@ -289,24 +268,18 @@ void MPEG1or2Demux::continueReadProcessing()
 	}
 }
 
-void MPEG1or2Demux::getNextFrame(u_int8_t streamIdTag,
-	unsigned char *to, unsigned maxSize,
-	FramedSource::afterGettingFunc *afterGettingFunc,
-	void *afterGettingClientData,
-	FramedSource::onCloseFunc *onCloseFunc,
-	void *onCloseClientData)
+void MPEG1or2Demux::getNextFrame(u_int8_t streamIdTag, unsigned char *to, unsigned maxSize,
+	FramedSource::afterGettingFunc *afterGettingFunc, void *afterGettingClientData, FramedSource::onCloseFunc *onCloseFunc, void *onCloseClientData)
 {
 	// First, check whether we have saved data for this stream id:
 	if (useSavedData(streamIdTag, to, maxSize,
-			afterGettingFunc, afterGettingClientData))
+		afterGettingFunc, afterGettingClientData))
 	{
 		return;
 	}
 
 	// Then save the parameters of the specified stream id:
-	registerReadInterest(streamIdTag, to, maxSize,
-		afterGettingFunc, afterGettingClientData,
-		onCloseFunc, onCloseClientData);
+	registerReadInterest(streamIdTag, to, maxSize, afterGettingFunc, afterGettingClientData, onCloseFunc, onCloseClientData);
 
 	// Next, if we're the only currently pending read, continue looking for data:
 	if (fNumPendingReads == 1 || fHaveUndeliveredData)
@@ -329,7 +302,6 @@ void MPEG1or2Demux::stopGettingFrames(u_int8_t streamIdTag)
 void MPEG1or2Demux::handleClosure(void *clientData)
 {
 	MPEG1or2Demux *demux = (MPEG1or2Demux *)clientData;
-
 	demux->fNumPendingReads = 0;
 
 	// Tell all pending readers that our source has closed.
@@ -357,8 +329,7 @@ void MPEG1or2Demux::handleClosure(void *clientData)
 		delete out.savedDataHead;
 		out.savedDataHead = out.savedDataTail = NULL;
 		out.savedDataTotalSize = 0;
-		out.isPotentiallyReadable = out.isCurrentlyActive = out.isCurrentlyAwaitingData
-				= False;
+		out.isPotentiallyReadable = out.isCurrentlyActive = out.isCurrentlyAwaitingData = False;
 	}
 	for (i = 0; i < numPending; ++i)
 	{
@@ -371,11 +342,9 @@ void MPEG1or2Demux::handleClosure(void *clientData)
 
 #include <string.h>
 
-MPEGProgramStreamParser::MPEGProgramStreamParser(MPEG1or2Demux *usingDemux,
-	FramedSource *inputSource)
-	: StreamParser(inputSource, MPEG1or2Demux::handleClosure, usingDemux,
-		  &MPEG1or2Demux::continueReadProcessing, usingDemux),
-	  fUsingDemux(usingDemux), fCurrentParseState(PARSING_PACK_HEADER)
+MPEGProgramStreamParser::MPEGProgramStreamParser(MPEG1or2Demux *usingDemux, FramedSource *inputSource)
+	: StreamParser(inputSource, MPEG1or2Demux::handleClosure, usingDemux, &MPEG1or2Demux::continueReadProcessing, usingDemux)
+	, fUsingDemux(usingDemux), fCurrentParseState(PARSING_PACK_HEADER)
 {
 }
 
@@ -435,8 +404,7 @@ unsigned char MPEGProgramStreamParser::parse()
 
 static inline Boolean isPacketStartCode(unsigned code)
 {
-	return (code & 0xFFFFFF00) == PACKET_START_CODE_PREFIX
-		&& code > SYSTEM_HEADER_START_CODE;
+	return (code & 0xFFFFFF00) == PACKET_START_CODE_PREFIX && code > SYSTEM_HEADER_START_CODE;
 }
 
 void MPEGProgramStreamParser::parsePackHeader()
@@ -502,8 +470,7 @@ void MPEGProgramStreamParser::parsePackHeader()
 		skipBits(24);
 
 #if defined(DEBUG_TIMESTAMPS) || defined(DEBUG_SCR_TIMESTAMPS)
-		fprintf(stderr, "pack hdr system_clock_reference_base: 0x%x",
-			scr.highBit);
+		fprintf(stderr, "pack hdr system_clock_reference_base: 0x%x", scr.highBit);
 		fprintf(stderr, "%08x\n", scr.remainingBits);
 #endif
 	}
@@ -523,11 +490,9 @@ void MPEGProgramStreamParser::parsePackHeader()
 		skipBits(5);
 
 #if defined(DEBUG_TIMESTAMPS) || defined(DEBUG_SCR_TIMESTAMPS)
-		fprintf(stderr, "pack hdr system_clock_reference_base: 0x%x",
-			scr.highBit);
+		fprintf(stderr, "pack hdr system_clock_reference_base: 0x%x", scr.highBit);
 		fprintf(stderr, "%08x\n", scr.remainingBits);
-		fprintf(stderr, "pack hdr system_clock_reference_extension: 0x%03x\n",
-			scr.extension);
+		fprintf(stderr, "pack hdr system_clock_reference_extension: 0x%03x\n", scr.extension);
 #endif
 		unsigned char pack_stuffing_length = getBits(3);
 		skipBytes(pack_stuffing_length);
@@ -567,8 +532,7 @@ void MPEGProgramStreamParser::parseSystemHeader()
 	// at least 6 bytes.  Check this now:
 	if (remaining_header_length < 6)
 	{
-		fUsingDemux->envir() << "StreamParser::parseSystemHeader(): saw strange header_length: "
-			<< remaining_header_length << " < 6\n";
+		fUsingDemux->envir() << "StreamParser::parseSystemHeader(): saw strange header_length: " << remaining_header_length << " < 6\n";
 	}
 	skipBytes(remaining_header_length);
 
@@ -580,8 +544,7 @@ void MPEGProgramStreamParser::parseSystemHeader()
 #define private_stream_2 0xBF
 
 // A test for stream ids that are exempt from normal PES packet header parsing
-Boolean MPEGProgramStreamParser
-::isSpecialStreamId(unsigned char stream_id) const
+Boolean MPEGProgramStreamParser::isSpecialStreamId(unsigned char stream_id) const
 {
 	if (stream_id == RAW_PES)
 		return True; // hack
@@ -744,11 +707,11 @@ unsigned char MPEGProgramStreamParser::parsePESPacket()
 			// Fields in the next 3 bytes determine the size of the rest:
 			unsigned next3Bytes = getBits(24);
 #ifdef DEBUG_TIMESTAMPS
-			unsigned char PTS_DTS_flags       = (next3Bytes & 0x00C000) >> 14;
+			unsigned char PTS_DTS_flags = (next3Bytes & 0x00C000) >> 14;
 #endif
 #ifdef undef
-			unsigned char ESCR_flag           = (next3Bytes & 0x002000) >> 13;
-			unsigned char ES_rate_flag        = (next3Bytes & 0x001000) >> 12;
+			unsigned char ESCR_flag = (next3Bytes & 0x002000) >> 13;
+			unsigned char ES_rate_flag = (next3Bytes & 0x001000) >> 12;
 			unsigned char DSM_trick_mode_flag = (next3Bytes & 0x000800) >> 11;
 #endif
 			unsigned char PES_header_data_length = (next3Bytes & 0x0000FF);
@@ -813,8 +776,7 @@ unsigned char MPEGProgramStreamParser::parsePESPacket()
 	if (PES_packet_length < bytesSkipped)
 	{
 		fUsingDemux->envir() << "StreamParser::parsePESPacket(): saw inconsistent PES_packet_length "
-			<< PES_packet_length << " < "
-			<< bytesSkipped << "\n";
+			<< PES_packet_length << " < " << bytesSkipped << "\n";
 	}
 	else
 	{
@@ -832,9 +794,7 @@ unsigned char MPEGProgramStreamParser::parsePESPacket()
 			if (PES_packet_length > out.maxSize)
 			{
 				fUsingDemux->envir() << "MPEGProgramStreamParser::parsePESPacket() error: PES_packet_length ("
-					<< PES_packet_length
-					<< ") exceeds max frame size asked for ("
-					<< out.maxSize << ")\n";
+					<< PES_packet_length << ") exceeds max frame size asked for (" << out.maxSize << ")\n";
 				numBytesToCopy = out.maxSize;
 			}
 			else
@@ -865,15 +825,13 @@ unsigned char MPEGProgramStreamParser::parsePESPacket()
 			fUsingDemux->fHaveUndeliveredData = True;
 			throw READER_NOT_READY;
 		}
-		else if (out.isPotentiallyReadable &&
-			out.savedDataTotalSize + PES_packet_length < 1000000 /*limit*/)
+		else if (out.isPotentiallyReadable && out.savedDataTotalSize + PES_packet_length < 1000000 /*limit*/)
 		{
 			// Someone is interested in this stream, but hasn't begun reading it yet.
 			// Save this data, so that the reader will get it when he later asks for it.
 			unsigned char *buf = new unsigned char[PES_packet_length];
 			getBytes(buf, PES_packet_length);
-			MPEG1or2Demux::OutputDescriptor::SavedData *savedData
-				= new MPEG1or2Demux::OutputDescriptor::SavedData(buf, PES_packet_length);
+			MPEG1or2Demux::OutputDescriptor::SavedData *savedData = new MPEG1or2Demux::OutputDescriptor::SavedData(buf, PES_packet_length);
 			if (out.savedDataHead == NULL)
 			{
 				out.savedDataHead = out.savedDataTail = savedData;

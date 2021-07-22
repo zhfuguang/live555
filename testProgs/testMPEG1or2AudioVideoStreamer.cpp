@@ -119,9 +119,7 @@ int main(int argc, char **argv)
 #ifdef IMPLEMENT_RTSP_SERVER
 	RTCPInstance *audioRTCP =
 #endif
-		RTCPInstance::createNew(*env, &rtcpGroupsockAudio,
-			estimatedSessionBandwidthAudio, CNAME,
-			audioSink, NULL /* we're a server */, isSSM);
+		RTCPInstance::createNew(*env, &rtcpGroupsockAudio, estimatedSessionBandwidthAudio, CNAME, audioSink, NULL /* we're a server */, isSSM);
 	// Note: This starts RTCP running automatically
 
 	// Create a 'MPEG Video RTP' sink from the RTP 'groupsock':
@@ -132,9 +130,7 @@ int main(int argc, char **argv)
 #ifdef IMPLEMENT_RTSP_SERVER
 	RTCPInstance *videoRTCP =
 #endif
-		RTCPInstance::createNew(*env, &rtcpGroupsockVideo,
-			estimatedSessionBandwidthVideo, CNAME,
-			videoSink, NULL /* we're a server */, isSSM);
+		RTCPInstance::createNew(*env, &rtcpGroupsockVideo, estimatedSessionBandwidthVideo, CNAME, videoSink, NULL /* we're a server */, isSSM);
 	// Note: This starts RTCP running automatically
 
 #ifdef IMPLEMENT_RTSP_SERVER
@@ -144,10 +140,7 @@ int main(int argc, char **argv)
 		*env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
 		exit(1);
 	}
-	ServerMediaSession *sms
-		= ServerMediaSession::createNew(*env, "testStream", inputFileName,
-				"Session streamed by \"testMPEG1or2AudioVideoStreamer\"",
-				isSSM);
+	ServerMediaSession *sms = ServerMediaSession::createNew(*env, "testStream", inputFileName, "Session streamed by \"testMPEG1or2AudioVideoStreamer\"", isSSM);
 	sms->addSubsession(PassiveServerMediaSubsession::createNew(*audioSink, audioRTCP));
 	sms->addSubsession(PassiveServerMediaSubsession::createNew(*videoSink, videoRTCP));
 	rtspServer->addServerMediaSession(sms);
@@ -159,7 +152,6 @@ int main(int argc, char **argv)
 	play();
 
 	env->taskScheduler().doEventLoop(); // does not return
-
 	return 0; // only to prevent compiler warning
 }
 
@@ -168,8 +160,7 @@ void afterPlaying(void *clientData)
 	// One of the sinks has ended playing.
 	// Check whether any of the sources have a pending read.  If so,
 	// wait until its sink ends playing also:
-	if (audioSource->isCurrentlyAwaitingData()
-		|| videoSource->isCurrentlyAwaitingData())
+	if (audioSource->isCurrentlyAwaitingData() || videoSource->isCurrentlyAwaitingData())
 		return;
 
 	// Now that both sinks have ended, close both input sources,
@@ -191,12 +182,10 @@ void afterPlaying(void *clientData)
 void play()
 {
 	// Open the input file as a 'byte-stream file source':
-	ByteStreamFileSource *fileSource
-		= ByteStreamFileSource::createNew(*env, inputFileName);
+	ByteStreamFileSource *fileSource = ByteStreamFileSource::createNew(*env, inputFileName);
 	if (fileSource == NULL)
 	{
-		*env << "Unable to open file \"" << inputFileName
-			<< "\" as a byte-stream file source\n";
+		*env << "Unable to open file \"" << inputFileName << "\" as a byte-stream file source\n";
 		exit(1);
 	}
 
@@ -207,10 +196,8 @@ void play()
 	FramedSource *videoES = mpegDemux->newVideoStream();
 
 	// Create a framer for each Elementary Stream:
-	audioSource
-		= MPEG1or2AudioStreamFramer::createNew(*env, audioES);
-	videoSource
-		= MPEG1or2VideoStreamFramer::createNew(*env, videoES, iFramesOnly);
+	audioSource = MPEG1or2AudioStreamFramer::createNew(*env, audioES);
+	videoSource = MPEG1or2VideoStreamFramer::createNew(*env, videoES, iFramesOnly);
 
 	// Finally, start playing each sink.
 	*env << "Beginning to read from file...\n";

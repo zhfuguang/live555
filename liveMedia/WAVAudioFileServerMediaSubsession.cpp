@@ -24,29 +24,22 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "uLawAudioFilter.hh"
 #include "SimpleRTPSink.hh"
 
-WAVAudioFileServerMediaSubsession *WAVAudioFileServerMediaSubsession
-::createNew(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource,
-	Boolean convertToULaw)
+WAVAudioFileServerMediaSubsession *WAVAudioFileServerMediaSubsession::createNew(
+	UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource, Boolean convertToULaw)
 {
-	return new WAVAudioFileServerMediaSubsession(env, fileName,
-			reuseFirstSource, convertToULaw);
+	return new WAVAudioFileServerMediaSubsession(env, fileName, reuseFirstSource, convertToULaw);
 }
 
-WAVAudioFileServerMediaSubsession
-::WAVAudioFileServerMediaSubsession(UsageEnvironment &env, char const *fileName,
-	Boolean reuseFirstSource, Boolean convertToULaw)
-	: FileServerMediaSubsession(env, fileName, reuseFirstSource),
-	  fConvertToULaw(convertToULaw)
+WAVAudioFileServerMediaSubsession::WAVAudioFileServerMediaSubsession(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource, Boolean convertToULaw)
+	: FileServerMediaSubsession(env, fileName, reuseFirstSource), fConvertToULaw(convertToULaw)
 {
 }
 
-WAVAudioFileServerMediaSubsession
-::~WAVAudioFileServerMediaSubsession()
+WAVAudioFileServerMediaSubsession::~WAVAudioFileServerMediaSubsession()
 {
 }
 
-void WAVAudioFileServerMediaSubsession
-::seekStreamSource(FramedSource *inputSource, double &seekNPT, double streamDuration, u_int64_t &numBytes)
+void WAVAudioFileServerMediaSubsession::seekStreamSource(FramedSource *inputSource, double &seekNPT, double streamDuration, u_int64_t &numBytes)
 {
 	WAVAudioFileSource *wavSource;
 	if (fBitsPerSample > 8)
@@ -64,12 +57,10 @@ void WAVAudioFileServerMediaSubsession
 	unsigned seekByteNumber = seekSampleNumber * ((fNumChannels * fBitsPerSample) / 8);
 
 	wavSource->seekToPCMByte(seekByteNumber);
-
 	setStreamSourceDuration(inputSource, streamDuration, numBytes);
 }
 
-void WAVAudioFileServerMediaSubsession
-::setStreamSourceDuration(FramedSource *inputSource, double streamDuration, u_int64_t &numBytes)
+void WAVAudioFileServerMediaSubsession::setStreamSourceDuration(FramedSource *inputSource, double streamDuration, u_int64_t &numBytes)
 {
 	WAVAudioFileSource *wavSource;
 	if (fBitsPerSample > 8)
@@ -90,8 +81,7 @@ void WAVAudioFileServerMediaSubsession
 	wavSource->limitNumBytesToStream(numDurationBytes);
 }
 
-void WAVAudioFileServerMediaSubsession
-::setStreamSourceScale(FramedSource *inputSource, float scale)
+void WAVAudioFileServerMediaSubsession::setStreamSourceScale(FramedSource *inputSource, float scale)
 {
 	int iScale = (int)scale;
 	WAVAudioFileSource *wavSource;
@@ -109,8 +99,7 @@ void WAVAudioFileServerMediaSubsession
 	wavSource->setScaleFactor(iScale);
 }
 
-FramedSource *WAVAudioFileServerMediaSubsession
-::createNewStreamSource(unsigned /*clientSessionId*/, unsigned &estBitrate)
+FramedSource *WAVAudioFileServerMediaSubsession::createNewStreamSource(unsigned /*clientSessionId*/, unsigned &estBitrate)
 {
 	FramedSource *resultSource = NULL;
 	do
@@ -170,10 +159,7 @@ FramedSource *WAVAudioFileServerMediaSubsession
 	return NULL;
 }
 
-RTPSink *WAVAudioFileServerMediaSubsession
-::createNewRTPSink(Groupsock *rtpGroupsock,
-	unsigned char rtpPayloadTypeIfDynamic,
-	FramedSource * /*inputSource*/)
+RTPSink *WAVAudioFileServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource * /*inputSource*/)
 {
 	do
 	{
@@ -262,9 +248,7 @@ RTPSink *WAVAudioFileServerMediaSubsession
 			break;
 		}
 
-		return SimpleRTPSink::createNew(envir(), rtpGroupsock,
-				payloadFormatCode, fSamplingFrequency,
-				"audio", mimeType, fNumChannels);
+		return SimpleRTPSink::createNew(envir(), rtpGroupsock, payloadFormatCode, fSamplingFrequency, "audio", mimeType, fNumChannels);
 	} while (0);
 
 	// An error occurred:

@@ -28,16 +28,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MP3ADUTranscoder.hh"
 #endif
 
-class MP3Transcoder: public MP3FromADUSource
+class MP3Transcoder : public MP3FromADUSource
 {
 public:
-	static MP3Transcoder *createNew(UsageEnvironment &env,
-		unsigned outBitrate /* in kbps */,
-		FramedSource *inputSource);
+	static MP3Transcoder *createNew(UsageEnvironment &env, unsigned outBitrate /* in kbps */, FramedSource *inputSource);
 
 protected:
-	MP3Transcoder(UsageEnvironment &env,
-		MP3ADUTranscoder *aduTranscoder);
+	MP3Transcoder(UsageEnvironment &env, MP3ADUTranscoder *aduTranscoder);
 	// called only by createNew()
 	virtual ~MP3Transcoder();
 };

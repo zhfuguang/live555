@@ -32,21 +32,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 //     will be less than that of the original.)
 #define KEEP_ORIGINAL_FRAME_RATE False
 
-MPEG2TransportStreamTrickModeFilter *MPEG2TransportStreamTrickModeFilter
-::createNew(UsageEnvironment &env, FramedSource *inputSource,
-	MPEG2TransportStreamIndexFile *indexFile, int scale)
+MPEG2TransportStreamTrickModeFilter *MPEG2TransportStreamTrickModeFilter::createNew(
+	UsageEnvironment &env, FramedSource *inputSource, MPEG2TransportStreamIndexFile *indexFile, int scale)
 {
 	return new MPEG2TransportStreamTrickModeFilter(env, inputSource, indexFile, scale);
 }
 
-MPEG2TransportStreamTrickModeFilter
-::MPEG2TransportStreamTrickModeFilter(UsageEnvironment &env, FramedSource *inputSource,
-	MPEG2TransportStreamIndexFile *indexFile, int scale)
-	: FramedFilter(env, inputSource),
-	  fHaveStarted(False), fIndexFile(indexFile), fScale(scale), fDirection(1),
-	  fState(SKIPPING_FRAME), fFrameCount(0),
-	  fNextIndexRecordNum(0), fNextTSPacketNum(0),
-	  fCurrentTSPacketNum((unsigned long)(-1)), fUseSavedFrameNextTime(False)
+MPEG2TransportStreamTrickModeFilter::MPEG2TransportStreamTrickModeFilter(
+	UsageEnvironment &env, FramedSource *inputSource, MPEG2TransportStreamIndexFile *indexFile, int scale)
+	: FramedFilter(env, inputSource), fHaveStarted(False), fIndexFile(indexFile), fScale(scale), fDirection(1)
+	, fState(SKIPPING_FRAME), fFrameCount(0), fNextIndexRecordNum(0), fNextTSPacketNum(0)
+	, fCurrentTSPacketNum((unsigned long)(-1)), fUseSavedFrameNextTime(False)
 {
 	if (fScale < 0)   // reverse play
 	{
@@ -59,8 +55,7 @@ MPEG2TransportStreamTrickModeFilter::~MPEG2TransportStreamTrickModeFilter()
 {
 }
 
-Boolean MPEG2TransportStreamTrickModeFilter::seekTo(unsigned long tsPacketNumber,
-	unsigned long indexRecordNumber)
+Boolean MPEG2TransportStreamTrickModeFilter::seekTo(unsigned long tsPacketNumber, unsigned long indexRecordNumber)
 {
 	seekToTransportPacket(tsPacketNumber);
 	fNextIndexRecordNum = indexRecordNumber;
@@ -94,10 +89,7 @@ void MPEG2TransportStreamTrickModeFilter::doGetNextFrame()
 		u_int8_t recordType;
 		float recordPCR;
 		Boolean endOfIndexFile = False;
-		if (!fIndexFile->readIndexRecordValues(fNextIndexRecordNum,
-				fDesiredTSPacketNum, fDesiredDataOffset,
-				fDesiredDataSize, recordPCR,
-				recordType))
+		if (!fIndexFile->readIndexRecordValues(fNextIndexRecordNum, fDesiredTSPacketNum, fDesiredDataOffset, fDesiredDataSize, recordPCR, recordType))
 		{
 			// We ran off the end of the index file.  If we're not delivering a
 			// pre-saved frame, then handle this the same way as if the
@@ -115,8 +107,7 @@ void MPEG2TransportStreamTrickModeFilter::doGetNextFrame()
 			fHaveStarted = True;
 		}
 		//    fprintf(stderr, "#####read index record %ld: ts %ld: %c, PCR %f\n", fNextIndexRecordNum, fDesiredTSPacketNum, isIFrameStart(recordType) ? 'I' : isNonIFrameStart(recordType) ? 'j' : 'x', recordPCR);
-		fNextIndexRecordNum
-		+= (fState == DELIVERING_SAVED_FRAME) ? 1 : fDirection;
+		fNextIndexRecordNum += (fState == DELIVERING_SAVED_FRAME) ? 1 : fDirection;
 
 		// Handle this index record, depending on the record type and our current state:
 		switch (fState)
@@ -198,10 +189,9 @@ void MPEG2TransportStreamTrickModeFilter::doGetNextFrame()
 			case DELIVERING_SAVED_FRAME:
 			{
 				//      fprintf(stderr, "\tDELIVERING_SAVED_FRAME\n");//#####
-				if (endOfIndexFile
-					|| (isIFrameStart(recordType)
-						&& fNextIndexRecordNum - 1 != fSavedFrameIndexRecordStart)
-					|| isNonIFrameStart(recordType))
+				if (endOfIndexFile ||
+					(isIFrameStart(recordType) && fNextIndexRecordNum - 1 != fSavedFrameIndexRecordStart) ||
+					isNonIFrameStart(recordType))
 				{
 					//	fprintf(stderr, "\tended delivery of saved frame\n");//#####
 					// We've reached the end of the saved frame, so revert to the
@@ -241,8 +231,7 @@ void MPEG2TransportStreamTrickModeFilter::attemptDeliveryToClient()
 		if (deliveryPCR < 0.0)
 			deliveryPCR = 0.0;
 		fPresentationTime.tv_sec = (unsigned long)deliveryPCR;
-		fPresentationTime.tv_usec
-			= (unsigned long)((deliveryPCR - fPresentationTime.tv_sec) * 1000000.0f);
+		fPresentationTime.tv_usec = (unsigned long)((deliveryPCR - fPresentationTime.tv_sec) * 1000000.0f);
 		//    fprintf(stderr, "#####DGNF9\n");
 
 		afterGetting(this);
@@ -269,16 +258,11 @@ void MPEG2TransportStreamTrickModeFilter::seekToTransportPacket(unsigned long ts
 void MPEG2TransportStreamTrickModeFilter::readTransportPacket(unsigned long tsPacketNum)
 {
 	seekToTransportPacket(tsPacketNum);
-	fInputSource->getNextFrame(fInputBuffer, TRANSPORT_PACKET_SIZE,
-		afterGettingFrame, this,
-		onSourceClosure, this);
+	fInputSource->getNextFrame(fInputBuffer, TRANSPORT_PACKET_SIZE, afterGettingFrame, this, onSourceClosure, this);
 }
 
-void MPEG2TransportStreamTrickModeFilter
-::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned /*numTruncatedBytes*/,
-	struct timeval presentationTime,
-	unsigned /*durationInMicroseconds*/)
+void MPEG2TransportStreamTrickModeFilter::afterGettingFrame(void *clientData,
+	unsigned frameSize, unsigned /*numTruncatedBytes*/, struct timeval presentationTime, unsigned /*durationInMicroseconds*/)
 {
 	MPEG2TransportStreamTrickModeFilter *filter = (MPEG2TransportStreamTrickModeFilter *)clientData;
 	filter->afterGettingFrame1(frameSize);

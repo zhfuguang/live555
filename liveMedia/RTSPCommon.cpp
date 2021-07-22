@@ -53,22 +53,11 @@ static void decodeURL(char *url)
 	*url = '\0';
 }
 
-Boolean parseRTSPRequestString(char const *reqStr,
-	unsigned reqStrSize,
-	char *resultCmdName,
-	unsigned resultCmdNameMaxSize,
-	char *resultURLPreSuffix,
-	unsigned resultURLPreSuffixMaxSize,
-	char *resultURLSuffix,
-	unsigned resultURLSuffixMaxSize,
-	char *resultCSeq,
-	unsigned resultCSeqMaxSize,
-	char *resultSessionIdStr,
-	unsigned resultSessionIdStrMaxSize,
-	unsigned &contentLength)
+Boolean parseRTSPRequestString(char const *reqStr, unsigned reqStrSize, char *resultCmdName, unsigned resultCmdNameMaxSize,
+	char *resultURLPreSuffix, unsigned resultURLPreSuffixMaxSize, char *resultURLSuffix, unsigned resultURLSuffixMaxSize,
+	char *resultCSeq, unsigned resultCSeqMaxSize, char *resultSessionIdStr, unsigned resultSessionIdStrMaxSize, unsigned &contentLength)
 {
 	// This parser is currently rather dumb; it should be made smarter #####
-
 	// "Be liberal in what you accept": Skip over any whitespace at the start of the request:
 	unsigned i;
 	for (i = 0; i < reqStrSize; ++i)
@@ -187,7 +176,7 @@ Boolean parseRTSPRequestString(char const *reqStr,
 		if (_strncasecmp("CSeq:", &reqStr[j], 5) == 0)
 		{
 			j += 5;
-			while (j < reqStrSize && (reqStr[j] ==  ' ' || reqStr[j] == '\t'))
+			while (j < reqStrSize && (reqStr[j] == ' ' || reqStr[j] == '\t'))
 				++j;
 			unsigned n;
 			for (n = 0; n < resultCSeqMaxSize - 1 && j < reqStrSize; ++n, ++j)
@@ -216,7 +205,7 @@ Boolean parseRTSPRequestString(char const *reqStr,
 		if (_strncasecmp("Session:", &reqStr[j], 8) == 0)
 		{
 			j += 8;
-			while (j < reqStrSize && (reqStr[j] ==  ' ' || reqStr[j] == '\t'))
+			while (j < reqStrSize && (reqStr[j] == ' ' || reqStr[j] == '\t'))
 				++j;
 			unsigned n;
 			for (n = 0; n < resultSessionIdStrMaxSize - 1 && j < reqStrSize; ++n, ++j)
@@ -241,7 +230,7 @@ Boolean parseRTSPRequestString(char const *reqStr,
 		if (_strncasecmp("Content-Length:", &(reqStr[j]), 15) == 0)
 		{
 			j += 15;
-			while (j < reqStrSize && (reqStr[j] ==  ' ' || reqStr[j] == '\t'))
+			while (j < reqStrSize && (reqStr[j] == ' ' || reqStr[j] == '\t'))
 				++j;
 			unsigned num;
 			if (sscanf(&reqStr[j], "%u", &num) == 1)
@@ -253,10 +242,7 @@ Boolean parseRTSPRequestString(char const *reqStr,
 	return True;
 }
 
-Boolean parseRangeParam(char const *paramStr,
-	double &rangeStart, double &rangeEnd,
-	char *&absStartTime, char *&absEndTime,
-	Boolean &startTimeIsNow)
+Boolean parseRangeParam(char const *paramStr, double &rangeStart, double &rangeEnd, char *&absStartTime, char *&absEndTime, Boolean &startTimeIsNow)
 {
 	delete[] absStartTime;
 	delete[] absEndTime;
@@ -352,10 +338,7 @@ Boolean parseRangeParam(char const *paramStr,
 	return True;
 }
 
-Boolean parseRangeHeader(char const *buf,
-	double &rangeStart, double &rangeEnd,
-	char *&absStartTime, char *&absEndTime,
-	Boolean &startTimeIsNow)
+Boolean parseRangeHeader(char const *buf, double &rangeStart, double &rangeEnd, char *&absStartTime, char *&absEndTime, Boolean &startTimeIsNow)
 {
 	// First, find "Range:"
 	while (1)
@@ -467,12 +450,9 @@ char const *dateHeader()
 	WCHAR inBuf[200];
 	DWORD locale = LOCALE_NEUTRAL;
 
-	int ret = GetDateFormat(locale, 0, &SystemTime,
-			(LPTSTR)dateFormat, (LPTSTR)inBuf, sizeof inBuf);
+	int ret = GetDateFormat(locale, 0, &SystemTime, (LPTSTR)dateFormat, (LPTSTR)inBuf, sizeof inBuf);
 	inBuf[ret - 1] = ' ';
-	ret = GetTimeFormat(locale, 0, &SystemTime,
-			(LPTSTR)timeFormat,
-			(LPTSTR)inBuf + ret, (sizeof inBuf) - ret);
+	ret = GetTimeFormat(locale, 0, &SystemTime, (LPTSTR)timeFormat, (LPTSTR)inBuf + ret, (sizeof inBuf) - ret);
 	wcstombs(buf, inBuf, wcslen(inBuf));
 #endif
 	return buf;

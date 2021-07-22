@@ -42,17 +42,14 @@ static void initBase64DecodeTable()
 	base64DecodeTable[(unsigned char)'='] = 0;
 }
 
-unsigned char *base64Decode(char const *in, unsigned &resultSize,
-	Boolean trimTrailingZeros)
+unsigned char *base64Decode(char const *in, unsigned &resultSize, Boolean trimTrailingZeros)
 {
 	if (in == NULL)
 		return NULL; // sanity check
 	return base64Decode(in, strlen(in), resultSize, trimTrailingZeros);
 }
 
-unsigned char *base64Decode(char const *in, unsigned inSize,
-	unsigned &resultSize,
-	Boolean trimTrailingZeros)
+unsigned char *base64Decode(char const *in, unsigned inSize, unsigned &resultSize, Boolean trimTrailingZeros)
 {
 	static Boolean haveInitializedBase64DecodeTable = False;
 	if (!haveInitializedBase64DecodeTable)
@@ -100,8 +97,7 @@ unsigned char *base64Decode(char const *in, unsigned inSize,
 	return result;
 }
 
-static const char base64Char[] =
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static const char base64Char[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 char *base64Encode(char const *origSigned, unsigned origLength)
 {

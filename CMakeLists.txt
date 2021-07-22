@@ -39,9 +39,8 @@ file(GLOB_RECURSE SOURCE_FILE
 )
 
 add_library(objlib OBJECT ${SOURCE_FILE})
+link_libraries(objlib)
 
-#add_executable(live555MediaServer $<TARGET_OBJECTS:objlib> mediaServer/live555MediaServer.cpp mediaServer/DynamicRTSPServer.cpp)
-#target_include_directories(live555MediaServer PUBLIC mediaServer)
-
-add_executable(testMKVStreamer $<TARGET_OBJECTS:objlib> testProgs/testMKVStreamer.cpp)
-add_executable(testOnDemandRTSPServer $<TARGET_OBJECTS:objlib> testProgs/testOnDemandRTSPServer.cpp)
+add_executable(testMKVStreamer testProgs/testMKVStreamer.cpp)
+add_executable(testMKVSplitter testProgs/testMKVSplitter.cpp)
+add_executable(testOnDemandRTSPServer testProgs/testOnDemandRTSPServer.cpp)

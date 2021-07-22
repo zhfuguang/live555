@@ -34,11 +34,10 @@ class DeviceParameters
 	//%%% TO BE WRITTEN %%%
 };
 
-class DeviceSource: public FramedSource
+class DeviceSource : public FramedSource
 {
 public:
-	static DeviceSource *createNew(UsageEnvironment &env,
-		DeviceParameters params);
+	static DeviceSource *createNew(UsageEnvironment &env, DeviceParameters params);
 
 public:
 	static EventTriggerId eventTriggerId;

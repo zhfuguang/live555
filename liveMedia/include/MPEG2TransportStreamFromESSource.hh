@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG2TransportStreamMultiplexor.hh"
 #endif
 
-class MPEG2TransportStreamFromESSource: public MPEG2TransportStreamMultiplexor
+class MPEG2TransportStreamFromESSource : public MPEG2TransportStreamMultiplexor
 {
 public:
 	static MPEG2TransportStreamFromESSource *createNew(UsageEnvironment &env);
@@ -48,8 +48,7 @@ protected:
 	// called only by createNew()
 	virtual ~MPEG2TransportStreamFromESSource();
 
-	void addNewInputSource(FramedSource *inputSource,
-		u_int8_t streamId, int mpegVersion, int16_t PID = -1);
+	void addNewInputSource(FramedSource *inputSource, u_int8_t streamId, int mpegVersion, int16_t PID = -1);
 	// used to implement addNew*Source() above
 
 private:

@@ -29,10 +29,8 @@ DVVideoFileServerMediaSubsession *DVVideoFileServerMediaSubsession::createNew(Us
 	return new DVVideoFileServerMediaSubsession(env, fileName, reuseFirstSource);
 }
 
-DVVideoFileServerMediaSubsession
-::DVVideoFileServerMediaSubsession(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource)
-	: FileServerMediaSubsession(env, fileName, reuseFirstSource),
-	  fFileDuration(0.0)
+DVVideoFileServerMediaSubsession::DVVideoFileServerMediaSubsession(UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource)
+	: FileServerMediaSubsession(env, fileName, reuseFirstSource), fFileDuration(0.0)
 {
 }
 
@@ -40,8 +38,7 @@ DVVideoFileServerMediaSubsession::~DVVideoFileServerMediaSubsession()
 {
 }
 
-FramedSource *DVVideoFileServerMediaSubsession
-::createNewStreamSource(unsigned /*clientSessionId*/, unsigned &estBitrate)
+FramedSource *DVVideoFileServerMediaSubsession::createNewStreamSource(unsigned /*clientSessionId*/, unsigned &estBitrate)
 {
 	// Create the video source:
 	ByteStreamFileSource *fileSource = ByteStreamFileSource::createNew(envir(), fFileName);
@@ -68,9 +65,7 @@ FramedSource *DVVideoFileServerMediaSubsession
 	return framer;
 }
 
-RTPSink *DVVideoFileServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock,
-	unsigned char rtpPayloadTypeIfDynamic,
-	FramedSource * /*inputSource*/)
+RTPSink *DVVideoFileServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource * /*inputSource*/)
 {
 	return DVVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
 }
@@ -85,8 +80,7 @@ float DVVideoFileServerMediaSubsession::duration() const
 	return fFileDuration;
 }
 
-void DVVideoFileServerMediaSubsession
-::seekStreamSource(FramedSource *inputSource, double &seekNPT, double streamDuration, u_int64_t &numBytes)
+void DVVideoFileServerMediaSubsession::seekStreamSource(FramedSource *inputSource, double &seekNPT, double streamDuration, u_int64_t &numBytes)
 {
 	// First, get the file source from "inputSource" (a framer):
 	DVVideoStreamFramer *framer = (DVVideoStreamFramer *)inputSource;
@@ -101,8 +95,7 @@ void DVVideoFileServerMediaSubsession
 	}
 }
 
-void DVVideoFileServerMediaSubsession
-::setStreamSourceDuration(FramedSource *inputSource, double streamDuration, u_int64_t &numBytes)
+void DVVideoFileServerMediaSubsession::setStreamSourceDuration(FramedSource *inputSource, double streamDuration, u_int64_t &numBytes)
 {
 	// First, get the file source from "inputSource" (a framer):
 	DVVideoStreamFramer *framer = (DVVideoStreamFramer *)inputSource;

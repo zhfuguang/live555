@@ -35,11 +35,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #define TRANSPORT_PACKET_SIZE 188
 #endif
 
-class MPEG2TransportStreamTrickModeFilter: public FramedFilter
+class MPEG2TransportStreamTrickModeFilter : public FramedFilter
 {
 public:
-	static MPEG2TransportStreamTrickModeFilter *createNew(UsageEnvironment &env, FramedSource *inputSource,
-		MPEG2TransportStreamIndexFile *indexFile, int scale);
+	static MPEG2TransportStreamTrickModeFilter *createNew(UsageEnvironment &env, FramedSource *inputSource, MPEG2TransportStreamIndexFile *indexFile, int scale);
 
 	Boolean seekTo(unsigned long tsPacketNumber, unsigned long indexRecordNumber);
 
@@ -55,8 +54,7 @@ public:
 	// this lets us delete this without also deleting the input Transport Stream
 
 protected:
-	MPEG2TransportStreamTrickModeFilter(UsageEnvironment &env, FramedSource *inputSource,
-		MPEG2TransportStreamIndexFile *indexFile, int scale);
+	MPEG2TransportStreamTrickModeFilter(UsageEnvironment &env, FramedSource *inputSource, MPEG2TransportStreamIndexFile *indexFile, int scale);
 	// called only by createNew()
 	virtual ~MPEG2TransportStreamTrickModeFilter();
 
@@ -70,10 +68,7 @@ private:
 	void seekToTransportPacket(unsigned long tsPacketNum);
 	void readTransportPacket(unsigned long tsPacketNum); // asynchronously
 
-	static void afterGettingFrame(void *clientData, unsigned frameSize,
-		unsigned numTruncatedBytes,
-		struct timeval presentationTime,
-		unsigned durationInMicroseconds);
+	static void afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds);
 	void afterGettingFrame1(unsigned frameSize);
 
 	static void onSourceClosure(void *clientData);

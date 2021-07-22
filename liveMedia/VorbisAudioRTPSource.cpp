@@ -23,18 +23,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// VorbisBufferedPacket and VorbisBufferedPacketFactory //////////
 
-class VorbisBufferedPacket: public BufferedPacket
+class VorbisBufferedPacket : public BufferedPacket
 {
 public:
 	VorbisBufferedPacket();
 	virtual ~VorbisBufferedPacket();
 
 private: // redefined virtual functions
-	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr,
-		unsigned dataSize);
+	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize);
 };
 
-class VorbisBufferedPacketFactory: public BufferedPacketFactory
+class VorbisBufferedPacketFactory : public BufferedPacketFactory
 {
 private: // redefined virtual functions
 	virtual BufferedPacket *createNewPacket(MultiFramedRTPSource *ourSource);
@@ -43,20 +42,13 @@ private: // redefined virtual functions
 
 ///////// VorbisAudioRTPSource implementation ////////
 
-VorbisAudioRTPSource *VorbisAudioRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
+VorbisAudioRTPSource *VorbisAudioRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
 {
 	return new VorbisAudioRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency);
 }
 
-VorbisAudioRTPSource
-::VorbisAudioRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency)
-	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency,
-		  new VorbisBufferedPacketFactory),
-	  fCurPacketIdent(0)
+VorbisAudioRTPSource::VorbisAudioRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency)
+	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, new VorbisBufferedPacketFactory), fCurPacketIdent(0)
 {
 }
 
@@ -64,9 +56,7 @@ VorbisAudioRTPSource::~VorbisAudioRTPSource()
 {
 }
 
-Boolean VorbisAudioRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean VorbisAudioRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	unsigned char *headerStart = packet->data();
 	unsigned packetSize = packet->dataSize();
@@ -106,8 +96,7 @@ VorbisBufferedPacket::~VorbisBufferedPacket()
 {
 }
 
-unsigned VorbisBufferedPacket
-::nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
+unsigned VorbisBufferedPacket::nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize)
 {
 	if (dataSize < 2)
 	{
@@ -123,8 +112,7 @@ unsigned VorbisBufferedPacket
 	return frameSize;
 }
 
-BufferedPacket *VorbisBufferedPacketFactory
-::createNewPacket(MultiFramedRTPSource * /*ourSource*/)
+BufferedPacket *VorbisBufferedPacketFactory::createNewPacket(MultiFramedRTPSource * /*ourSource*/)
 {
 	return new VorbisBufferedPacket();
 }

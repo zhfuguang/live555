@@ -26,53 +26,35 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 int setupDatagramSocket(UsageEnvironment &env, Port port, int domain);
-int setupStreamSocket(UsageEnvironment &env, Port port, int domain,
-	Boolean makeNonBlocking = True, Boolean setKeepAlive = False);
+int setupStreamSocket(UsageEnvironment &env, Port port, int domain, Boolean makeNonBlocking = True, Boolean setKeepAlive = False);
 
-int readSocket(UsageEnvironment &env,
-	int socket, unsigned char *buffer, unsigned bufferSize,
-	struct sockaddr_storage &fromAddress);
+int readSocket(UsageEnvironment &env, int socket, unsigned char *buffer, unsigned bufferSize, struct sockaddr_storage &fromAddress);
 
-Boolean writeSocket(UsageEnvironment &env,
-	int socket, struct sockaddr_storage const &addressAndPort,
-	u_int8_t ttlArg,
-	unsigned char *buffer, unsigned bufferSize);
+Boolean writeSocket(UsageEnvironment &env, int socket, struct sockaddr_storage const &addressAndPort, u_int8_t ttlArg, unsigned char *buffer, unsigned bufferSize);
 
-Boolean writeSocket(UsageEnvironment &env,
-	int socket, struct sockaddr_storage const &addressAndPort,
-	unsigned char *buffer, unsigned bufferSize);
+Boolean writeSocket(UsageEnvironment &env, int socket, struct sockaddr_storage const &addressAndPort, unsigned char *buffer, unsigned bufferSize);
 // An optimized version of "writeSocket" that omits the "setsockopt()" call to set the TTL.
 
 void ignoreSigPipeOnSocket(int socketNum);
 
 unsigned getSendBufferSize(UsageEnvironment &env, int socket);
 unsigned getReceiveBufferSize(UsageEnvironment &env, int socket);
-unsigned setSendBufferTo(UsageEnvironment &env,
-	int socket, unsigned requestedSize);
-unsigned setReceiveBufferTo(UsageEnvironment &env,
-	int socket, unsigned requestedSize);
-unsigned increaseSendBufferTo(UsageEnvironment &env,
-	int socket, unsigned requestedSize);
-unsigned increaseReceiveBufferTo(UsageEnvironment &env,
-	int socket, unsigned requestedSize);
+unsigned setSendBufferTo(UsageEnvironment &env, int socket, unsigned requestedSize);
+unsigned setReceiveBufferTo(UsageEnvironment &env, int socket, unsigned requestedSize);
+unsigned increaseSendBufferTo(UsageEnvironment &env, int socket, unsigned requestedSize);
+unsigned increaseReceiveBufferTo(UsageEnvironment &env, int socket, unsigned requestedSize);
 
 Boolean makeSocketNonBlocking(int sock);
 Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds = 0);
 // A "writeTimeoutInMilliseconds" value of 0 means: Don't timeout
 Boolean setSocketKeepAlive(int sock);
 
-Boolean socketJoinGroup(UsageEnvironment &env, int socket,
-	struct sockaddr_storage const &groupAddress);
-Boolean socketLeaveGroup(UsageEnvironment &, int socket,
-	struct sockaddr_storage const &groupAddress);
+Boolean socketJoinGroup(UsageEnvironment &env, int socket, struct sockaddr_storage const &groupAddress);
+Boolean socketLeaveGroup(UsageEnvironment &, int socket, struct sockaddr_storage const &groupAddress);
 
 // source-specific multicast join/leave
-Boolean socketJoinGroupSSM(UsageEnvironment &env, int socket,
-	struct sockaddr_storage const &groupAddress,
-	struct sockaddr_storage const &sourceFilterAddr);
-Boolean socketLeaveGroupSSM(UsageEnvironment &, int socket,
-	struct sockaddr_storage const &groupAddress,
-	struct sockaddr_storage const &sourceFilterAddr);
+Boolean socketJoinGroupSSM(UsageEnvironment &env, int socket, struct sockaddr_storage const &groupAddress, struct sockaddr_storage const &sourceFilterAddr);
+Boolean socketLeaveGroupSSM(UsageEnvironment &, int socket, struct sockaddr_storage const &groupAddress, struct sockaddr_storage const &sourceFilterAddr);
 
 Boolean getSourcePort(UsageEnvironment &env, int socket, int domain, Port &port);
 

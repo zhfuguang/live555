@@ -37,12 +37,11 @@ typedef enum
 } WAV_AUDIO_FORMAT;
 
 
-class WAVAudioFileSource: public AudioInputDevice
+class WAVAudioFileSource : public AudioInputDevice
 {
 public:
 
-	static WAVAudioFileSource *createNew(UsageEnvironment &env,
-		char const *fileName);
+	static WAVAudioFileSource *createNew(UsageEnvironment &env, char const *fileName);
 
 	unsigned numPCMBytes() const;
 	void setScaleFactor(int scale);

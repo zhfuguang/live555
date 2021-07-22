@@ -25,26 +25,21 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class MPEG1or2AudioRTPSource: public MultiFramedRTPSource
+class MPEG1or2AudioRTPSource : public MultiFramedRTPSource
 {
 public:
-	static MPEG1or2AudioRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat = 14,
-		unsigned rtpTimestampFrequency = 90000);
+	static MPEG1or2AudioRTPSource *createNew(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat = 14, unsigned rtpTimestampFrequency = 90000);
 
 protected:
 	virtual ~MPEG1or2AudioRTPSource();
 
 private:
-	MPEG1or2AudioRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-		unsigned char rtpPayloadFormat,
-		unsigned rtpTimestampFrequency);
+	MPEG1or2AudioRTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency);
 	// called only by createNew()
 
 private:
 	// redefined virtual functions:
-	virtual Boolean processSpecialHeader(BufferedPacket *packet,
-		unsigned &resultSpecialHeaderSize);
+	virtual Boolean processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize);
 	virtual char const *MIMEtype() const;
 };
 

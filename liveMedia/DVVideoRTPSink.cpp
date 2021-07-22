@@ -23,10 +23,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// DVVideoRTPSink implementation //////////
 
-DVVideoRTPSink
-::DVVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat)
-	: VideoRTPSink(env, RTPgs, rtpPayloadFormat, 90000, "DV"),
-	  fFmtpSDPLine(NULL)
+DVVideoRTPSink::DVVideoRTPSink(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat)
+	: VideoRTPSink(env, RTPgs, rtpPayloadFormat, 90000, "DV"), fFmtpSDPLine(NULL)
 {
 }
 
@@ -47,10 +45,7 @@ Boolean DVVideoRTPSink::sourceIsCompatibleWithUs(MediaSource &source)
 }
 
 void DVVideoRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
-	unsigned char * /*frameStart*/,
-	unsigned /*numBytesInFrame*/,
-	struct timeval framePresentationTime,
-	unsigned numRemainingBytes)
+	unsigned char * /*frameStart*/, unsigned /*numBytesInFrame*/, struct timeval framePresentationTime, unsigned numRemainingBytes)
 {
 	if (numRemainingBytes == 0)
 	{

@@ -27,9 +27,7 @@ void MatroskaDemuxedTrack::seekToTime(double &seekNPT)
 }
 
 MatroskaDemuxedTrack::MatroskaDemuxedTrack(UsageEnvironment &env, unsigned trackNumber, MatroskaDemux &sourceDemux)
-	: FramedSource(env),
-	  fOurTrackNumber(trackNumber), fOurSourceDemux(sourceDemux),
-	  fOpusFrameNumber(0)
+	: FramedSource(env), fOurTrackNumber(trackNumber), fOurSourceDemux(sourceDemux), fOpusFrameNumber(0)
 {
 	reset();
 }

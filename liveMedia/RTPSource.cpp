@@ -23,9 +23,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// RTPSource //////////
 
-Boolean RTPSource::lookupByName(UsageEnvironment &env,
-	char const *sourceName,
-	RTPSource *&resultSource)
+Boolean RTPSource::lookupByName(UsageEnvironment &env, char const *sourceName, RTPSource *&resultSource)
 {
 	resultSource = NULL; // unless we succeed
 
@@ -53,15 +51,10 @@ Boolean RTPSource::isRTPSource() const
 	return True;
 }
 
-RTPSource::RTPSource(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	u_int32_t rtpTimestampFrequency)
-	: FramedSource(env),
-	  fRTPInterface(this, RTPgs),
-	  fCurPacketHasBeenSynchronizedUsingRTCP(False), fLastReceivedSSRC(0),
-	  fRTCPInstanceForMultiplexedRTCPPackets(NULL), fCrypto(NULL),
-	  fRTPPayloadFormat(rtpPayloadFormat), fTimestampFrequency(rtpTimestampFrequency),
-	  fSSRC(our_random32()), fEnableRTCPReports(True)
+RTPSource::RTPSource(UsageEnvironment &env, Groupsock *RTPgs, unsigned char rtpPayloadFormat, u_int32_t rtpTimestampFrequency)
+	: FramedSource(env), fRTPInterface(this, RTPgs), fCurPacketHasBeenSynchronizedUsingRTCP(False), fLastReceivedSSRC(0)
+	, fRTCPInstanceForMultiplexedRTCPPackets(NULL), fCrypto(NULL), fRTPPayloadFormat(rtpPayloadFormat), fTimestampFrequency(rtpTimestampFrequency)
+	, fSSRC(our_random32()), fEnableRTCPReports(True)
 {
 	fReceptionStatsDB = new RTPReceptionStatsDB();
 }
@@ -110,13 +103,8 @@ RTPReceptionStatsDB::~RTPReceptionStatsDB()
 	delete fTable;
 }
 
-void RTPReceptionStatsDB
-::noteIncomingPacket(u_int32_t SSRC, u_int16_t seqNum,
-	u_int32_t rtpTimestamp, unsigned timestampFrequency,
-	Boolean useForJitterCalculation,
-	struct timeval &resultPresentationTime,
-	Boolean &resultHasBeenSyncedUsingRTCP,
-	unsigned packetSize)
+void RTPReceptionStatsDB::noteIncomingPacket(u_int32_t SSRC, u_int16_t seqNum, u_int32_t rtpTimestamp, unsigned timestampFrequency,
+	Boolean useForJitterCalculation, struct timeval &resultPresentationTime, Boolean &resultHasBeenSyncedUsingRTCP, unsigned packetSize)
 {
 	++fTotNumPacketsReceived;
 	RTPReceptionStats *stats = lookup(SSRC);
@@ -136,15 +124,10 @@ void RTPReceptionStatsDB
 	}
 
 	stats->noteIncomingPacket(seqNum, rtpTimestamp, timestampFrequency,
-		useForJitterCalculation,
-		resultPresentationTime,
-		resultHasBeenSyncedUsingRTCP, packetSize);
+		useForJitterCalculation, resultPresentationTime, resultHasBeenSyncedUsingRTCP, packetSize);
 }
 
-void RTPReceptionStatsDB
-::noteIncomingSR(u_int32_t SSRC,
-	u_int32_t ntpTimestampMSW, u_int32_t ntpTimestampLSW,
-	u_int32_t rtpTimestamp)
+void RTPReceptionStatsDB::noteIncomingSR(u_int32_t SSRC, u_int32_t ntpTimestampMSW, u_int32_t ntpTimestampLSW, u_int32_t rtpTimestamp)
 {
 	RTPReceptionStats *stats = lookup(SSRC);
 	if (stats == NULL)
@@ -171,8 +154,7 @@ void RTPReceptionStatsDB::removeRecord(u_int32_t SSRC)
 	}
 }
 
-RTPReceptionStatsDB::Iterator
-::Iterator(RTPReceptionStatsDB &receptionStatsDB)
+RTPReceptionStatsDB::Iterator::Iterator(RTPReceptionStatsDB &receptionStatsDB)
 	: fIter(HashTable::Iterator::create(*(receptionStatsDB.fTable)))
 {
 }
@@ -192,8 +174,7 @@ RTPReceptionStats *RTPReceptionStatsDB::Iterator::next(Boolean includeInactiveSo
 	do
 	{
 		stats = (RTPReceptionStats *)(fIter->next(key));
-	} while (stats != NULL && !includeInactiveSources
-		&& stats->numPacketsReceivedSinceLastReset() == 0);
+	} while (stats != NULL && !includeInactiveSources && stats->numPacketsReceivedSinceLastReset() == 0);
 
 	return stats;
 }
@@ -260,13 +241,8 @@ void RTPReceptionStats::initSeqNum(u_int16_t initialSeqNum)
 #define MILLION 1000000
 #endif
 
-void RTPReceptionStats
-::noteIncomingPacket(u_int16_t seqNum, u_int32_t rtpTimestamp,
-	unsigned timestampFrequency,
-	Boolean useForJitterCalculation,
-	struct timeval &resultPresentationTime,
-	Boolean &resultHasBeenSyncedUsingRTCP,
-	unsigned packetSize)
+void RTPReceptionStats::noteIncomingPacket(u_int16_t seqNum, u_int32_t rtpTimestamp, unsigned timestampFrequency,
+	Boolean useForJitterCalculation, struct timeval &resultPresentationTime, Boolean &resultHasBeenSyncedUsingRTCP, unsigned packetSize)
 {
 	if (!fHaveSeenInitialSequenceNumber)
 		initSeqNum(seqNum);
@@ -288,7 +264,6 @@ void RTPReceptionStats
 	if (seqNumLT((u_int16_t)oldSeqNum, seqNum))
 	{
 		// This packet was not an old packet received out of order, so check it:
-
 		if (seqNumDifference >= 0x8000)
 		{
 			// The sequence number wrapped around, so start a new cycle:
@@ -304,7 +279,6 @@ void RTPReceptionStats
 	else if (fTotNumPacketsReceived > 1)
 	{
 		// This packet was an old packet received out of order
-
 		if ((int)seqNumDifference >= 0x8000)
 		{
 			// The sequence number wrapped around, so switch to an old cycle:
@@ -321,12 +295,9 @@ void RTPReceptionStats
 	// Record the inter-packet delay
 	struct timeval timeNow;
 	gettimeofday(&timeNow, NULL);
-	if (fLastPacketReceptionTime.tv_sec != 0
-		|| fLastPacketReceptionTime.tv_usec != 0)
+	if (fLastPacketReceptionTime.tv_sec != 0 || fLastPacketReceptionTime.tv_usec != 0)
 	{
-		unsigned gap
-			= (timeNow.tv_sec - fLastPacketReceptionTime.tv_sec) * MILLION
-				+ timeNow.tv_usec - fLastPacketReceptionTime.tv_usec;
+		unsigned gap = (timeNow.tv_sec - fLastPacketReceptionTime.tv_sec) * MILLION + timeNow.tv_usec - fLastPacketReceptionTime.tv_usec;
 		if (gap > fMaxInterPacketGapUS)
 		{
 			fMaxInterPacketGapUS = gap;
@@ -350,12 +321,10 @@ void RTPReceptionStats
 	// Note, however, that we don't use this packet if its timestamp is
 	// the same as that of the previous packet (this indicates a multi-packet
 	// fragment), or if we've been explicitly told not to use this packet.
-	if (useForJitterCalculation
-		&& rtpTimestamp != fPreviousPacketRTPTimestamp)
+	if (useForJitterCalculation && rtpTimestamp != fPreviousPacketRTPTimestamp)
 	{
 		unsigned arrival = (timestampFrequency * timeNow.tv_sec);
-		arrival += (unsigned)
-			((2.0 * timestampFrequency * timeNow.tv_usec + 1000000.0) / 2000000);
+		arrival += (unsigned)((2.0 * timestampFrequency * timeNow.tv_usec + 1000000.0) / 2000000);
 		// note: rounding
 		int transit = arrival - rtpTimestamp;
 		if (fLastTransit == (~0))
@@ -390,8 +359,7 @@ void RTPReceptionStats
 	if (timeDiff >= 0.0)
 	{
 		seconds = fSyncTime.tv_sec + (unsigned)(timeDiff);
-		uSeconds = fSyncTime.tv_usec
-			+ (unsigned)((timeDiff - (unsigned)timeDiff) * million);
+		uSeconds = fSyncTime.tv_usec + (unsigned)((timeDiff - (unsigned)timeDiff) * million);
 		if (uSeconds >= million)
 		{
 			uSeconds -= million;
@@ -402,8 +370,7 @@ void RTPReceptionStats
 	{
 		timeDiff = -timeDiff;
 		seconds = fSyncTime.tv_sec - (unsigned)(timeDiff);
-		uSeconds = fSyncTime.tv_usec
-			- (unsigned)((timeDiff - (unsigned)timeDiff) * million);
+		uSeconds = fSyncTime.tv_usec - (unsigned)((timeDiff - (unsigned)timeDiff) * million);
 		if ((int)uSeconds < 0)
 		{
 			uSeconds += million;
@@ -421,9 +388,7 @@ void RTPReceptionStats
 	fPreviousPacketRTPTimestamp = rtpTimestamp;
 }
 
-void RTPReceptionStats::noteIncomingSR(u_int32_t ntpTimestampMSW,
-	u_int32_t ntpTimestampLSW,
-	u_int32_t rtpTimestamp)
+void RTPReceptionStats::noteIncomingSR(u_int32_t ntpTimestampMSW, u_int32_t ntpTimestampLSW, u_int32_t rtpTimestamp)
 {
 	fLastReceivedSR_NTPmsw = ntpTimestampMSW;
 	fLastReceivedSR_NTPlsw = ntpTimestampLSW;

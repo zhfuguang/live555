@@ -22,7 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// JPEGBufferedPacket and JPEGBufferedPacketFactory //////////
 
-class JPEGBufferedPacket: public BufferedPacket
+class JPEGBufferedPacket : public BufferedPacket
 {
 public:
 	Boolean completesFrame;
@@ -30,11 +30,10 @@ public:
 private:
 	// Redefined virtual functions:
 	virtual void reset();
-	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr,
-		unsigned dataSize);
+	virtual unsigned nextEnclosedFrameSize(unsigned char *&framePtr, unsigned dataSize);
 };
 
-class JPEGBufferedPacketFactory: public BufferedPacketFactory
+class JPEGBufferedPacketFactory : public BufferedPacketFactory
 {
 private: // redefined virtual functions
 	virtual BufferedPacket *createNewPacket(MultiFramedRTPSource *ourSource);
@@ -48,23 +47,15 @@ private: // redefined virtual functions
 #define DWORD unsigned long
 
 JPEGVideoRTPSource *JPEGVideoRTPSource::createNew(UsageEnvironment &env, Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency,
-	unsigned defaultWidth, unsigned defaultHeight)
+	unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, unsigned defaultWidth, unsigned defaultHeight)
 {
-	return new JPEGVideoRTPSource(env, RTPgs, rtpPayloadFormat,
-			rtpTimestampFrequency, defaultWidth, defaultHeight);
+	return new JPEGVideoRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, defaultWidth, defaultHeight);
 }
 
-JPEGVideoRTPSource::JPEGVideoRTPSource(UsageEnvironment &env,
-	Groupsock *RTPgs,
-	unsigned char rtpPayloadFormat,
-	unsigned rtpTimestampFrequency,
-	unsigned defaultWidth, unsigned defaultHeight)
-	: MultiFramedRTPSource(env, RTPgs,
-		  rtpPayloadFormat, rtpTimestampFrequency,
-		  new JPEGBufferedPacketFactory),
-	  fDefaultWidth(defaultWidth), fDefaultHeight(defaultHeight)
+JPEGVideoRTPSource::JPEGVideoRTPSource(UsageEnvironment &env, Groupsock *RTPgs,
+	unsigned char rtpPayloadFormat, unsigned rtpTimestampFrequency, unsigned defaultWidth, unsigned defaultHeight)
+	: MultiFramedRTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency, new JPEGBufferedPacketFactory)
+	, fDefaultWidth(defaultWidth), fDefaultHeight(defaultHeight)
 {
 }
 
@@ -74,16 +65,16 @@ JPEGVideoRTPSource::~JPEGVideoRTPSource()
 
 enum
 {
-	MARKER_SOF0	= 0xc0,		// start-of-frame, baseline scan
-	MARKER_SOI	= 0xd8,		// start of image
-	MARKER_EOI	= 0xd9,		// end of image
-	MARKER_SOS	= 0xda,		// start of scan
-	MARKER_DRI	= 0xdd,		// restart interval
-	MARKER_DQT	= 0xdb,		// define quantization tables
-	MARKER_DHT  = 0xc4,		// huffman tables
-	MARKER_APP_FIRST	= 0xe0,
-	MARKER_APP_LAST		= 0xef,
-	MARKER_COMMENT		= 0xfe,
+	MARKER_SOF0 = 0xc0,		// start-of-frame, baseline scan
+	MARKER_SOI = 0xd8,		// start of image
+	MARKER_EOI = 0xd9,		// end of image
+	MARKER_SOS = 0xda,		// start of scan
+	MARKER_DRI = 0xdd,		// restart interval
+	MARKER_DQT = 0xdb,		// define quantization tables
+	MARKER_DHT = 0xc4,		// huffman tables
+	MARKER_APP_FIRST = 0xe0,
+	MARKER_APP_LAST = 0xef,
+	MARKER_COMMENT = 0xfe,
 };
 
 static unsigned char const lum_dc_codelens[] =
@@ -166,12 +157,7 @@ static unsigned char const chm_ac_symbols[] =
 	0xf9, 0xfa,
 };
 
-static void createHuffmanHeader(unsigned char *&p,
-	unsigned char const *codelens,
-	int ncodes,
-	unsigned char const *symbols,
-	int nsymbols,
-	int tableNo, int tableClass)
+static void createHuffmanHeader(unsigned char *&p, unsigned char const *codelens, int ncodes, unsigned char const *symbols, int nsymbols, int tableNo, int tableClass)
 {
 	*p++ = 0xff;
 	*p++ = MARKER_DHT;
@@ -193,10 +179,7 @@ static unsigned computeJPEGHeaderSize(unsigned qtlen, unsigned dri)
 	return 485 + numQtables * 5 + qtlen + (dri > 0 ? 6 : 0);
 }
 
-static void createJPEGHeader(unsigned char *buf, unsigned type,
-	unsigned w, unsigned h,
-	unsigned char const *qtables, unsigned qtlen,
-	unsigned dri)
+static void createJPEGHeader(unsigned char *buf, unsigned type, unsigned w, unsigned h, unsigned char const *qtables, unsigned qtlen, unsigned dri)
 {
 	unsigned char *ptr = buf;
 	unsigned numQtables = qtlen > 64 ? 2 : 1;
@@ -361,9 +344,7 @@ static void makeDefaultQtables(unsigned char *resultTables, unsigned Q)
 	}
 }
 
-Boolean JPEGVideoRTPSource
-::processSpecialHeader(BufferedPacket *packet,
-	unsigned &resultSpecialHeaderSize)
+Boolean JPEGVideoRTPSource::processSpecialHeader(BufferedPacket *packet, unsigned &resultSpecialHeaderSize)
 {
 	unsigned char *headerStart = packet->data();
 	unsigned packetSize = packet->dataSize();
@@ -490,8 +471,7 @@ Boolean JPEGVideoRTPSource
 	fCurrentPacketBeginsFrame = (Offset == 0);
 
 	// The RTP "M" (marker) bit indicates the last fragment of a frame:
-	((JPEGBufferedPacket *)packet)->completesFrame
-		= fCurrentPacketCompletesFrame = packet->rtpMarkerBit();
+	((JPEGBufferedPacket *)packet)->completesFrame = fCurrentPacketCompletesFrame = packet->rtpMarkerBit();
 
 	return True;
 }
@@ -529,8 +509,7 @@ unsigned JPEGBufferedPacket
 	return dataSize;
 }
 
-BufferedPacket *JPEGBufferedPacketFactory
-::createNewPacket(MultiFramedRTPSource * /*ourSource*/)
+BufferedPacket *JPEGBufferedPacketFactory::createNewPacket(MultiFramedRTPSource * /*ourSource*/)
 {
 	return new JPEGBufferedPacket;
 }

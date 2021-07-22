@@ -54,9 +54,7 @@ int main(int argc, char **argv)
 	}
 
 	*env << "LIVE555 Media Server\n";
-	*env << "\tversion " << MEDIA_SERVER_VERSION_STRING
-		<< " (LIVE555 Streaming Media library version "
-		<< LIVEMEDIA_LIBRARY_VERSION_STRING << ").\n";
+	*env << "\tversion " << MEDIA_SERVER_VERSION_STRING << " (LIVE555 Streaming Media library version " << LIVEMEDIA_LIBRARY_VERSION_STRING << ").\n";
 
 	*env << "Play streams from this server using the URL\n";
 	if (weHaveAnIPv4Address(*env))
