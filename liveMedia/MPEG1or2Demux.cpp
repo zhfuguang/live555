@@ -83,9 +83,10 @@ public:
 
 ////////// MPEG1or2Demux implementation //////////
 
-MPEG1or2Demux::MPEG1or2Demux(UsageEnvironment &env, FramedSource *inputSource, Boolean reclaimWhenLastESDies)
+MPEG1or2Demux::MPEG1or2Demux(UsageEnvironment &env, FramedSource *inputSource, Boolean reclaimWhenLastESDies, MPEG1or2DemuxOnDeletionFunc *onDeletionFunc, void *objectToNotify)
 	: Medium(env), fInputSource(inputSource), fMPEGversion(0), fNextAudioStreamNumber(0), fNextVideoStreamNumber(0)
 	, fReclaimWhenLastESDies(reclaimWhenLastESDies), fNumOutstandingESs(0), fNumPendingReads(0), fHaveUndeliveredData(False)
+	, fOnDeletionFunc(onDeletionFunc), fOnDeletionObjectToNotify(objectToNotify)
 {
 	fParser = new MPEGProgramStreamParser(this, inputSource);
 	for (unsigned i = 0; i < 256; ++i)
@@ -99,17 +100,22 @@ MPEG1or2Demux::MPEG1or2Demux(UsageEnvironment &env, FramedSource *inputSource, B
 
 MPEG1or2Demux::~MPEG1or2Demux()
 {
+	if (fOnDeletionFunc != NULL)
+	{
+		(*fOnDeletionFunc)(fOnDeletionObjectToNotify, this);
+	}
+
 	delete fParser;
 	for (unsigned i = 0; i < 256; ++i)
 		delete fOutput[i].savedDataHead;
 	Medium::close(fInputSource);
 }
 
-MPEG1or2Demux *MPEG1or2Demux::createNew(UsageEnvironment &env, FramedSource *inputSource, Boolean reclaimWhenLastESDies)
+MPEG1or2Demux *MPEG1or2Demux::createNew(UsageEnvironment &env, FramedSource *inputSource,
+	Boolean reclaimWhenLastESDies, MPEG1or2DemuxOnDeletionFunc *onDeletionFunc, void *objectToNotify)
 {
 	// Need to add source type checking here???  #####
-
-	return new MPEG1or2Demux(env, inputSource, reclaimWhenLastESDies);
+	return new MPEG1or2Demux(env, inputSource, reclaimWhenLastESDies, onDeletionFunc, objectToNotify);
 }
 
 MPEG1or2Demux::SCR::SCR()
@@ -184,8 +190,7 @@ void MPEG1or2Demux::registerReadInterest(u_int8_t streamIdTag, unsigned char *to
 	++fNumPendingReads;
 }
 
-Boolean MPEG1or2Demux::useSavedData(u_int8_t streamIdTag, unsigned char *to,
-	unsigned maxSize, FramedSource::afterGettingFunc *afterGettingFunc, void *afterGettingClientData)
+Boolean MPEG1or2Demux::useSavedData(u_int8_t streamIdTag, unsigned char *to, unsigned maxSize, FramedSource::afterGettingFunc *afterGettingFunc, void *afterGettingClientData)
 {
 	struct OutputDescriptor &out = fOutput[streamIdTag];
 	if (out.savedDataHead == NULL)
@@ -199,12 +204,14 @@ Boolean MPEG1or2Demux::useSavedData(u_int8_t streamIdTag, unsigned char *to,
 		unsigned numBytesToCopy = savedData.dataSize - savedData.numBytesUsed;
 		if (numBytesToCopy > maxSize)
 			numBytesToCopy = maxSize;
+
 		memmove(to, from, numBytesToCopy);
 		to += numBytesToCopy;
 		maxSize -= numBytesToCopy;
 		out.savedDataTotalSize -= numBytesToCopy;
 		totNumBytesCopied += numBytesToCopy;
 		savedData.numBytesUsed += numBytesToCopy;
+
 		if (savedData.numBytesUsed == savedData.dataSize)
 		{
 			out.savedDataHead = savedData.next;
@@ -272,8 +279,7 @@ void MPEG1or2Demux::getNextFrame(u_int8_t streamIdTag, unsigned char *to, unsign
 	FramedSource::afterGettingFunc *afterGettingFunc, void *afterGettingClientData, FramedSource::onCloseFunc *onCloseFunc, void *onCloseClientData)
 {
 	// First, check whether we have saved data for this stream id:
-	if (useSavedData(streamIdTag, to, maxSize,
-		afterGettingFunc, afterGettingClientData))
+	if (useSavedData(streamIdTag, to, maxSize, afterGettingFunc, afterGettingClientData))
 	{
 		return;
 	}
@@ -292,10 +298,12 @@ void MPEG1or2Demux::getNextFrame(u_int8_t streamIdTag, unsigned char *to, unsign
 void MPEG1or2Demux::stopGettingFrames(u_int8_t streamIdTag)
 {
 	struct OutputDescriptor &out = fOutput[streamIdTag];
-
 	if (out.isCurrentlyAwaitingData && fNumPendingReads > 0)
+	{
 		--fNumPendingReads;
-
+		if (fNumPendingReads == 0 && fInputSource != NULL)
+			fInputSource->stopGettingFrames();
+	}
 	out.isCurrentlyActive = out.isCurrentlyAwaitingData = False;
 }
 
@@ -775,8 +783,7 @@ unsigned char MPEGProgramStreamParser::parsePESPacket()
 	}
 	if (PES_packet_length < bytesSkipped)
 	{
-		fUsingDemux->envir() << "StreamParser::parsePESPacket(): saw inconsistent PES_packet_length "
-			<< PES_packet_length << " < " << bytesSkipped << "\n";
+		fUsingDemux->envir() << "StreamParser::parsePESPacket(): saw inconsistent PES_packet_length " << PES_packet_length << " < " << bytesSkipped << "\n";
 	}
 	else
 	{

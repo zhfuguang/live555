@@ -49,7 +49,6 @@ public:
 	// (You should not call this function more than once with the same track number.)
 
 	// The following public: member functions are called only by the "ServerMediaSubsession" objects:
-
 	MatroskaFile *ourMatroskaFile()
 	{
 		return fOurMatroskaFile;
@@ -73,6 +72,10 @@ private:
 
 	static void onMatroskaFileCreation(MatroskaFile *newFile, void *clientData);
 	void onMatroskaFileCreation(MatroskaFile *newFile);
+
+	static void onDemuxDeletion(void *clientData, MatroskaDemux *demuxBeingDeleted);
+	void onDemuxDeletion(MatroskaDemux *demuxBeingDeleted);
+
 private:
 	char const *fFileName;
 	onCreationFunc *fOnCreation;

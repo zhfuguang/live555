@@ -27,10 +27,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class MPEG1or2DemuxedElementaryStream; // forward
 
+typedef void MPEG1or2DemuxOnDeletionFunc(void *objectToNotify, class MPEG1or2Demux *demuxBeingDeleted);
+
 class MPEG1or2Demux : public Medium
 {
 public:
-	static MPEG1or2Demux *createNew(UsageEnvironment &env, FramedSource *inputSource, Boolean reclaimWhenLastESDies = False);
+	static MPEG1or2Demux *createNew(UsageEnvironment &env, FramedSource *inputSource,
+		Boolean reclaimWhenLastESDies = False, MPEG1or2DemuxOnDeletionFunc *onDeletionFunc = NULL, void *objectToNotify = NULL);
 	// If "reclaimWhenLastESDies" is True, the the demux is deleted when
 	// all "MPEG1or2DemuxedElementaryStream"s that we created get deleted.
 
@@ -85,7 +88,7 @@ public:
 	void flushInput(); // should be called before any 'seek' on the underlying source
 
 private:
-	MPEG1or2Demux(UsageEnvironment &env, FramedSource *inputSource, Boolean reclaimWhenLastESDies);
+	MPEG1or2Demux(UsageEnvironment &env, FramedSource *inputSource, Boolean reclaimWhenLastESDies, MPEG1or2DemuxOnDeletionFunc *onDeletionFunc, void *objectToNotify);
 	// called only by createNew()
 	virtual ~MPEG1or2Demux();
 
@@ -139,6 +142,9 @@ private:
 
 	unsigned fNumPendingReads;
 	Boolean fHaveUndeliveredData;
+
+	MPEG1or2DemuxOnDeletionFunc *fOnDeletionFunc;
+	void *fOnDeletionObjectToNotify;
 
 private: // parsing state
 	class MPEGProgramStreamParser *fParser;

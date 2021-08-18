@@ -59,7 +59,7 @@ ServerMediaSubsession *MPEG1or2FileServerDemux::newAC3AudioServerMediaSubsession
 
 MPEG1or2DemuxedElementaryStream *MPEG1or2FileServerDemux::newElementaryStream(unsigned clientSessionId, u_int8_t streamIdTag)
 {
-	MPEG1or2Demux *demuxToUse;
+	MPEG1or2Demux *demuxToUse = NULL;
 	if (clientSessionId == 0)
 	{
 		// 'Session 0' is treated especially, because its audio & video streams
@@ -82,28 +82,39 @@ MPEG1or2DemuxedElementaryStream *MPEG1or2FileServerDemux::newElementaryStream(un
 	{
 		// First, check whether this is a new client session.  If so, create a new
 		// demux for it:
-		if (clientSessionId != fLastClientSessionId)
+		if (clientSessionId == fLastClientSessionId)
+		{
+			demuxToUse = fLastCreatedDemux; // use the same demultiplexor as before
+		}
+
+		if (demuxToUse == NULL)
 		{
 			// Open our input file as a 'byte-stream file source':
 			ByteStreamFileSource *fileSource = ByteStreamFileSource::createNew(envir(), fFileName);
 			if (fileSource == NULL)
 				return NULL;
 
-			fLastCreatedDemux = MPEG1or2Demux::createNew(envir(), fileSource, True);
+			demuxToUse = MPEG1or2Demux::createNew(envir(), fileSource, True, onDemuxDeletion, this);
 			// Note: We tell the demux to delete itself when its last
 			// elementary stream is deleted.
-			fLastClientSessionId = clientSessionId;
-			// Note: This code relies upon the fact that the creation of streams for
-			// different client sessions do not overlap - so one "MPEG1or2Demux" is used
-			// at a time.
 		}
-		demuxToUse = fLastCreatedDemux;
+
+		fLastClientSessionId = clientSessionId;
+		fLastCreatedDemux = demuxToUse;
 	}
 
-	if (demuxToUse == NULL)
-		return NULL; // shouldn't happen
-
 	return demuxToUse->newElementaryStream(streamIdTag);
+}
+
+void MPEG1or2FileServerDemux::onDemuxDeletion(void *clientData, MPEG1or2Demux *demuxBeingDeleted)
+{
+	((MPEG1or2FileServerDemux *)clientData)->onDemuxDeletion(demuxBeingDeleted);
+}
+
+void MPEG1or2FileServerDemux::onDemuxDeletion(MPEG1or2Demux *demuxBeingDeleted)
+{
+	if (fLastCreatedDemux == demuxBeingDeleted)
+		fLastCreatedDemux = NULL;
 }
 
 
@@ -241,7 +252,6 @@ void MFSD_DummySink::afterGettingFrame1()
 		onSourceClosure();
 		return;
 	}
-
 	continuePlaying();
 }
 
@@ -260,6 +270,5 @@ static float computeSCRTimeCode(MPEG1or2Demux::SCR const &scr)
 		double const highBitValue = (256 * 1024 * 1024) / 5625.0;
 		result += highBitValue;
 	}
-
 	return (float)result;
 }

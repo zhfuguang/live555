@@ -34,6 +34,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class MatroskaTrack; // forward
 class MatroskaDemux; // forward
 
+typedef void MatroskaDemuxOnDeletionFunc(void *objectToNotify, MatroskaDemux *demuxBeingDeleted);
+
 class MatroskaFile : public Medium
 {
 public:
@@ -45,8 +47,9 @@ public:
 
 	MatroskaTrack *lookup(unsigned trackNumber) const;
 
-	// Create a demultiplexor for extracting tracks from this file.  (Separate clients will typically have separate demultiplexors.)
-	MatroskaDemux *newDemux();
+	MatroskaDemux *newDemux(MatroskaDemuxOnDeletionFunc *onDeletionFunc = NULL, void *objectToNotify = NULL);
+	// Creates a demultiplexor for extracting tracks from this file.
+	// (Separate clients will typically have separate demultiplexors.)
 
 	// Parameters of the file ('Segment'); set when the file is parsed:
 	unsigned timecodeScale()
@@ -112,8 +115,9 @@ private:
 	void getH265ConfigData(MatroskaTrack const *track, u_int8_t *&vps, unsigned &vpsSize, u_int8_t *&sps, unsigned &spsSize, u_int8_t *&pps, unsigned &ppsSize);
 	// "vps","sps","pps" are dynamically allocated by this function, and must be delete[]d afterwards
 
-	void getVorbisOrTheoraConfigData(MatroskaTrack const *track, u_int8_t *&identificationHeader,
-		unsigned &identificationHeaderSize, u_int8_t *&commentHeader, unsigned &commentHeaderSize, u_int8_t *&setupHeader, unsigned &setupHeaderSize);
+	void getVorbisOrTheoraConfigData(MatroskaTrack const *track,
+		u_int8_t *&identificationHeader, unsigned &identificationHeaderSize,
+		u_int8_t *&commentHeader, unsigned &commentHeaderSize, u_int8_t *&setupHeader, unsigned &setupHeaderSize);
 	// "identificationHeader", "commentHeader", "setupHeader" are dynamically allocated by this function, and must be delete[]d afterwards
 
 private:

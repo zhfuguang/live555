@@ -468,10 +468,7 @@ static void setKeyFromAddress(int *&key, struct sockaddr_storage const &address)
 	}
 }
 
-static void setKey(int *key,
-	struct sockaddr_storage const &address1,
-	struct sockaddr_storage const &address2,
-	Port port)
+static void setKey(int *key, struct sockaddr_storage const &address1, struct sockaddr_storage const &address2, Port port)
 {
 	setKeyFromAddress(key, address1);
 	setKeyFromAddress(key, address2);
@@ -631,17 +628,5 @@ portNumBits portNum(struct sockaddr_storage const &address)
 
 void setPortNum(struct sockaddr_storage &address, portNumBits portNum/*in network order*/)
 {
-	switch (address.ss_family)
-	{
-		case AF_INET:
-		{
-			((sockaddr_in &)address).sin_port = portNum;
-			break;
-		}
-		case AF_INET6:
-		{
-			((sockaddr_in6 &)address).sin6_port = portNum;
-			break;
-		}
-	}
+	((sockaddr_in &)address).sin_port = portNum; // position will be the same for "sockaddr_in6"
 }

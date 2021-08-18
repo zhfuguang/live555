@@ -49,7 +49,6 @@ ServerMediaSubsession *MatroskaFileServerDemux::newServerMediaSubsession(unsigne
 
 		result = newServerMediaSubsessionByTrackNumber(resultTrackNumber);
 	}
-
 	return result;
 }
 
@@ -76,14 +75,12 @@ ServerMediaSubsession *MatroskaFileServerDemux::newServerMediaSubsessionByTrackN
 		fprintf(stderr, "Created 'ServerMediaSubsession' object for track #%d: %s (%s)\n", track->trackNumber, track->codecID, track->mimeType);
 #endif
 	}
-
 	return result;
 }
 
 FramedSource *MatroskaFileServerDemux::newDemuxedTrack(unsigned clientSessionId, unsigned trackNumber)
 {
 	MatroskaDemux *demuxToUse = NULL;
-
 	if (clientSessionId != 0 && clientSessionId == fLastClientSessionId)
 	{
 		demuxToUse = fLastCreatedDemux; // use the same demultiplexor as before
@@ -96,11 +93,10 @@ FramedSource *MatroskaFileServerDemux::newDemuxedTrack(unsigned clientSessionId,
 	}
 
 	if (demuxToUse == NULL)
-		demuxToUse = fOurMatroskaFile->newDemux();
+		demuxToUse = fOurMatroskaFile->newDemux(onDemuxDeletion, this);
 
 	fLastClientSessionId = clientSessionId;
 	fLastCreatedDemux = demuxToUse;
-
 	return demuxToUse->newDemuxedTrackByTrackNumber(trackNumber);
 }
 
@@ -129,4 +125,15 @@ void MatroskaFileServerDemux::onMatroskaFileCreation(MatroskaFile *newFile)
 	// Now, call our own creation notification function:
 	if (fOnCreation != NULL)
 		(*fOnCreation)(this, fOnCreationClientData);
+}
+
+void MatroskaFileServerDemux::onDemuxDeletion(void *clientData, MatroskaDemux *demuxBeingDeleted)
+{
+	((MatroskaFileServerDemux *)clientData)->onDemuxDeletion(demuxBeingDeleted);
+}
+
+void MatroskaFileServerDemux::onDemuxDeletion(MatroskaDemux *demuxBeingDeleted)
+{
+	if (fLastCreatedDemux == demuxBeingDeleted)
+		fLastCreatedDemux = NULL;
 }

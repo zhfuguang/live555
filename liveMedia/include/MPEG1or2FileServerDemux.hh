@@ -35,8 +35,7 @@ public:
 
 	ServerMediaSubsession *newAudioServerMediaSubsession(); // MPEG-1 or 2 audio
 	ServerMediaSubsession *newVideoServerMediaSubsession(Boolean iFramesOnly = False, double vshPeriod = 5.0
-		/* how often (in seconds) to inject a Video_Sequence_Header,
-		if one doesn't already appear in the stream */);
+	/* how often (in seconds) to inject a Video_Sequence_Header,if one doesn't already appear in the stream */);
 	ServerMediaSubsession *newAC3AudioServerMediaSubsession(); // AC-3 audio (from VOB)
 
 	unsigned fileSize() const
@@ -56,6 +55,9 @@ private:
 private:
 	friend class MPEG1or2DemuxedServerMediaSubsession;
 	MPEG1or2DemuxedElementaryStream *newElementaryStream(unsigned clientSessionId, u_int8_t streamIdTag);
+
+	static void onDemuxDeletion(void *clientData, MPEG1or2Demux *demuxBeingDeleted);
+	void onDemuxDeletion(MPEG1or2Demux *demuxBeingDeleted);
 
 private:
 	char const *fFileName;

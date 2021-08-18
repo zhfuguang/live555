@@ -35,11 +35,9 @@ ServerMediaSubsession *OggFileServerDemux::newServerMediaSubsession()
 ServerMediaSubsession *OggFileServerDemux::newServerMediaSubsession(u_int32_t &resultTrackNumber)
 {
 	resultTrackNumber = 0;
-
 	OggTrack *nextTrack = fIter->next();
 	if (nextTrack == NULL)
 		return NULL;
-
 	return newServerMediaSubsessionByTrackNumber(nextTrack->trackNumber);
 }
 
@@ -56,14 +54,12 @@ ServerMediaSubsession *OggFileServerDemux::newServerMediaSubsessionByTrackNumber
 		fprintf(stderr, "Created 'ServerMediaSubsession' object for track #%d: (%s)\n", track->trackNumber, track->mimeType);
 #endif
 	}
-
 	return result;
 }
 
 FramedSource *OggFileServerDemux::newDemuxedTrack(unsigned clientSessionId, u_int32_t trackNumber)
 {
 	OggDemux *demuxToUse = NULL;
-
 	if (clientSessionId != 0 && clientSessionId == fLastClientSessionId)
 	{
 		demuxToUse = fLastCreatedDemux; // use the same demultiplexor as before
@@ -76,11 +72,10 @@ FramedSource *OggFileServerDemux::newDemuxedTrack(unsigned clientSessionId, u_in
 	}
 
 	if (demuxToUse == NULL)
-		demuxToUse = fOurOggFile->newDemux();
+		demuxToUse = fOurOggFile->newDemux(onDemuxDeletion, this);
 
 	fLastClientSessionId = clientSessionId;
 	fLastCreatedDemux = demuxToUse;
-
 	return demuxToUse->newDemuxedTrackByTrackNumber(trackNumber);
 }
 
@@ -110,4 +105,15 @@ void OggFileServerDemux::onOggFileCreation(OggFile *newFile)
 	// Now, call our own creation notification function:
 	if (fOnCreation != NULL)
 		(*fOnCreation)(this, fOnCreationClientData);
+}
+
+void OggFileServerDemux::onDemuxDeletion(void *clientData, OggDemux *demuxBeingDeleted)
+{
+	((OggFileServerDemux *)clientData)->onDemuxDeletion(demuxBeingDeleted);
+}
+
+void OggFileServerDemux::onDemuxDeletion(OggDemux *demuxBeingDeleted)
+{
+	if (fLastCreatedDemux == demuxBeingDeleted)
+		fLastCreatedDemux = NULL;
 }

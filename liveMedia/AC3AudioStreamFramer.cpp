@@ -85,14 +85,11 @@ private:
 
 ////////// AC3AudioStreamFramer implementation //////////
 
-AC3AudioStreamFramer::AC3AudioStreamFramer(UsageEnvironment &env,
-	FramedSource *inputSource,
-	unsigned char streamCode)
+AC3AudioStreamFramer::AC3AudioStreamFramer(UsageEnvironment &env, FramedSource *inputSource, unsigned char streamCode)
 	: FramedFilter(env, inputSource), fOurStreamCode(streamCode)
 {
 	// Use the current wallclock time as the initial 'presentation time':
 	gettimeofday(&fNextFramePresentationTime, NULL);
-
 	fParser = new AC3AudioStreamParser(this, inputSource);
 }
 
@@ -101,9 +98,7 @@ AC3AudioStreamFramer::~AC3AudioStreamFramer()
 	delete fParser;
 }
 
-AC3AudioStreamFramer *AC3AudioStreamFramer::createNew(UsageEnvironment &env,
-	FramedSource *inputSource,
-	unsigned char streamCode)
+AC3AudioStreamFramer *AC3AudioStreamFramer::createNew(UsageEnvironment &env, FramedSource *inputSource, unsigned char streamCode)
 {
 	// Need to add source type checking here???  #####
 	return new AC3AudioStreamFramer(env, inputSource, streamCode);
@@ -142,8 +137,7 @@ struct timeval AC3AudioStreamFramer::currentFramePlayTime() const
 	unsigned const freq = fr.samplingFreq;
 
 	// result is numSamples/freq
-	unsigned const uSeconds = (freq == 0) ? 0
-		: ((numSamples * 2 * MILLION) / freq + 1) / 2; // rounds to nearest integer
+	unsigned const uSeconds = (freq == 0) ? 0 : ((numSamples * 2 * MILLION) / freq + 1) / 2; // rounds to nearest integer
 
 	struct timeval result;
 	result.tv_sec = uSeconds / MILLION;
@@ -151,19 +145,15 @@ struct timeval AC3AudioStreamFramer::currentFramePlayTime() const
 	return result;
 }
 
-void AC3AudioStreamFramer
-::handleNewData(void *clientData, unsigned char *ptr, unsigned size,
-	struct timeval /*presentationTime*/)
+void AC3AudioStreamFramer::handleNewData(void *clientData, unsigned char *ptr, unsigned size, struct timeval /*presentationTime*/)
 {
 	AC3AudioStreamFramer *framer = (AC3AudioStreamFramer *)clientData;
 	framer->handleNewData(ptr, size);
 }
 
-void AC3AudioStreamFramer
-::handleNewData(unsigned char *ptr, unsigned size)
+void AC3AudioStreamFramer::handleNewData(unsigned char *ptr, unsigned size)
 {
 	fParser->testStreamCode(fOurStreamCode, ptr, size);
-
 	parseNextFrame();
 }
 
@@ -183,8 +173,7 @@ void AC3AudioStreamFramer::parseNextFrame()
 		struct timeval framePlayTime = currentFramePlayTime();
 		fDurationInMicroseconds = framePlayTime.tv_sec * MILLION + framePlayTime.tv_usec;
 		fNextFramePresentationTime.tv_usec += framePlayTime.tv_usec;
-		fNextFramePresentationTime.tv_sec
-			+= framePlayTime.tv_sec + fNextFramePresentationTime.tv_usec / MILLION;
+		fNextFramePresentationTime.tv_sec += framePlayTime.tv_sec + fNextFramePresentationTime.tv_usec / MILLION;
 		fNextFramePresentationTime.tv_usec %= MILLION;
 
 		// Call our own 'after getting' function.  Because we're not a 'leaf'
@@ -201,11 +190,7 @@ void AC3AudioStreamFramer::parseNextFrame()
 
 
 ////////// AC3AudioStreamParser implementation //////////
-
-static int const kbpsTable[] = { 32,  40,  48,  56,  64,  80,  96, 112,
-		128, 160, 192, 224, 256, 320, 384, 448,
-		512, 576, 640
-};
+static int const kbpsTable[] = { 32,  40,  48,  56,  64,  80,  96, 112,128, 160, 192, 224, 256, 320, 384, 448,512, 576, 640 };
 
 void AC3FrameParams::setParamsFromHeader()
 {
@@ -234,30 +219,24 @@ void AC3FrameParams::setParamsFromHeader()
 	}
 }
 
-AC3AudioStreamParser
-::AC3AudioStreamParser(AC3AudioStreamFramer *usingSource,
-	FramedSource *inputSource)
-	: StreamParser(inputSource, FramedSource::handleClosure, usingSource,
-		&AC3AudioStreamFramer::handleNewData, usingSource),
-	fUsingSource(usingSource), fHaveParsedAFrame(False),
-	fSavedFrame(NULL), fSavedFrameSize(0)
+AC3AudioStreamParser::AC3AudioStreamParser(AC3AudioStreamFramer *usingSource, FramedSource *inputSource)
+	: StreamParser(inputSource, FramedSource::handleClosure, usingSource, &AC3AudioStreamFramer::handleNewData, usingSource)
+	, fUsingSource(usingSource), fHaveParsedAFrame(False), fSavedFrame(NULL), fSavedFrameSize(0)
 {
 }
 
 AC3AudioStreamParser::~AC3AudioStreamParser()
 {
+	delete[] fSavedFrame;
 }
 
-void AC3AudioStreamParser::registerReadInterest(unsigned char *to,
-	unsigned maxSize)
+void AC3AudioStreamParser::registerReadInterest(unsigned char *to, unsigned maxSize)
 {
 	fTo = to;
 	fMaxSize = maxSize;
 }
 
-void AC3AudioStreamParser
-::testStreamCode(unsigned char ourStreamCode,
-	unsigned char *ptr, unsigned size)
+void AC3AudioStreamParser::testStreamCode(unsigned char ourStreamCode, unsigned char *ptr, unsigned size)
 {
 	if (ourStreamCode == 0)
 		return; // we assume that there's no stream code at the beginning of the data
@@ -339,33 +318,28 @@ unsigned AC3AudioStreamParser::parseFrame(unsigned &numTruncatedBytes)
 #endif
 		return 0;  // the parsing got interrupted
 	}
-	}
+}
 
 void AC3AudioStreamParser::readAndSaveAFrame()
 {
 	unsigned const maxAC3FrameSize = 4000;
+	delete[] fSavedFrame;
 	fSavedFrame = new unsigned char[maxAC3FrameSize];
 	fSavedFrameSize = 0;
 
 	fSavedFrameFlag = 0;
-	fUsingSource->getNextFrame(fSavedFrame, maxAC3FrameSize,
-		afterGettingSavedFrame, this,
-		onSavedFrameClosure, this);
+	fUsingSource->getNextFrame(fSavedFrame, maxAC3FrameSize, afterGettingSavedFrame, this, onSavedFrameClosure, this);
 	fUsingSource->envir().taskScheduler().doEventLoop(&fSavedFrameFlag);
 }
 
-void AC3AudioStreamParser
-::afterGettingSavedFrame(void *clientData, unsigned frameSize,
-	unsigned /*numTruncatedBytes*/,
-	struct timeval /*presentationTime*/,
-	unsigned /*durationInMicroseconds*/)
+void AC3AudioStreamParser::afterGettingSavedFrame(void *clientData, unsigned frameSize,
+	unsigned /*numTruncatedBytes*/, struct timeval /*presentationTime*/, unsigned /*durationInMicroseconds*/)
 {
 	AC3AudioStreamParser *parser = (AC3AudioStreamParser *)clientData;
 	parser->afterGettingSavedFrame1(frameSize);
 }
 
-void AC3AudioStreamParser
-::afterGettingSavedFrame1(unsigned frameSize)
+void AC3AudioStreamParser::afterGettingSavedFrame1(unsigned frameSize)
 {
 	fSavedFrameSize = frameSize;
 	fSavedFrameFlag = ~0;

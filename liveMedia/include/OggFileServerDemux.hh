@@ -49,7 +49,6 @@ public:
 	// (You should not call this function more than once with the same track number.)
 
 	// The following public: member functions are called only by the "ServerMediaSubsession" objects:
-
 	OggFile *ourOggFile()
 	{
 		return fOurOggFile;
@@ -69,6 +68,10 @@ private:
 
 	static void onOggFileCreation(OggFile *newFile, void *clientData);
 	void onOggFileCreation(OggFile *newFile);
+
+	static void onDemuxDeletion(void *clientData, OggDemux *demuxBeingDeleted);
+	void onDemuxDeletion(OggDemux *demuxBeingDeleted);
+
 private:
 	char const *fFileName;
 	onCreationFunc *fOnCreation;

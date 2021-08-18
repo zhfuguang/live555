@@ -108,7 +108,8 @@ unsigned int i_slen2[256]; /* MPEG 2.0 slen for intensity stereo */
 ////////// MP3FrameParams //////////
 
 MP3FrameParams::MP3FrameParams()
-	: bv(frameBytes, 0, sizeof frameBytes) /* by default */
+	: isMPEG2(0), samplingFreq(44100), frameSize(413) // init params, in case we're used early
+	, bv(frameBytes, 0, sizeof frameBytes) /* by default */
 {
 	oldHdr = firstHdr = 0;
 
@@ -319,8 +320,11 @@ static unsigned updateSideInfoSizes(MP3SideInfo &sideInfo, Boolean isMPEG2,
 	// The truncations computed above are still estimates.  We need to
 	// adjust them so that the new fields will continue to end on
 	// Huffman-encoded sample boundaries:
-	updateSideInfoForHuffman(sideInfo, isMPEG2, mainDataPtr, p23L0, p23L1, part23Length0a, part23Length0aTruncation,
-		part23Length0b, part23Length0bTruncation, part23Length1a, part23Length1aTruncation, part23Length1b, part23Length1bTruncation);
+	updateSideInfoForHuffman(sideInfo, isMPEG2, mainDataPtr, p23L0, p23L1,
+		part23Length0a, part23Length0aTruncation,
+		part23Length0b, part23Length0bTruncation,
+		part23Length1a, part23Length1aTruncation,
+		part23Length1b, part23Length1bTruncation);
 	p23L0 = part23Length0a + part23Length0b;
 	p23L1 = part23Length1a + part23Length1b;
 
@@ -370,7 +374,9 @@ Boolean GetADUInfoFromMP3Frame(unsigned char const *framePtr, unsigned totFrameS
 	numBits += sideInfo.ch[1].gr[1].part2_3_length;
 	aduSize = (numBits + 7) / 8;
 #ifdef DEBUG
-	fprintf(stderr, "mp3GetADUInfoFromFrame: hdr: %08x, frameSize: %d, part2_3_lengths: %d,%d,%d,%d, aduSize: %d, backpointer: %d\n", hdr, frameSize, sideInfo.ch[0].gr[0].part2_3_length, sideInfo.ch[0].gr[1].part2_3_length, sideInfo.ch[1].gr[0].part2_3_length, sideInfo.ch[1].gr[1].part2_3_length, aduSize, backpointer);
+	fprintf(stderr, "mp3GetADUInfoFromFrame: hdr: %08x, frameSize: %d, part2_3_lengths: %d,%d,%d,%d, aduSize: %d, backpointer: %d\n",
+		hdr, frameSize, sideInfo.ch[0].gr[0].part2_3_length, sideInfo.ch[0].gr[1].part2_3_length, sideInfo.ch[1].gr[0].part2_3_length,
+		sideInfo.ch[1].gr[1].part2_3_length, aduSize, backpointer);
 #endif
 
 	return True;
@@ -576,6 +582,7 @@ void MP3FrameParams::getSideInfo(MP3SideInfo &si)
 	}
 
 	ms_stereo = (mode == MPG_MD_JOINT_STEREO) && (mode_ext & 0x2);
+
 	if (isMPEG2)
 	{
 		getSideInfo2(*this, si, stereo, ms_stereo, sfreq, single);

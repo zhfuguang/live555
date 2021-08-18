@@ -32,8 +32,8 @@ MP3AudioFileServerMediaSubsession *MP3AudioFileServerMediaSubsession::createNew(
 	return new MP3AudioFileServerMediaSubsession(env, fileName, reuseFirstSource, generateADUs, interleaving);
 }
 
-MP3AudioFileServerMediaSubsession::MP3AudioFileServerMediaSubsession(UsageEnvironment &env,
-	char const *fileName, Boolean reuseFirstSource, Boolean generateADUs, Interleaving *interleaving)
+MP3AudioFileServerMediaSubsession::MP3AudioFileServerMediaSubsession(
+	UsageEnvironment &env, char const *fileName, Boolean reuseFirstSource, Boolean generateADUs, Interleaving *interleaving)
 	: FileServerMediaSubsession(env, fileName, reuseFirstSource), fGenerateADUs(generateADUs), fInterleaving(interleaving), fFileDuration(0.0)
 {
 }
@@ -56,6 +56,8 @@ FramedSource *MP3AudioFileServerMediaSubsession::createNewStreamSourceCommon(Fra
 		if (mp3NumBytes > 0 && fFileDuration > 0.0)
 		{
 			estBitrate = (unsigned)(mp3NumBytes / (125 * fFileDuration) + 0.5); // kbps, rounded
+			if (estBitrate == 0)
+				estBitrate = 128; // kbps, estimate
 		}
 		else
 		{
@@ -163,7 +165,6 @@ FramedSource *MP3AudioFileServerMediaSubsession::createNewStreamSource(unsigned 
 	if (mp3Source == NULL)
 		return NULL;
 	fFileDuration = mp3Source->filePlayTime();
-
 	return createNewStreamSourceCommon(mp3Source, mp3Source->fileSize(), estBitrate);
 }
 
