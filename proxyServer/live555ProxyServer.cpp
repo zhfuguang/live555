@@ -114,8 +114,7 @@ int main(int argc, char **argv)
 				if (argc > 2 && argv[2][0] != '-')
 				{
 					// The next argument is the HTTP server port number:
-					if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
-						&& tunnelOverHTTPPortNum > 0)
+					if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1 && tunnelOverHTTPPortNum > 0)
 					{
 						++argv;
 						--argc;
@@ -134,8 +133,7 @@ int main(int argc, char **argv)
 				if (argc > 2 && argv[2][0] != '-')
 				{
 					// The next argument is the rtsp server port number:
-					if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
-						&& rtspServerPortNum > 0)
+					if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1 && rtspServerPortNum > 0)
 					{
 						++argv;
 						--argc;
@@ -228,8 +226,7 @@ int main(int argc, char **argv)
 	// Create the RTSP server. Try first with the configured port number,
 	// and then with the default port number (554) if different,
 	// and then with the alternative port number (8554):
-	RTSPServer *rtspServer;
-	rtspServer = createRTSPServer(rtspServerPortNum);
+	RTSPServer *rtspServer = createRTSPServer(rtspServerPortNum);
 	if (rtspServer == NULL)
 	{
 		if (rtspServerPortNum != 554)

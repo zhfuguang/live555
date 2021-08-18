@@ -205,7 +205,6 @@ int H263plusVideoStreamParser::parseH263Frame()
 	memcpy(fNextHeader, bufferIndex - H263_STARTCODE_SIZE_BYTES, H263_REQUIRE_HEADER_SIZE_BYTES);
 
 	int sz = bufferIndex - fTo - H263_STARTCODE_SIZE_BYTES;
-
 	if (sz == 5) // first frame
 		memcpy(fTo, fTo + H263_REQUIRE_HEADER_SIZE_BYTES, H263_REQUIRE_HEADER_SIZE_BYTES);
 

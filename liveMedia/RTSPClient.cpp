@@ -562,12 +562,9 @@ unsigned RTSPClient::sendRequest(RequestRecord *request)
 		}
 
 		// Construct and send the command:
-
 		// First, construct command-specific headers that we need:
-
 		char *cmdURL = fBaseURL; // by default
 		Boolean cmdURLWasAllocated = False;
-
 		char const *protocolStr = "RTSP/1.0"; // by default
 
 		char *extraHeaders = (char *)""; // by default
@@ -659,7 +656,6 @@ unsigned RTSPClient::sendRequest(RequestRecord *request)
 		// The command send succeeded, so enqueue the request record, so that its response (when it comes) can be handled.
 		// However, note that we do not expect a response to a POST command with RTSP-over-HTTP, so don't enqueue that.
 		int cseq = request->cseq();
-
 		if (fTunnelOverHTTPPortNum == 0 || strcmp(request->commandName(), "POST") != 0)
 		{
 			fRequestsAwaitingResponse.enqueue(request);
@@ -708,7 +704,6 @@ static char *createSpeedString(float speed)
 	{
 		sprintf(buf, "Speed: %.3f\r\n", speed);
 	}
-
 	return strDup(buf);
 }
 
@@ -725,18 +720,15 @@ static char *createScaleString(float scale, float currentScale)
 		Locale l("C", Numeric);
 		sprintf(buf, "Scale: %f\r\n", scale);
 	}
-
 	return strDup(buf);
 }
 
 static char *createRangeString(double start, double end, char const *absStartTime, char const *absEndTime)
 {
 	char buf[100];
-
 	if (absStartTime != NULL)
 	{
 		// Create a "Range:" header that specifies 'absolute' time values:
-
 		if (absEndTime == NULL)
 		{
 			// There's no end time:
@@ -751,7 +743,6 @@ static char *createRangeString(double start, double end, char const *absStartTim
 	else
 	{
 		// Create a "Range:" header that specifies relative (i.e., NPT) time values:
-
 		if (start < 0)
 		{
 			// We're resuming from a PAUSE; there's no "Range:" header at all
@@ -770,7 +761,6 @@ static char *createRangeString(double start, double end, char const *absStartTim
 			sprintf(buf, "Range: npt=%.3f-%.3f\r\n", start, end);
 		}
 	}
-
 	return strDup(buf);
 }
 
@@ -778,7 +768,6 @@ Boolean RTSPClient::setRequestFields(RequestRecord *request, char *&cmdURL,
 	Boolean &cmdURLWasAllocated, char const *&protocolStr, char *&extraHeaders, Boolean &extraHeadersWereAllocated)
 {
 	// Set various fields that will appear in our outgoing request, depending upon the particular command that we are sending.
-
 	if (strcmp(request->commandName(), "DESCRIBE") == 0)
 	{
 		extraHeaders = (char *)"Accept: application/sdp\r\n";
@@ -1036,6 +1025,7 @@ int RTSPClient::openConnection()
 		char const *urlSuffix;
 		if (!parseRTSPURL(fBaseURL, username, password, destAddress, urlPortNum, &urlSuffix))
 			break;
+
 		portNumBits destPortNum = fTunnelOverHTTPPortNum == 0 ? urlPortNum : fTunnelOverHTTPPortNum;
 		if (destPortNum == 322)
 			useTLS(); // port 322 is a special case: "rtsps"
@@ -1052,6 +1042,7 @@ int RTSPClient::openConnection()
 		fInputSocketNum = setupStreamSocket(envir(), 0, fServerAddress.ss_family);
 		if (fInputSocketNum < 0)
 			break;
+
 		ignoreSigPipeOnSocket(fInputSocketNum); // so that servers on the same host that get killed don't also kill us
 		if (fOutputSocketNum < 0)
 			fOutputSocketNum = fInputSocketNum;
@@ -1061,7 +1052,9 @@ int RTSPClient::openConnection()
 		// Connect to the remote endpoint:
 		int connectResult = connectToServer(fInputSocketNum, destPortNum);
 		if (connectResult < 0)
+		{
 			break;
+		}
 		else if (connectResult > 0)
 		{
 			if (fTLS.isNeeded)
@@ -1124,8 +1117,7 @@ char *RTSPClient::createAuthenticatorString(char const *cmd, char const *url)
 		char *authenticatorStr;
 		if (auth.nonce() != NULL)   // Digest authentication
 		{
-			char const *const authFmt = "Authorization: Digest username=\"%s\", realm=\"%s\", "
-				"nonce=\"%s\", uri=\"%s\", response=\"%s\"\r\n";
+			char const *const authFmt = "Authorization: Digest username=\"%s\", realm=\"%s\", ""nonce=\"%s\", uri=\"%s\", response=\"%s\"\r\n";
 			char const *response = auth.computeDigestResponse(cmd, url);
 			unsigned authBufSize = strlen(authFmt) + strlen(auth.username()) + strlen(auth.realm()) + strlen(auth.nonce()) + strlen(url) + strlen(response);
 			authenticatorStr = new char[authBufSize];
@@ -1135,7 +1127,6 @@ char *RTSPClient::createAuthenticatorString(char const *cmd, char const *url)
 		else     // Basic authentication
 		{
 			char const *const authFmt = "Authorization: Basic %s\r\n";
-
 			unsigned usernamePasswordLength = strlen(auth.username()) + 1 + strlen(auth.password());
 			char *usernamePassword = new char[usernamePasswordLength + 1];
 			sprintf(usernamePassword, "%s:%s", auth.username(), auth.password());
@@ -1867,7 +1858,6 @@ void RTSPClient::responseHandlerForHTTP_GET1(int responseCode, char *responseStr
 Boolean RTSPClient::setupHTTPTunneling2()
 {
 	fHTTPTunnelingConnectionIsPending = False;
-
 	// Send a HTTP "POST", to set up the client->server link.  (Note that we won't see a reply to the "POST".)
 	return sendRequest(new RequestRecord(1, "POST", NULL)) != 0;
 }
@@ -1979,7 +1969,6 @@ static char *getLine(char *startOfLine)
 			return ptr;
 		}
 	}
-
 	return NULL;
 }
 
@@ -2164,22 +2153,16 @@ void RTSPClient::handleResponseBytes(int newBytesRead)
 				else if (checkForHeader(lineStart, "Scale:", 6, scaleParamsStr))
 				{
 				}
-				else if (checkForHeader(lineStart, "Speed:",
-					// NOTE: Should you feel the need to modify this code,
-					6,
-					// please first email the "live-devel" mailing list
-					speedParamsStr
-					// (see http://live555.com/liveMedia/faq.html#mailing-list-address for details),
+				else if (checkForHeader(lineStart, "Speed:",// NOTE: Should you feel the need to modify this code,
+					6,// please first email the "live-devel" mailing list
+					speedParamsStr// (see http://live555.com/liveMedia/faq.html#mailing-list-address for details),
 				))
 				{
 					// to check whether your proposed modification is appropriate/correct,
 				}
-				else if (checkForHeader(lineStart, "Range:",
-					// and, if so, whether instead it could be included in
-					6,
-					// a future release of the "LIVE555 Streaming Media" software,
-					rangeParamsStr
-					// so that other projects that use the code could benefit (not just your own project).
+				else if (checkForHeader(lineStart, "Range:",// and, if so, whether instead it could be included in
+					6,// a future release of the "LIVE555 Streaming Media" software,
+					rangeParamsStr// so that other projects that use the code could benefit (not just your own project).
 				))
 				{
 				}
@@ -2313,7 +2296,6 @@ void RTSPClient::handleResponseBytes(int newBytesRead)
 				{
 					// We need to resend the command, with an "Authorization:" header:
 					needToResendCommand = True;
-
 					if (strcmp(foundRequest->commandName(), "GET") == 0)
 					{
 						// Note: If a HTTP "GET" command (for RTSP-over-HTTP tunneling) returns "401 Unauthorized", then we resend it
@@ -2445,7 +2427,6 @@ RTSPClient::RequestRecord::~RequestRecord()
 {
 	// Delete the rest of the list first:
 	delete fNext;
-
 	delete[] fAbsStartTime;
 	delete[] fAbsEndTime;
 	delete[] fContentStr;
@@ -2583,7 +2564,6 @@ void HandlerServerForREGISTERCommand::implementCmd_REGISTER(char const *cmd/*"RE
 	{
 		// Create a new "RTSPClient" object, and call our 'creation function' with it:
 		RTSPClient *newRTSPClient = createNewRTSPClient(url, fVerbosityLevel, fApplicationName, socketToRemoteServer);
-
 		if (fCreationFunc != NULL)
 			(*fCreationFunc)(newRTSPClient, deliverViaTCP);
 	}

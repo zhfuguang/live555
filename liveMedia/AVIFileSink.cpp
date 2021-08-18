@@ -779,7 +779,7 @@ while ((subsession = iter.next()) != NULL)
 }
 
 // Then add another JUNK entry
-+ +fJunkNumber;
+++fJunkNumber;
 size += addFileHeader_JUNK();
 addFileHeaderEnd;
 

@@ -716,7 +716,6 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead)
 	do
 	{
 		RTSPServer::RTSPClientSession *clientSession = NULL;
-
 		if (newBytesRead < 0 || (unsigned)newBytesRead >= fRequestBufferBytesLeft)
 		{
 			// Either the client socket has died, or the request was too big for us.
@@ -895,7 +894,6 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead)
 			else if (strcmp(cmdName, "SETUP") == 0)
 			{
 				Boolean areAuthenticated = True;
-
 				if (!requestIncludedSessionId)
 				{
 					// No session id was present in the request.
@@ -2080,7 +2078,6 @@ void RTSPServer::RTSPClientSession::handleCmd_PLAY(RTSPServer::RTSPClientConnect
 				else
 				{
 					// Seeking by relative (NPT) time:
-
 					u_int64_t numBytes;
 					if (!sawRangeHeader || startTimeIsNow)
 					{

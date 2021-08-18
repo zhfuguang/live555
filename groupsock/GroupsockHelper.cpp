@@ -1044,6 +1044,7 @@ void getOurIPAddresses(UsageEnvironment &env)
 #endif
 
 	if (!getifaddrsWorks)
+	{
 		do
 		{
 			// We couldn't find our address using "getifaddrs()",
@@ -1106,6 +1107,7 @@ void getOurIPAddresses(UsageEnvironment &env)
 			seed ^= (_ourIPv6Address[i] << 24) | (_ourIPv6Address[i + 1] << 16) | (_ourIPv6Address[i + 2] << 8) | _ourIPv6Address[i + 3];
 		}
 		our_srandom(seed);
+	}
 }
 
 ipv4AddressBits chooseRandomIPv4SSMAddress(UsageEnvironment &env)

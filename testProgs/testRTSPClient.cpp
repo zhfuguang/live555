@@ -316,8 +316,7 @@ void continueAfterSETUP(RTSPClient *rtspClient, int resultCode, char *resultStri
 		// perhaps use your own custom "MediaSink" subclass instead
 		if (scs.subsession->sink == NULL)
 		{
-			env << *rtspClient << "Failed to create a data sink for the \"" << *scs.subsession
-				<< "\" subsession: " << env.getResultMsg() << "\n";
+			env << *rtspClient << "Failed to create a data sink for the \"" << *scs.subsession << "\" subsession: " << env.getResultMsg() << "\n";
 			break;
 		}
 

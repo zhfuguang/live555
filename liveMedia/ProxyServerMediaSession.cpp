@@ -286,9 +286,7 @@ ProxyRTSPClient::~ProxyRTSPClient()
 
 int ProxyRTSPClient::connectToServer(int socketNum, portNumBits remotePortNum)
 {
-	int res;
-	res = RTSPClient::connectToServer(socketNum, remotePortNum);
-
+	int res = RTSPClient::connectToServer(socketNum, remotePortNum);
 	if (res == 0 && fDoneDESCRIBE && fStreamRTPOverTCP)
 	{
 		if (fVerbosityLevel > 0)
@@ -546,7 +544,8 @@ void ProxyRTSPClient::handleSubsessionTimeout()
 	fSubsessionTimerTask = NULL;
 	// We still have one or more subsessions ('tracks') left to "SETUP".  But we can't wait any longer for them.  Send a "PLAY" now:
 	MediaSession *sess = fOurServerMediaSession.fClientMediaSession;
-	if (sess != NULL) sendPlayCommand(*sess, ::continueAfterPLAY, -1.0f, -1.0f, 1.0f, fOurAuthenticator);
+	if (sess != NULL)
+		sendPlayCommand(*sess, ::continueAfterPLAY, -1.0f, -1.0f, 1.0f, fOurAuthenticator);
 	fLastCommandWasPLAY = True;
 }
 
@@ -612,8 +611,8 @@ FramedSource *ProxyServerMediaSubsession::createNewStreamSource(unsigned clientS
 
 			// Then, add to the front of all data sources a filter that will 'normalize' their frames'
 			// presentation times, before the frames get re-transmitted by our server:
-			FramedFilter *normalizerFilter = sms->fPresentationTimeSessionNormalizer->createNewPresentationTimeSubsessionNormalizer(
-				fClientMediaSubsession.readSource(), fClientMediaSubsession.rtpSource(), fCodecName);
+			FramedFilter *normalizerFilter = sms->fPresentationTimeSessionNormalizer->
+				createNewPresentationTimeSubsessionNormalizer(fClientMediaSubsession.readSource(), fClientMediaSubsession.rtpSource(), fCodecName);
 			fClientMediaSubsession.addFilter(normalizerFilter);
 
 			// Some data sources require a 'framer' object to be added, before they can be fed into

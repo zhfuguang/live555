@@ -205,7 +205,6 @@ void RTPInterface::removeStreamSocket(int sockNum, unsigned char streamChannelId
 	while (1)
 	{
 		tcpStreamRecord **streamsPtr = &fTCPStreams;
-
 		while (*streamsPtr != NULL)
 		{
 			if ((*streamsPtr)->fStreamSocketNum == sockNum
@@ -238,7 +237,6 @@ void RTPInterface::removeStreamSocket(int sockNum, unsigned char streamChannelId
 void RTPInterface::setServerRequestAlternativeByteHandler(UsageEnvironment &env, int socketNum, ServerRequestAlternativeByteHandler *handler, void *clientData)
 {
 	SocketDescriptor *socketDescriptor = lookupSocketDescriptor(env, socketNum, False);
-
 	if (socketDescriptor != NULL)
 		socketDescriptor->setServerRequestAlternativeByteHandler(handler, clientData);
 }
@@ -438,7 +436,6 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, u_int8_t const *data, unsig
 				return False;
 			}
 			makeSocketNonBlocking(socketNum);
-
 			return True;
 		}
 		else if (sendResult < 0 && envir().getErrno() != EAGAIN)
@@ -447,10 +444,8 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, u_int8_t const *data, unsig
 			// using it (for both RTP and RTCP):
 			removeStreamSocket(socketNum, 0xFF);
 		}
-
 		return False;
 	}
-
 	return True;
 }
 
@@ -547,6 +542,7 @@ void SocketDescriptor::tcpReadHandler(SocketDescriptor *socketDescriptor, int ma
 	unsigned count = 2000;
 	socketDescriptor->fAreInReadHandlerLoop = True;
 	while (!socketDescriptor->fDeleteMyselfNext && socketDescriptor->tcpReadHandler1(mask) && --count > 0) {}
+	
 	socketDescriptor->fAreInReadHandlerLoop = False;
 	if (socketDescriptor->fDeleteMyselfNext)
 		delete socketDescriptor;

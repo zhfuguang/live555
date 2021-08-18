@@ -865,7 +865,6 @@ FileSink *MatroskaFile::createFileSinkForTrackNumber(unsigned trackNumber, char 
 			unsigned spsSize;
 			u_int8_t *pps;
 			unsigned ppsSize;
-
 			getH264ConfigData(track, sps, spsSize, pps, ppsSize);
 
 			char *sps_base64 = base64Encode((char *)sps, spsSize);
@@ -890,7 +889,6 @@ FileSink *MatroskaFile::createFileSinkForTrackNumber(unsigned trackNumber, char 
 			unsigned spsSize;
 			u_int8_t *pps;
 			unsigned ppsSize;
-
 			getH265ConfigData(track, vps, vpsSize, sps, spsSize, pps, ppsSize);
 
 			char *vps_base64 = base64Encode((char *)vps, vpsSize);
@@ -922,7 +920,6 @@ FileSink *MatroskaFile::createFileSinkForTrackNumber(unsigned trackNumber, char 
 		if (createOggFileSink)
 		{
 			char *configStr = NULL; // by default
-
 			if (strcmp(track->mimeType, "audio/VORBIS") == 0 || strcmp(track->mimeType, "video/THEORA") == 0)
 			{
 				u_int8_t *identificationHeader;
@@ -932,6 +929,7 @@ FileSink *MatroskaFile::createFileSinkForTrackNumber(unsigned trackNumber, char 
 				u_int8_t *setupHeader;
 				unsigned setupHeaderSize;
 				getVorbisOrTheoraConfigData(track, identificationHeader, identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize);
+
 				u_int32_t identField = 0xFACADE; // Can we get a real value from the file somehow?
 				configStr = generateVorbisOrTheoraConfigStr(identificationHeader, identificationHeaderSize, commentHeader, commentHeaderSize, setupHeader, setupHeaderSize, identField);
 				delete[] identificationHeader;
@@ -1313,7 +1311,6 @@ void CuePoint::fprintf(FILE *fid, CuePoint *cuePoint)
 	{
 		::fprintf(fid, "[");
 		fprintf(fid, cuePoint->left());
-
 		::fprintf(fid, ",%.1f{%d},", cuePoint->fCueTime, cuePoint->fBalance);
 
 		fprintf(fid, cuePoint->right());
