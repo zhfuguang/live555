@@ -3,10 +3,7 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(rtspLive555)
 
 set(CMAKE_BUILD_TYPE Debug)
-#set(CMAKE_BUILD_TYPE Release)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
-#set(-DCMAKE_TOOLCHAIN_FILE=toolchain-hisiv400.cmake)
-
 #set(CMAKE_CXX_STANDARD 11)
 
 add_definitions(
@@ -35,7 +32,6 @@ file(GLOB_RECURSE SOURCE_FILE
 	liveMedia/*.cpp
 	UsageEnvironment/*.cpp
 	BasicUsageEnvironment/*.cpp
-	testProgs/announceURL.cpp
 )
 
 add_library(objlib OBJECT ${SOURCE_FILE})
