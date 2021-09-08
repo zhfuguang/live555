@@ -270,10 +270,10 @@ void Groupsock::multicastSendOnly()
 	// to not be received by other applications (at least, on the same host).
 #if 0
 	socketLeaveGroup(env(), socketNum(), groupAddress(r);
-		for (destRecord *dests = fDests; dests != NULL; dests = dests->fNext)
-{
-	socketLeaveGroup(env(), socketNum(), dests->fGroupEId.groupAddress(r);
-}
+	for (destRecord *dests = fDests; dests != NULL; dests = dests->fNext)
+	{
+		socketLeaveGroup(env(), socketNum(), dests->fGroupEId.groupAddress(r);
+	}
 #endif
 }
 

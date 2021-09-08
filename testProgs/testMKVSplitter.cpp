@@ -43,7 +43,6 @@ void usage()
 
 int main(int argc, char **argv)
 {
-	getchar();
 	// Begin by setting up our usage environment:
 	TaskScheduler *scheduler = BasicTaskScheduler::createNew();
 	env = BasicUsageEnvironment::createNew(*scheduler);

@@ -93,7 +93,6 @@ char *RTSPServer::rtspURLPrefix(int clientSocket, Boolean useIPv6) const
 	}
 
 	char urlBuffer[100]; // more than big enough for "rtsp://<ip-address>:<port>/"
-
 	char const *addressPrefixInURL = ourAddress.ss_family == AF_INET6 ? "[" : "";
 	char const *addressSuffixInURL = ourAddress.ss_family == AF_INET6 ? "]" : "";
 
@@ -114,7 +113,6 @@ UserAuthenticationDatabase *RTSPServer::setAuthenticationDatabase(UserAuthentica
 {
 	UserAuthenticationDatabase *oldDB = fAuthDB;
 	fAuthDB = newDB;
-
 	return oldDB;
 }
 
@@ -322,7 +320,6 @@ void RTSPServer::stopTCPStreamingOnSocket(int socketNum)
 
 
 ////////// RTSPServer::RTSPClientConnection implementation //////////
-
 RTSPServer::RTSPClientConnection::RTSPClientConnection(RTSPServer &ourServer, int clientSocket, struct sockaddr_storage const &clientAddr)
 	: GenericMediaServer::ClientConnection(ourServer, clientSocket, clientAddr)
 	, fOurRTSPServer(ourServer), fClientInputSocket(fOurSocket), fClientOutputSocket(fOurSocket)
@@ -344,10 +341,10 @@ RTSPServer::RTSPClientConnection::~RTSPClientConnection()
 }
 
 // Handler routines for specific RTSP commands:
-
 void RTSPServer::RTSPClientConnection::handleCmd_OPTIONS()
 {
-	snprintf((char *)fResponseBuffer, sizeof fResponseBuffer, "RTSP/1.0 200 OK\r\nCSeq: %s\r\n%sPublic: %s\r\n\r\n", fCurrentCSeq, dateHeader(), fOurRTSPServer.allowedCommandNames());
+	snprintf((char *)fResponseBuffer, sizeof fResponseBuffer,
+		"RTSP/1.0 200 OK\r\nCSeq: %s\r\n%sPublic: %s\r\n\r\n", fCurrentCSeq, dateHeader(), fOurRTSPServer.allowedCommandNames());
 }
 
 void RTSPServer::RTSPClientConnection::handleCmd_GET_PARAMETER(char const * /*fullRequestStr*/)

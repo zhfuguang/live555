@@ -94,7 +94,6 @@ Boolean H264VideoRTPSource::processSpecialHeader(BufferedPacket *packet, unsigne
 			if (startBit)
 			{
 				fCurrentPacketBeginsFrame = True;
-
 				headerStart[1] = (headerStart[0] & 0xE0) | (headerStart[1] & 0x1F);
 				numBytesToSkip = 1;
 			}

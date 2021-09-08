@@ -739,7 +739,6 @@ static char *createRangeString(double start, double end, char const *absStartTim
 	else
 	{
 		// Create a "Range:" header that specifies relative (i.e., NPT) time values:
-
 		if (start < 0)
 		{
 			// We're resuming from a PAUSE; there's no "Range:" header at all
@@ -1017,7 +1016,6 @@ int RTSPClient::openConnection()
 	do
 	{
 		// Set up a connection to the server.  Begin by parsing the URL:
-
 		char *username;
 		char *password;
 		NetAddress destAddress;

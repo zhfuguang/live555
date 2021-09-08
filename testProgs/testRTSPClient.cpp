@@ -101,7 +101,6 @@ int main(int argc, char **argv)
 }
 
 // Define a class to hold per-stream state that we maintain throughout each stream's lifetime:
-
 class StreamClientState
 {
 public:
@@ -191,7 +190,6 @@ void openURL(UsageEnvironment &env, char const *progName, char const *rtspURL)
 
 
 // Implementation of the RTSP 'response handlers':
-
 void continueAfterDESCRIBE(RTSPClient *rtspClient, int resultCode, char *resultString)
 {
 	do
@@ -338,7 +336,6 @@ void continueAfterSETUP(RTSPClient *rtspClient, int resultCode, char *resultStri
 void continueAfterPLAY(RTSPClient *rtspClient, int resultCode, char *resultString)
 {
 	Boolean success = False;
-
 	do
 	{
 		UsageEnvironment &env = rtspClient->envir(); // alias
@@ -382,7 +379,6 @@ void continueAfterPLAY(RTSPClient *rtspClient, int resultCode, char *resultStrin
 
 
 // Implementation of the other event handlers:
-
 void subsessionAfterPlaying(void *clientData)
 {
 	MediaSubsession *subsession = (MediaSubsession *)clientData;
@@ -456,7 +452,6 @@ void shutdownStream(RTSPClient *rtspClient, int exitCode)
 				{
 					subsession->rtcpInstance()->setByeHandler(NULL, NULL); // in case the server sends a RTCP "BYE" while handling "TEARDOWN"
 				}
-
 				someSubsessionsWereActive = True;
 			}
 		}
@@ -484,7 +479,6 @@ void shutdownStream(RTSPClient *rtspClient, int exitCode)
 
 
 // Implementation of "ourRTSPClient":
-
 ourRTSPClient *ourRTSPClient::createNew(UsageEnvironment &env, char const *rtspURL,
 	int verbosityLevel, char const *applicationName, portNumBits tunnelOverHTTPPortNum)
 {
@@ -503,7 +497,6 @@ ourRTSPClient::~ourRTSPClient()
 
 
 // Implementation of "StreamClientState":
-
 StreamClientState::StreamClientState()
 	: iter(NULL), session(NULL), subsession(NULL), streamTimerTask(NULL), duration(0.0)
 {
@@ -516,7 +509,6 @@ StreamClientState::~StreamClientState()
 	{
 		// We also need to delete "session", and unschedule "streamTimerTask" (if set)
 		UsageEnvironment &env = session->envir(); // alias
-
 		env.taskScheduler().unscheduleDelayedTask(streamTimerTask);
 		Medium::close(session);
 	}
@@ -527,7 +519,7 @@ StreamClientState::~StreamClientState()
 
 // Even though we're not going to be doing anything with the incoming data, we still need to receive it.
 // Define the size of the buffer that we'll use:
-#define DUMMY_SINK_RECEIVE_BUFFER_SIZE 100000
+#define DUMMY_SINK_RECEIVE_BUFFER_SIZE 1000000
 
 DummySink *DummySink::createNew(UsageEnvironment &env, MediaSubsession &subsession, char const *streamId)
 {
@@ -535,8 +527,7 @@ DummySink *DummySink::createNew(UsageEnvironment &env, MediaSubsession &subsessi
 }
 
 DummySink::DummySink(UsageEnvironment &env, MediaSubsession &subsession, char const *streamId)
-	: MediaSink(env),
-	fSubsession(subsession)
+	: MediaSink(env),fSubsession(subsession)
 {
 	fStreamId = strDup(streamId);
 	fReceiveBuffer = new u_int8_t[DUMMY_SINK_RECEIVE_BUFFER_SIZE];
@@ -561,9 +552,10 @@ void DummySink::afterGettingFrame(void *clientData, unsigned frameSize,
 void DummySink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned /*durationInMicroseconds*/)
 {
 	// We've just received a frame of data.  (Optionally) print out information about it:
-#ifdef DEBUG_PRINT_EACH_RECEIVED_FRAME
+#if DEBUG_PRINT_EACH_RECEIVED_FRAME
 	if (fStreamId != NULL)
 		envir() << "Stream \"" << fStreamId << "\"; ";
+
 	envir() << fSubsession.mediumName() << "/" << fSubsession.codecName() << ":\tReceived " << frameSize << " bytes";
 	if (numTruncatedBytes > 0)
 		envir() << " (with " << numTruncatedBytes << " bytes truncated)";

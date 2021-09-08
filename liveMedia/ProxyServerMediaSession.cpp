@@ -83,9 +83,9 @@ ProxyServerMediaSession *ProxyServerMediaSession::createNew(UsageEnvironment &en
 }
 
 
-ProxyServerMediaSession::ProxyServerMediaSession(UsageEnvironment &env, GenericMediaServer *ourMediaServer, char const *inputStreamURL, char const *streamName,
-	char const *username, char const *password, portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer, MediaTranscodingTable *transcodingTable,
-	createNewProxyRTSPClientFunc *ourCreateNewProxyRTSPClientFunc, portNumBits initialPortNum, Boolean multiplexRTCPWithRTP)
+ProxyServerMediaSession::ProxyServerMediaSession(UsageEnvironment &env, GenericMediaServer *ourMediaServer, char const *inputStreamURL,
+	char const *streamName, char const *username, char const *password, portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer,
+	MediaTranscodingTable *transcodingTable, createNewProxyRTSPClientFunc *ourCreateNewProxyRTSPClientFunc, portNumBits initialPortNum, Boolean multiplexRTCPWithRTP)
 	: ServerMediaSession(env, streamName, NULL, NULL, False, NULL)
 	, describeCompletedFlag(0), fOurMediaServer(ourMediaServer), fClientMediaSession(NULL)
 	, fVerbosityLevel(verbosityLevel), fPresentationTimeSessionNormalizer(new PresentationTimeSessionNormalizer(envir()))
@@ -144,18 +144,19 @@ Boolean ProxyServerMediaSession::allowProxyingForSubsession(MediaSubsession cons
 void ProxyServerMediaSession::continueAfterDESCRIBE(char const *sdpDescription)
 {
 	describeCompletedFlag = 1;
-
 	// Create a (client) "MediaSession" object from the stream's SDP description ("resultString"), then iterate through its
 	// "MediaSubsession" objects, to set up corresponding "ServerMediaSubsession" objects that we'll use to serve the stream's tracks.
 	do
 	{
 		fClientMediaSession = MediaSession::createNew(envir(), sdpDescription);
-		if (fClientMediaSession == NULL) break;
+		if (fClientMediaSession == NULL)
+			break;
 
 		MediaSubsessionIterator iter(*fClientMediaSession);
 		for (MediaSubsession *mss = iter.next(); mss != NULL; mss = iter.next())
 		{
-			if (!allowProxyingForSubsession(*mss)) continue;
+			if (!allowProxyingForSubsession(*mss))
+				continue;
 
 			ServerMediaSubsession *smss = new ProxyServerMediaSubsession(*mss, fInitialPortNum, fMultiplexRTCPWithRTP);
 			addSubsession(smss);
@@ -279,7 +280,6 @@ void ProxyRTSPClient::reset()
 ProxyRTSPClient::~ProxyRTSPClient()
 {
 	reset();
-
 	delete fOurAuthenticator;
 	delete[] fOurURL;
 }

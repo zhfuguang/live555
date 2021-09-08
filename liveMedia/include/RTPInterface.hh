@@ -61,13 +61,10 @@ public:
 	Boolean handleRead(unsigned char *buffer, unsigned bufferMaxSize,
 		// out parameters:
 		unsigned &bytesRead, struct sockaddr_storage &fromAddress, int &tcpSocketNum, unsigned char &tcpStreamChannelId, Boolean &packetReadWasIncomplete);
-	// Note: If "tcpSocketNum" < 0, then the packet was received over UDP, and "tcpStreamChannelId"
-	//   is undefined (and irrelevant).
+	// Note: If "tcpSocketNum" < 0, then the packet was received over UDP, and "tcpStreamChannelId" is undefined (and irrelevant).
 
 
-	// Otherwise (if "tcpSocketNum" >= 0), the packet was received (interleaved) over TCP, and
-	//   "tcpStreamChannelId" will return the channel id.
-
+	// Otherwise (if "tcpSocketNum" >= 0), the packet was received (interleaved) over TCP, and "tcpStreamChannelId" will return the channel id.
 	void stopNetworkReading();
 
 	UsageEnvironment &envir() const

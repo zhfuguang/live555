@@ -41,7 +41,8 @@ file(GLOB_RECURSE SOURCE_FILE
 add_library(objlib OBJECT ${SOURCE_FILE})
 link_libraries(objlib)
 
+add_executable(testRTSPClient testProgs/testRTSPClient.cpp)
 #add_executable(testMKVStreamer testProgs/testMKVStreamer.cpp)
 #add_executable(testMKVSplitter testProgs/testMKVSplitter.cpp)
-add_executable(live555ProxyServer proxyServer/live555ProxyServer.cpp)
+#add_executable(live555ProxyServer proxyServer/live555ProxyServer.cpp)
 #add_executable(testOnDemandRTSPServer testProgs/testOnDemandRTSPServer.cpp)

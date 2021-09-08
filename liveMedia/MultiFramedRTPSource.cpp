@@ -157,7 +157,6 @@ void MultiFramedRTPSource::doGetNextFrame1()
 			break;
 
 		fNeedDelivery = False;
-
 		if (nextPacket->useCount() == 0)
 		{
 			// Before using the packet, check whether it has a special header

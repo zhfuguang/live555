@@ -230,7 +230,6 @@ Boolean MediaSession::initializeWithSDP(char const *sdpDescription)
 		}
 
 		subsession->serverPortNum = subsession->fClientPortNum; // by default
-
 		char const *mStart = sdpLine;
 		subsession->fSavedSDPLines = strDup(mStart);
 
@@ -330,8 +329,7 @@ Boolean MediaSession::parseSDPLine(char const *inputLine, char const *&nextLine)
 	// (However, we also accept blank lines in the input.)
 	if (inputLine[0] == '\r' || inputLine[0] == '\n')
 		return True;
-	if (strlen(inputLine) < 2 || inputLine[1] != '='
-		|| inputLine[0] < 'a' || inputLine[0] > 'z')
+	if (strlen(inputLine) < 2 || inputLine[1] != '=' || inputLine[0] < 'a' || inputLine[0] > 'z')
 	{
 		envir().setResultMsg("Invalid SDP line: ", inputLine);
 		return False;
@@ -353,7 +351,6 @@ static Boolean parseStringValue(char const *sdpLine, char const *searchFormat, c
 		parseSuccess = True;
 	}
 	delete[] buffer;
-
 	return parseSuccess;
 }
 
@@ -436,7 +433,6 @@ Boolean MediaSession::parseSDPLine_c(char const *sdpLine)
 		fConnectionEndpointNameAddressFamily = AF_INET6;
 		return True;
 	}
-
 	return False;
 }
 
@@ -479,7 +475,6 @@ static Boolean parseRangeAttribute(char const *sdpLine, char *&absStartTime, cha
 		delete[] ae;
 		return False;
 	}
-
 	return True;
 }
 
@@ -507,7 +502,6 @@ Boolean MediaSession::parseSDPAttribute_range(char const *sdpLine)
 	{
 		parseSuccess = True;
 	}
-
 	return parseSuccess;
 }
 
@@ -1483,7 +1477,6 @@ Boolean MediaSubsession::parseSDPAttribute_rtcpmux(char const *sdpLine)
 		fMultiplexRTCPWithRTP = True;
 		return True;
 	}
-
 	return False;
 }
 
