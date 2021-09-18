@@ -72,8 +72,9 @@ NoReuse::~NoReuse()
 
 _groupsockPriv *groupsockPriv(UsageEnvironment &env)
 {
-	if (env.groupsockPriv == NULL)   // We need to create it
+	if (env.groupsockPriv == NULL)
 	{
+		// We need to create it
 		_groupsockPriv *result = new _groupsockPriv;
 		result->socketTable = NULL;
 		result->reuseFlag = 1; // default value => allow reuse of socket numbers
@@ -134,8 +135,7 @@ int setupDatagramSocket(UsageEnvironment &env, Port port, int domain)
 
 	int reuseFlag = groupsockPriv(env)->reuseFlag;
 	reclaimGroupsockPriv(env);
-	if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEADDR,
-		(const char *)&reuseFlag, sizeof reuseFlag) < 0)
+	if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEADDR, (const char *)&reuseFlag, sizeof reuseFlag) < 0)
 	{
 		socketErr(env, "setsockopt(SO_REUSEADDR) error: ");
 		closeSocket(newSocket);
@@ -146,8 +146,7 @@ int setupDatagramSocket(UsageEnvironment &env, Port port, int domain)
 	// Windoze doesn't properly handle SO_REUSEPORT or IP_MULTICAST_LOOP
 #else
 #ifdef SO_REUSEPORT
-	if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEPORT,
-		(const char *)&reuseFlag, sizeof reuseFlag) < 0)
+	if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEPORT, (const char *)&reuseFlag, sizeof reuseFlag) < 0)
 	{
 		socketErr(env, "setsockopt(SO_REUSEPORT) error: ");
 		closeSocket(newSocket);
@@ -162,8 +161,9 @@ int setupDatagramSocket(UsageEnvironment &env, Port port, int domain)
 		domain == AF_INET ? IP_MULTICAST_LOOP : IPV6_MULTICAST_LOOP,
 		(const char *)&loop, sizeof loop) < 0)
 	{
-		if (domain == AF_INET)   // For some unknown reason, this might not work for IPv6
+		if (domain == AF_INET)
 		{
+			// For some unknown reason, this might not work for IPv6
 			socketErr(env, "setsockopt(IP_MULTICAST_LOOP) error: ");
 			closeSocket(newSocket);
 			return -1;
@@ -197,8 +197,9 @@ int setupDatagramSocket(UsageEnvironment &env, Port port, int domain)
 		}
 #endif
 	}
-	else     // IPv6
+	else
 	{
+		// IPv6
 		if (port.num() != 0)
 		{
 			// For IPv6 sockets, we need the IPV6_V6ONLY flag set to 1, otherwise we would not
@@ -219,8 +220,9 @@ int setupDatagramSocket(UsageEnvironment &env, Port port, int domain)
 	}
 
 	// Set the sending interface for multicasts, if it's not the default:
-	if (SendingInterfaceAddr != INADDR_ANY)   // later, fix for IPv6
+	if (SendingInterfaceAddr != INADDR_ANY)
 	{
+		// later, fix for IPv6
 		struct in_addr addr;
 		addr.s_addr = SendingInterfaceAddr;
 
@@ -352,7 +354,7 @@ int setupStreamSocket(UsageEnvironment &env, Port port, int domain, Boolean make
 	// #define REUSE_FOR_TCP
 #ifdef REUSE_FOR_TCP
 #if defined(__WIN32__) || defined(_WIN32)
-	// Windoze doesn't properly handle SO_REUSEPORT
+  // Windoze doesn't properly handle SO_REUSEPORT
 #else
 #ifdef SO_REUSEPORT
 	if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEPORT, (const char *)&reuseFlag, sizeof reuseFlag) < 0)
@@ -387,8 +389,9 @@ int setupStreamSocket(UsageEnvironment &env, Port port, int domain, Boolean make
 		}
 #endif
 	}
-	else     // IPv6
+	else
 	{
+		// IPv6
 		if (port.num() != 0)
 		{
 			// For IPv6 sockets, we need the IPV6_V6ONLY flag set to 1, otherwise we would not
@@ -418,7 +421,7 @@ int setupStreamSocket(UsageEnvironment &env, Port port, int domain, Boolean make
 		}
 	}
 
-	// Set the keep alive mechanism for the TCP socket, to avoid "ghost sockets"
+	// Set the keep alive mechanism for the TCP socket, to avoid "ghost sockets" 
 	//    that remain after an interrupted communication.
 	if (setKeepAlive)
 	{
@@ -443,32 +446,19 @@ int readSocket(UsageEnvironment &env, int socket, unsigned char *buffer, unsigne
 		int err = env.getErrno();
 		if (err == 111 /*ECONNREFUSED (Linux)*/
 #if defined(__WIN32__) || defined(_WIN32)
-			// What a piece of crap Windows is.  Sometimes
-			// recvfrom() returns -1, but with an 'errno' of 0.
-			// This appears not to be a real error; just treat
-			// it as if it were a read of zero bytes, and hope
-			// we don't have to do anything else to 'reset'
-			// this alleged error:
+	// What a piece of crap Windows is.  Sometimes
+	// recvfrom() returns -1, but with an 'errno' of 0.
+	// This appears not to be a real error; just treat
+	// it as if it were a read of zero bytes, and hope
+	// we don't have to do anything else to 'reset'
+	// this alleged error:
 			|| err == 0 || err == EWOULDBLOCK
 #else
 			|| err == EAGAIN
 #endif
-			|| err == 113 /*EHOSTUNREACH (Linux)*/)   // Why does Linux return this for datagram sock?
+			|| err == 113 /*EHOSTUNREACH (Linux)*/)
 		{
-			switch (fromAddress.ss_family)
-			{
-				case AF_INET:
-				{
-					((sockaddr_in &)fromAddress).sin_addr.s_addr = 0;
-					break;
-				}
-				case AF_INET6:
-				{
-					for (unsigned i = 0; i < 16; ++i)
-						((sockaddr_in6 &)fromAddress).sin6_addr.s6_addr[i] = 0;
-					break;
-				}
-			}
+			// Why does Linux return this for datagram sock?
 			return 0;
 		}
 		//##### END HACK
@@ -765,8 +755,7 @@ Boolean socketJoinGroupSSM(UsageEnvironment &env, int socket, struct sockaddr_st
 	imr.imr_sourceaddr.s_addr = ((struct sockaddr_in &)sourceFilterAddr).sin_addr.s_addr;
 	imr.imr_interface.s_addr = ReceivingInterfaceAddr;
 #endif
-	if (setsockopt(socket, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP,
-		(const char *)&imr, sizeof(struct ip_mreq_source)) < 0)
+	if (setsockopt(socket, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, (const char *)&imr, sizeof(struct ip_mreq_source)) < 0)
 	{
 		socketErr(env, "setsockopt(IP_ADD_SOURCE_MEMBERSHIP) error: ");
 		return False;
@@ -797,7 +786,6 @@ Boolean socketLeaveGroupSSM(UsageEnvironment & /*env*/, int socket, struct socka
 	{
 		return False;
 	}
-
 	return True;
 }
 
@@ -820,13 +808,15 @@ Boolean getSourcePort(UsageEnvironment &env, int socket, int domain, Port &port)
 	if (!getSourcePort0(socket, portNum) || portNum == 0)
 	{
 		// Hack - call bind(), then try again:
-		if (domain == AF_INET)   // IPv4
+		if (domain == AF_INET)
 		{
+			// IPv4
 			MAKE_SOCKADDR_IN(name, INADDR_ANY, 0);
 			bind(socket, (struct sockaddr *)&name, sizeof name);
 		}
-		else     // IPv6
+		else
 		{
+			// IPv6
 			MAKE_SOCKADDR_IN6(name, 0);
 			bind(socket, (struct sockaddr *)&name, sizeof name);
 		}
@@ -864,7 +854,6 @@ static Boolean isBadIPv6AddressForUs(ipv6AddressBits addr)
 		if (addr[i] != 0)
 			return False;
 	}
-
 	return addr[15] == 0 || addr[15] == 1;
 }
 
@@ -912,7 +901,7 @@ ipv4AddressBits ourIPv4Address(UsageEnvironment &env)
 {
 	if (ReceivingInterfaceAddr != INADDR_ANY)
 	{
-		// Hack: If we were told to receive on a specific interface address, then
+		// Hack: If we were told to receive on a specific interface address, then 
 		// define this to be our ip address:
 		_ourIPv4Address = ReceivingInterfaceAddr;
 	}
@@ -921,7 +910,6 @@ ipv4AddressBits ourIPv4Address(UsageEnvironment &env)
 	{
 		getOurIPAddresses(env);
 	}
-
 	return _ourIPv4Address;
 }
 
@@ -934,7 +922,6 @@ ipv6AddressBits const &ourIPv6Address(UsageEnvironment &env)
 	{
 		getOurIPAddresses(env);
 	}
-
 	return _ourIPv6Address;
 }
 
@@ -1013,7 +1000,6 @@ void getOurIPAddresses(UsageEnvironment &env)
 	Boolean getifaddrsWorks = False; // until we learn otherwise
 #ifndef NO_GETIFADDRS
 	struct ifaddrs *ifap;
-
 	if (getifaddrs(&ifap) == 0)
 	{
 		// Look through all interfaces:
@@ -1043,71 +1029,66 @@ void getOurIPAddresses(UsageEnvironment &env)
 	}
 #endif
 
-	if (!getifaddrsWorks)
+	if (!getifaddrsWorks) do
 	{
-		do
+		// We couldn't find our address using "getifaddrs()",
+		// so try instead to look it up directly - by first getting our host name,
+		// and then resolving this host name
+		char hostname[100];
+		hostname[0] = '\0';
+		int result = gethostname(hostname, sizeof hostname);
+		if (result != 0 || hostname[0] == '\0')
 		{
-			// We couldn't find our address using "getifaddrs()",
-			// so try instead to look it up directly - by first getting our host name,
-			// and then resolving this host name
-			char hostname[100];
-			hostname[0] = '\0';
-			int result = gethostname(hostname, sizeof hostname);
-			if (result != 0 || hostname[0] == '\0')
+			env.setResultErrMsg("initial gethostname() failed");
+			break;
+		}
+
+		// Try to resolve "hostname" to one or more IP addresses:
+		NetAddressList addresses(hostname);
+		NetAddressList::Iterator iter(addresses);
+
+		// Look at each address, rejecting any that are bad.
+		// We take the first IPv4 and first IPv6 addresses, if any.
+		NetAddress const *address;
+		while ((address = iter.nextAddress()) != NULL)
+		{
+			if (isBadAddressForUs(*address)) continue;
+
+			if (address->length() == sizeof(ipv4AddressBits) && addressIsNull(foundIPv4Address))
 			{
-				env.setResultErrMsg("initial gethostname() failed");
-				break;
+				copyAddress(foundIPv4Address, address);
 			}
-
-			// Try to resolve "hostname" to one or more IP addresses:
-			NetAddressList addresses(hostname);
-			NetAddressList::Iterator iter(addresses);
-
-			// Look at each address, rejecting any that are bad.
-			// We take the first IPv4 and first IPv6 addresses, if any.
-			NetAddress const *address;
-			while ((address = iter.nextAddress()) != NULL)
+			else if (address->length() == sizeof(ipv6AddressBits) && addressIsNull(foundIPv6Address))
 			{
-				if (isBadAddressForUs(*address))
-					continue;
-
-				if (address->length() == sizeof(ipv4AddressBits) && addressIsNull(foundIPv4Address))
-				{
-					copyAddress(foundIPv4Address, address);
-				}
-				else if (address->length() == sizeof(ipv6AddressBits) && addressIsNull(foundIPv6Address))
-				{
-					copyAddress(foundIPv6Address, address);
-				}
+				copyAddress(foundIPv6Address, address);
 			}
-		} while (0);
-
-		// Note the IPv4 and IPv6 addresses that we found:
-		_ourIPv4Address = ((sockaddr_in &)foundIPv4Address).sin_addr.s_addr;
-
-		for (unsigned i = 0; i < 16; ++i)
-		{
-			_ourIPv6Address[i] = ((sockaddr_in6 &)foundIPv6Address).sin6_addr.s6_addr[i];
-			if (_ourIPv6Address[i] != 0)
-				_weHaveAnIPv6Address = True;
 		}
+	} while (0);
 
-		if (!_weHaveAnIPv4Address && !_weHaveAnIPv6Address)
-		{
-			env.setResultMsg("This computer does not have a valid IP (v4 or v6) address!");
-		}
+	// Note the IPv4 and IPv6 addresses that we found:
+	_ourIPv4Address = ((sockaddr_in &)foundIPv4Address).sin_addr.s_addr;
 
-		// Use our newly-discovered IP addresses, and the current time,
-		// to initialize the random number generator's seed:
-		struct timeval timeNow;
-		gettimeofday(&timeNow, NULL);
-		unsigned seed = _ourIPv4Address ^ timeNow.tv_sec ^ timeNow.tv_usec;
-		for (unsigned i = 0; i < 16; i += 4)
-		{
-			seed ^= (_ourIPv6Address[i] << 24) | (_ourIPv6Address[i + 1] << 16) | (_ourIPv6Address[i + 2] << 8) | _ourIPv6Address[i + 3];
-		}
-		our_srandom(seed);
+	for (unsigned i = 0; i < 16; ++i)
+	{
+		_ourIPv6Address[i] = ((sockaddr_in6 &)foundIPv6Address).sin6_addr.s6_addr[i];
+		if (_ourIPv6Address[i] != 0) _weHaveAnIPv6Address = True;
 	}
+
+	if (!_weHaveAnIPv4Address && !_weHaveAnIPv6Address)
+	{
+		env.setResultMsg("This computer does not have a valid IP (v4 or v6) address!");
+	}
+
+	// Use our newly-discovered IP addresses, and the current time,
+	// to initialize the random number generator's seed:
+	struct timeval timeNow;
+	gettimeofday(&timeNow, NULL);
+	unsigned seed = _ourIPv4Address ^ timeNow.tv_sec ^ timeNow.tv_usec;
+	for (unsigned i = 0; i < 16; i += 4)
+	{
+		seed ^= (_ourIPv6Address[i] << 24) | (_ourIPv6Address[i + 1] << 16) | (_ourIPv6Address[i + 2] << 8) | _ourIPv6Address[i + 3];
+	}
+	our_srandom(seed);
 }
 
 ipv4AddressBits chooseRandomIPv4SSMAddress(UsageEnvironment &env)

@@ -179,7 +179,6 @@ void openURL(UsageEnvironment &env, char const *progName, char const *rtspURL)
 		env << "Failed to create a RTSP client for URL \"" << rtspURL << "\": " << env.getResultMsg() << "\n";
 		return;
 	}
-
 	++rtspClientCount;
 
 	// Next, send a RTSP "DESCRIBE" command, to get a SDP description for the stream.
@@ -235,7 +234,7 @@ void continueAfterDESCRIBE(RTSPClient *rtspClient, int resultCode, char *resultS
 
 // By default, we request that the server stream its data using RTP/UDP.
 // If, instead, you want to request that the server stream via RTP-over-TCP, change the following to True:
-#define REQUEST_STREAMING_OVER_TCP False
+#define REQUEST_STREAMING_OVER_TCP True
 
 void setupNextSubsession(RTSPClient *rtspClient)
 {
@@ -479,14 +478,12 @@ void shutdownStream(RTSPClient *rtspClient, int exitCode)
 
 
 // Implementation of "ourRTSPClient":
-ourRTSPClient *ourRTSPClient::createNew(UsageEnvironment &env, char const *rtspURL,
-	int verbosityLevel, char const *applicationName, portNumBits tunnelOverHTTPPortNum)
+ourRTSPClient *ourRTSPClient::createNew(UsageEnvironment &env, char const *rtspURL, int verbosityLevel, char const *applicationName, portNumBits tunnelOverHTTPPortNum)
 {
 	return new ourRTSPClient(env, rtspURL, verbosityLevel, applicationName, tunnelOverHTTPPortNum);
 }
 
-ourRTSPClient::ourRTSPClient(UsageEnvironment &env, char const *rtspURL,
-	int verbosityLevel, char const *applicationName, portNumBits tunnelOverHTTPPortNum)
+ourRTSPClient::ourRTSPClient(UsageEnvironment &env, char const *rtspURL, int verbosityLevel, char const *applicationName, portNumBits tunnelOverHTTPPortNum)
 	: RTSPClient(env, rtspURL, verbosityLevel, applicationName, tunnelOverHTTPPortNum, -1)
 {
 }
@@ -527,7 +524,7 @@ DummySink *DummySink::createNew(UsageEnvironment &env, MediaSubsession &subsessi
 }
 
 DummySink::DummySink(UsageEnvironment &env, MediaSubsession &subsession, char const *streamId)
-	: MediaSink(env),fSubsession(subsession)
+	: MediaSink(env), fSubsession(subsession)
 {
 	fStreamId = strDup(streamId);
 	fReceiveBuffer = new u_int8_t[DUMMY_SINK_RECEIVE_BUFFER_SIZE];
@@ -539,8 +536,7 @@ DummySink::~DummySink()
 	delete[] fStreamId;
 }
 
-void DummySink::afterGettingFrame(void *clientData, unsigned frameSize,
-	unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
+void DummySink::afterGettingFrame(void *clientData, unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime, unsigned durationInMicroseconds)
 {
 	DummySink *sink = (DummySink *)clientData;
 	sink->afterGettingFrame(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);

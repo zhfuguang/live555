@@ -28,15 +28,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 int setupDatagramSocket(UsageEnvironment &env, Port port, int domain);
 int setupStreamSocket(UsageEnvironment &env, Port port, int domain, Boolean makeNonBlocking = True, Boolean setKeepAlive = False);
 
-int readSocket(UsageEnvironment &env, int socket, unsigned char *buffer, unsigned bufferSize, struct sockaddr_storage &fromAddress);
-
+int readSocket(UsageEnvironment &env, int socket, unsigned char *buffer, unsigned bufferSize, struct sockaddr_storage &fromAddress /*set only if we're a datagram socket*/);
 Boolean writeSocket(UsageEnvironment &env, int socket, struct sockaddr_storage const &addressAndPort, u_int8_t ttlArg, unsigned char *buffer, unsigned bufferSize);
-
 Boolean writeSocket(UsageEnvironment &env, int socket, struct sockaddr_storage const &addressAndPort, unsigned char *buffer, unsigned bufferSize);
 // An optimized version of "writeSocket" that omits the "setsockopt()" call to set the TTL.
 
 void ignoreSigPipeOnSocket(int socketNum);
-
 unsigned getSendBufferSize(UsageEnvironment &env, int socket);
 unsigned getReceiveBufferSize(UsageEnvironment &env, int socket);
 unsigned setSendBufferTo(UsageEnvironment &env, int socket, unsigned requestedSize);
@@ -92,6 +89,7 @@ char const *timestampString();
     var.sin_addr.s_addr = (adr);\
     var.sin_port = (prt);\
     SET_SOCKADDR_SIN_LEN(var);
+
 #define MAKE_SOCKADDR_IN6(var,prt) /*adr,prt must be in network order*/\
     struct sockaddr_in6 var;\
     memset(&var, 0, sizeof var);\
@@ -120,8 +118,9 @@ private:
 
 // Define the "UsageEnvironment"-specific "groupsockPriv" structure:
 
-struct _groupsockPriv   // There should be only one of these allocated
+struct _groupsockPriv
 {
+	// There should be only one of these allocated
 	HashTable *socketTable;
 	int reuseFlag;
 };
