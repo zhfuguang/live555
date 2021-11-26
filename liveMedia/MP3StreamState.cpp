@@ -225,7 +225,7 @@ read_again:
 	if (fr().oldHdr != fr().hdr || !fr().oldHdr)
 	{
 		i = 0;
-	init_resync:
+init_resync:
 #ifdef DEBUG_PARSE
 		fprintf(stderr, "init_resync: fr().hdr: 0x%08x\n", fr().hdr);
 #endif
@@ -235,13 +235,13 @@ read_again:
 			|| (fr().hdr & 0x0000F000) == 0x0000F000 // undefined bitrate index
 			|| (fr().hdr & 0x00000C00) == 0x00000C00 // undefined frequency index
 			|| (fr().hdr & 0x00000003) != 0x00000000 // 'emphasis' field unexpectedly set
-			)
+		)
 		{
 			/* RSF: Do the following test even if we're not at the
 			start of the file, in case we have two or more
 			 separate MP3 files cat'ed together:
 				*/
-				/* Check for RIFF hdr */
+			/* Check for RIFF hdr */
 			if (fr().hdr == ('R' << 24) + ('I' << 16) + ('F' << 8) + 'F')
 			{
 				unsigned char buf[70 /*was: 40*/];

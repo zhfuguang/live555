@@ -42,9 +42,9 @@ public:
 	static Boolean lookupByName(UsageEnvironment &env, char const *name, RTSPServer *&resultServer);
 
 	typedef void (responseHandlerForREGISTER)(RTSPServer *rtspServer, unsigned requestId, int resultCode, char *resultString);
-	unsigned registerStream(ServerMediaSession *serverMediaSession, char const *remoteClientNameOrAddress,
-		portNumBits remoteClientPortNum, responseHandlerForREGISTER *responseHandler, char const *username = NULL,
-		char const *password = NULL, Boolean receiveOurStreamViaTCP = False, char const *proxyURLSuffix = NULL);
+	unsigned registerStream(ServerMediaSession *serverMediaSession,
+		char const *remoteClientNameOrAddress, portNumBits remoteClientPortNum, responseHandlerForREGISTER *responseHandler,
+		char const *username = NULL, char const *password = NULL, Boolean receiveOurStreamViaTCP = False, char const *proxyURLSuffix = NULL);
 	// 'Register' the stream represented by "serverMediaSession" with the given remote client (specifed by name and port number).
 	// This is done using our custom "REGISTER" RTSP command.
 	// The function returns a unique number that can be used to identify the request; this number is also passed to "responseHandler".
@@ -109,6 +109,8 @@ public:
 	//  and http://images.apple.com/br/quicktime/pdf/QTSS_Modules.pdf
 	portNumBits httpServerPortNum() const; // in host byte order.  (Returns 0 if not present.)
 
+	void setTLSState(char const *certFileName, char const *privKeyFileName, Boolean weServeSRTP = False/*later change to True #####@@@@@*/);
+
 protected:
 	RTSPServer(UsageEnvironment &env, int ourSocketIPv4, int ourSocketIPv6, Port ourPort, UserAuthenticationDatabase *authDatabase, unsigned reclamationSeconds);
 	// called only by createNew();
@@ -118,8 +120,9 @@ protected:
 	virtual Boolean weImplementREGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/, char const *proxyURLSuffix, char *&responseStr);
 	// used to implement "RTSPClientConnection::handleCmd_REGISTER()"
 	// Note: "responseStr" is dynamically allocated (or NULL), and should be delete[]d after the call
-	virtual void implementCmd_REGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/, char const *url,
-		char const *urlSuffix, int socketToRemoteServer, Boolean deliverViaTCP, char const *proxyURLSuffix);
+
+	virtual void implementCmd_REGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/,
+		char const *url, char const *urlSuffix, int socketToRemoteServer, Boolean deliverViaTCP, char const *proxyURLSuffix);
 	// used to implement "RTSPClientConnection::handleCmd_REGISTER()"
 
 	virtual UserAuthenticationDatabase *getAuthenticationDatabaseForCommand(char const *cmdName);
@@ -161,7 +164,7 @@ public: // should be protected, but some old compilers complain otherwise
 		virtual void handleRequestBytes(int newBytesRead);
 
 	protected:
-		RTSPClientConnection(RTSPServer &ourServer, int clientSocket, struct sockaddr_storage const &clientAddr);
+		RTSPClientConnection(RTSPServer &ourServer, int clientSocket, struct sockaddr_storage const &clientAddr, Boolean useTLS = False);
 		virtual ~RTSPClientConnection();
 
 		friend class RTSPServer;
@@ -175,18 +178,17 @@ public: // should be protected, but some old compilers complain otherwise
 		virtual void handleCmd_DESCRIBE(char const *urlPreSuffix, char const *urlSuffix, char const *fullRequestStr);
 		static void DESCRIBELookupCompletionFunction(void *clientData, ServerMediaSession *sessionLookedUp);
 		virtual void handleCmd_DESCRIBE_afterLookup(ServerMediaSession *session);
-		virtual void handleCmd_REGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/, char const *url,
-			char const *urlSuffix, char const *fullRequestStr, Boolean reuseConnection, Boolean deliverViaTCP, char const *proxyURLSuffix);
+		virtual void handleCmd_REGISTER(char const *cmd/*"REGISTER" or "DEREGISTER"*/,
+			char const *url, char const *urlSuffix, char const *fullRequestStr, Boolean reuseConnection, Boolean deliverViaTCP, char const *proxyURLSuffix);
 		// You probably won't need to subclass/reimplement this function;
 		//     reimplement "RTSPServer::weImplementREGISTER()" and "RTSPServer::implementCmd_REGISTER()" instead.
-
 		virtual void handleCmd_bad();
 		virtual void handleCmd_notSupported();
+		virtual void handleCmd_redirect(char const *urlSuffix);
 		virtual void handleCmd_notFound();
 		virtual void handleCmd_sessionNotFound();
 		virtual void handleCmd_unsupportedTransport();
 		// Support for optional RTSP-over-HTTP tunneling:
-
 		virtual Boolean parseHTTPRequestString(char *resultCmdName, unsigned resultCmdNameMaxSize,
 			char *urlSuffix, unsigned urlSuffixMaxSize, char *sessionCookie, unsigned sessionCookieMaxSize, char *acceptStr, unsigned acceptStrMaxSize);
 		virtual void handleHTTPCmd_notSupported();
@@ -195,7 +197,6 @@ public: // should be protected, but some old compilers complain otherwise
 		virtual void handleHTTPCmd_TunnelingGET(char const *sessionCookie);
 		virtual Boolean handleHTTPCmd_TunnelingPOST(char const *sessionCookie, unsigned char const *extraData, unsigned extraDataSize);
 		virtual void handleHTTPCmd_StreamingGET(char const *urlSuffix, char const *fullRequestStr);
-
 	protected:
 		void resetRequestBuffer();
 		void closeSocketsRTSP();
@@ -242,7 +243,8 @@ public: // should be protected, but some old compilers complain otherwise
 		virtual void handleCmd_SETUP_afterLookup1(ServerMediaSession *sms);
 		static void SETUPLookupCompletionFunction2(void *clientData, ServerMediaSession *sessionLookedUp);
 		virtual void handleCmd_SETUP_afterLookup2(ServerMediaSession *sms);
-		virtual void handleCmd_withinSession(RTSPClientConnection *ourClientConnection, char const *cmdName, char const *urlPreSuffix, char const *urlSuffix, char const *fullRequestStr);
+		virtual void handleCmd_withinSession(RTSPClientConnection *ourClientConnection,
+			char const *cmdName, char const *urlPreSuffix, char const *urlSuffix, char const *fullRequestStr);
 		virtual void handleCmd_TEARDOWN(RTSPClientConnection *ourClientConnection, ServerMediaSubsession *subsession);
 		virtual void handleCmd_PLAY(RTSPClientConnection *ourClientConnection, ServerMediaSubsession *subsession, char const *fullRequestStr);
 		virtual void handleCmd_PAUSE(RTSPClientConnection *ourClientConnection, ServerMediaSubsession *subsession);
@@ -333,6 +335,8 @@ private:
 	unsigned fRegisterOrDeregisterRequestCounter;
 	UserAuthenticationDatabase *fAuthDB;
 	Boolean fAllowStreamingRTPOverTCP; // by default, True
+	Boolean fOurConnectionsUseTLS; // by default, False
+	Boolean fWeServeSRTP; // used only if "fOurConnectionsUseTLS" is True
 };
 
 
@@ -343,7 +347,8 @@ class RTSPServerWithREGISTERProxying : public RTSPServer
 public:
 	static RTSPServerWithREGISTERProxying *createNew(UsageEnvironment &env, Port ourPort = 554,
 		UserAuthenticationDatabase *authDatabase = NULL, UserAuthenticationDatabase *authDatabaseForREGISTER = NULL,
-		unsigned reclamationSeconds = 65, Boolean streamRTPOverTCP = False, int verbosityLevelForProxying = 0, char const *backEndUsername = NULL, char const *backEndPassword = NULL);
+		unsigned reclamationSeconds = 65, Boolean streamRTPOverTCP = False, int verbosityLevelForProxying = 0,
+		char const *backEndUsername = NULL, char const *backEndPassword = NULL);
 
 protected:
 	RTSPServerWithREGISTERProxying(UsageEnvironment &env, int ourSocketIPv4, int ourSocketIPv6, Port ourPort,

@@ -33,6 +33,7 @@ MatroskaFileParser::MatroskaFileParser(MatroskaFile &ourFile, FramedSource *inpu
 	{
 		// Initialization
 		fCurrentParseState = PARSING_START_OF_FILE;
+
 		continueParsing();
 	}
 	else
@@ -121,6 +122,7 @@ void MatroskaFileParser::continueParsing()
 Boolean MatroskaFileParser::parse()
 {
 	Boolean areDone = False;
+
 	if (fInputSource->isCurrentlyAwaitingData())
 		return False;
 	// Our input source is currently being read. Wait until that read completes
@@ -408,9 +410,8 @@ Boolean MatroskaFileParser::parseTrack()
 				if (parseEBMLVal_unsigned(size, trackType) && track != NULL)
 				{
 					// We convert the Matroska 'track type' code into our own code (which we can use as a bitmap):
-					track->trackType = trackType == 1 ? MATROSKA_TRACK_TYPE_VIDEO :
-						trackType == 2 ? MATROSKA_TRACK_TYPE_AUDIO :
-						trackType == 0x11 ? MATROSKA_TRACK_TYPE_SUBTITLE : MATROSKA_TRACK_TYPE_OTHER;
+					track->trackType = trackType == 1 ? MATROSKA_TRACK_TYPE_VIDEO : trackType == 2 ? MATROSKA_TRACK_TYPE_AUDIO
+						: trackType == 0x11 ? MATROSKA_TRACK_TYPE_SUBTITLE : MATROSKA_TRACK_TYPE_OTHER;
 #ifdef DEBUG
 					fprintf(stderr, "\tTrack Type 0x%02x (%s)\n", trackType,
 						track->trackType == MATROSKA_TRACK_TYPE_VIDEO ? "video" :
@@ -1501,9 +1502,10 @@ Boolean MatroskaFileParser::deliverFrameWithinBlock()
 			fprintf(stderr, "\tdelivered special frame: %d bytes", demuxedTrack->frameSize());
 			if (demuxedTrack->numTruncatedBytes() > 0)
 				fprintf(stderr, " (%d bytes truncated)", demuxedTrack->numTruncatedBytes());
-
-			fprintf(stderr, " @%u.%06u (%.06f from start); duration %u us\n", demuxedTrack->presentationTime().tv_sec, demuxedTrack->presentationTime().tv_usec,
-				demuxedTrack->presentationTime().tv_sec + demuxedTrack->presentationTime().tv_usec / 1000000.0 - fPresentationTimeOffset, demuxedTrack->durationInMicroseconds());
+			fprintf(stderr, " @%u.%06u (%.06f from start); duration %u us\n",
+				demuxedTrack->presentationTime().tv_sec, demuxedTrack->presentationTime().tv_usec,
+				demuxedTrack->presentationTime().tv_sec + demuxedTrack->presentationTime().tv_usec / 1000000.0 - fPresentationTimeOffset,
+				demuxedTrack->durationInMicroseconds());
 #endif
 			setParseState();
 			FramedSource::afterGetting(demuxedTrack); // completes delivery
@@ -1535,6 +1537,8 @@ void MatroskaFileParser::deliverFrameBytes()
 		MatroskaDemuxedTrack *demuxedTrack = fOurDemux->lookupDemuxedTrack(fBlockTrackNumber);
 		if (demuxedTrack == NULL)
 			break; // shouldn't happen
+		if (!demuxedTrack->isCurrentlyAwaitingData())
+			return; // wait until we're asked for data
 
 		unsigned const BANK_SIZE = bankSize();
 		while (fCurFrameNumBytesToGet > 0)
@@ -1562,12 +1566,13 @@ void MatroskaFileParser::deliverFrameBytes()
 			fprintf(stderr, "[offset %d]", fCurOffsetWithinFrame - track->subframeSizeSize - demuxedTrack->frameSize() - demuxedTrack->numTruncatedBytes());
 		if (demuxedTrack->numTruncatedBytes() > 0)
 			fprintf(stderr, " (%d bytes truncated)", demuxedTrack->numTruncatedBytes());
-		fprintf(stderr, " @%u.%06u (%.06f from start); duration %u us\n", demuxedTrack->presentationTime().tv_sec, demuxedTrack->presentationTime().tv_usec,
-			demuxedTrack->presentationTime().tv_sec + demuxedTrack->presentationTime().tv_usec / 1000000.0 - fPresentationTimeOffset, demuxedTrack->durationInMicroseconds());
+		fprintf(stderr, " @%u.%06u (%.06f from start); duration %u us\n",
+			demuxedTrack->presentationTime().tv_sec, demuxedTrack->presentationTime().tv_usec,
+			demuxedTrack->presentationTime().tv_sec + demuxedTrack->presentationTime().tv_usec / 1000000.0 - fPresentationTimeOffset,
+			demuxedTrack->durationInMicroseconds());
 #endif
 
-		if (!track->haveSubframes()
-			|| fCurOffsetWithinFrame + track->subframeSizeSize >= fFrameSizesWithinBlock[fNextFrameNumberToDeliver])
+		if (!track->haveSubframes() || fCurOffsetWithinFrame + track->subframeSizeSize >= fFrameSizesWithinBlock[fNextFrameNumberToDeliver])
 		{
 			// Either we don't have subframes, or there's no more room for another subframe => We're completely done with this frame now:
 			++fNextFrameNumberToDeliver;
@@ -1648,9 +1653,7 @@ Boolean MatroskaFileParser::parseEBMLNumber(EBMLNumber &num)
 			++fCurOffsetInFile;
 
 			// If we're looking for an id, skip any leading bytes that don't contain a '1' in the first 4 bits:
-			if (i == 0/*we're a leading byte*/
-				&& !num.stripLeading1/*we're looking for an id*/
-				&& (num.data[i] & 0xF0) == 0)
+			if (i == 0/*we're a leading byte*/ && !num.stripLeading1/*we're looking for an id*/ && (num.data[i] & 0xF0) == 0)
 			{
 				setParseState(); // ensures that we make forward progress if the parsing gets interrupted
 				continue;

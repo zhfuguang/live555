@@ -361,7 +361,7 @@ void MP3FromADUSource::doGetNextFrame()
 	{
 		// Before returning a frame, we must enqueue at least one ADU:
 #ifdef TEST_LOSS
-		NOTE :
+NOTE :
 		//This code no longer works, because it uses synchronous reads,which are no longer supported.
 		static unsigned const framesPerPacket = 10;
 		static unsigned const frameCount = 0;

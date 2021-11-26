@@ -69,15 +69,12 @@ public:
 
 	void deleteServerMediaSession(ServerMediaSession *serverMediaSession);
 	// Equivalent to:
-	//     "closeAllClientSessionsForServerMediaSession(serverMediaSession); removeServerMediaSession(serverMediaSession);"
+	// "closeAllClientSessionsForServerMediaSession(serverMediaSession); removeServerMediaSession(serverMediaSession);"
 	virtual void deleteServerMediaSession(char const *streamName);
 	// Equivalent to:
-	//     "closeAllClientSessionsForServerMediaSession(streamName); removeServerMediaSession(streamName);
+	// "closeAllClientSessionsForServerMediaSession(streamName); removeServerMediaSession(streamName);
 
-	unsigned numClientSessions() const
-	{
-		return fClientSessions->numEntries();
-	}
+	unsigned numClientSessions() const { return fClientSessions->numEntries(); }
 
 protected:
 	GenericMediaServer(UsageEnvironment &env, int ourSocketIPv4, int ourSocketIPv6, Port ourPort, unsigned reclamationSeconds);
@@ -95,12 +92,14 @@ protected:
 	void incomingConnectionHandlerIPv6();
 	void incomingConnectionHandlerOnSocket(int serverSocket);
 
+	void setTLSFileNames(char const *certFileName, char const *privKeyFileName);
+
 public: // should be protected, but some old compilers complain otherwise
-	// The state of a TCP connection used by a client:
+  // The state of a TCP connection used by a client:
 	class ClientConnection
 	{
 	protected:
-		ClientConnection(GenericMediaServer &ourServer, int clientSocket, struct sockaddr_storage const &clientAddr);
+		ClientConnection(GenericMediaServer &ourServer, int clientSocket, struct sockaddr_storage const &clientAddr, Boolean useTLS);
 		virtual ~ClientConnection();
 
 		UsageEnvironment &envir()
@@ -124,6 +123,9 @@ public: // should be protected, but some old compilers complain otherwise
 		unsigned char fRequestBuffer[REQUEST_BUFFER_SIZE];
 		unsigned char fResponseBuffer[RESPONSE_BUFFER_SIZE];
 		unsigned fRequestBytesAlreadySeen, fRequestBufferBytesLeft;
+
+		// Optional support for TLS:
+		ServerTLSState fTLS;
 	};
 
 	// The state of an individual client session (using one or more sequential TCP connections) handled by a server:
@@ -158,7 +160,7 @@ protected:
 	// Generates a new (unused) random session id, and calls the "createNewClientSession()"
 	// virtual function with this session id as parameter.
 
-	// Lookup a "ClientSession" object by sessionId (integer, and string):
+// Lookup a "ClientSession" object by sessionId (integer, and string):
 	ClientSession *lookupClientSession(u_int32_t sessionId);
 	ClientSession *lookupClientSession(char const *sessionIdStr);
 
@@ -189,6 +191,9 @@ private:
 	HashTable *fClientConnections; // the "ClientConnection" objects that we're using
 	HashTable *fClientSessions; // maps 'session id' strings to "ClientSession" objects
 	u_int32_t fPreviousClientSessionId;
+
+	char const *fTLSCertificateFileName;
+	char const *fTLSPrivateKeyFileName;
 };
 
 // A data structure used for optional user/password authentication:

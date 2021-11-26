@@ -83,9 +83,10 @@ char const *OnDemandServerMediaSubsession::sdpLines(int addressFamily)
 	return fSDPLines;
 }
 
-void OnDemandServerMediaSubsession::getStreamParameters(unsigned clientSessionId, struct sockaddr_storage const &clientAddress,
-	Port const &clientRTPPort, Port const &clientRTCPPort, int tcpSocketNum, unsigned char rtpChannelId, unsigned char rtcpChannelId,
-	struct sockaddr_storage &destinationAddress, u_int8_t & /*destinationTTL*/, Boolean &isMulticast, Port &serverRTPPort, Port &serverRTCPPort, void *&streamToken)
+void OnDemandServerMediaSubsession::getStreamParameters(unsigned clientSessionId,
+	struct sockaddr_storage const &clientAddress, Port const &clientRTPPort, Port const &clientRTCPPort, int tcpSocketNum,
+	unsigned char rtpChannelId, unsigned char rtcpChannelId, TLSState *tlsState, struct sockaddr_storage &destinationAddress, u_int8_t & /*destinationTTL*/,
+	Boolean &isMulticast, Port &serverRTPPort, Port &serverRTCPPort, void *&streamToken)
 {
 	if (addressIsNull(destinationAddress))
 	{
@@ -196,8 +197,7 @@ void OnDemandServerMediaSubsession::getStreamParameters(unsigned clientSessionId
 		}
 
 		// Set up the state of the stream.  The stream will get started later:
-		streamToken = fLastStreamToken = new StreamState(*this, serverRTPPort,
-			serverRTCPPort, rtpSink, udpSink, streamBitrate, mediaSource, rtpGroupsock, rtcpGroupsock);
+		streamToken = fLastStreamToken = new StreamState(*this, serverRTPPort, serverRTCPPort, rtpSink, udpSink, streamBitrate, mediaSource, rtpGroupsock, rtcpGroupsock);
 	}
 
 	// Record these destinations as being for this client session id:
@@ -208,7 +208,7 @@ void OnDemandServerMediaSubsession::getStreamParameters(unsigned clientSessionId
 	}
 	else     // TCP
 	{
-		destinations = new Destinations(tcpSocketNum, rtpChannelId, rtcpChannelId);
+		destinations = new Destinations(tcpSocketNum, rtpChannelId, rtcpChannelId, tlsState);
 	}
 	fDestinationsHashTable->Add((char const *)clientSessionId, destinations);
 }
@@ -221,8 +221,8 @@ void OnDemandServerMediaSubsession::startStream(unsigned clientSessionId, void *
 	Destinations *destinations = (Destinations *)(fDestinationsHashTable->Lookup((char const *)clientSessionId));
 	if (streamState != NULL)
 	{
-		streamState->startPlaying(destinations, clientSessionId, rtcpRRHandler,
-			rtcpRRHandlerClientData, serverRequestAlternativeByteHandler, serverRequestAlternativeByteHandlerClientData);
+		streamState->startPlaying(destinations, clientSessionId,
+			rtcpRRHandler, rtcpRRHandlerClientData, serverRequestAlternativeByteHandler, serverRequestAlternativeByteHandlerClientData);
 		RTPSink *rtpSink = streamState->rtpSink(); // alias
 		if (rtpSink != NULL)
 		{
@@ -324,7 +324,8 @@ float OnDemandServerMediaSubsession::getCurrentNPT(void *streamToken)
 		if (rtpSink == NULL)
 			break;
 
-		return streamState->startNPT() + (rtpSink->mostRecentPresentationTime().tv_sec - rtpSink->initialPresentationTime().tv_sec)
+		return streamState->startNPT()
+			+ (rtpSink->mostRecentPresentationTime().tv_sec - rtpSink->initialPresentationTime().tv_sec)
 			+ (rtpSink->mostRecentPresentationTime().tv_usec - rtpSink->initialPresentationTime().tv_usec) / 1000000.0f;
 	} while (0);
 
@@ -499,7 +500,6 @@ void OnDemandServerMediaSubsession::setSDPLinesFromRTPSink(RTPSink *rtpSink, Fra
 		rangeLine, // a=range:... (if present)
 		auxSDPLine, // optional extra SDP line
 		trackId()); // a=control:<track-id>
-
 	delete[](char *)rangeLine;
 	delete[] rtpmapLine;
 
@@ -542,8 +542,8 @@ StreamState::~StreamState()
 	reclaim();
 }
 
-void StreamState::startPlaying(Destinations *dests, unsigned clientSessionId, TaskFunc *rtcpRRHandler,
-	void *rtcpRRHandlerClientData, ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler, void *serverRequestAlternativeByteHandlerClientData)
+void StreamState::startPlaying(Destinations *dests, unsigned clientSessionId, TaskFunc *rtcpRRHandler, void *rtcpRRHandlerClientData,
+	ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler, void *serverRequestAlternativeByteHandlerClientData)
 {
 	if (dests == NULL)
 		return;
@@ -561,14 +561,14 @@ void StreamState::startPlaying(Destinations *dests, unsigned clientSessionId, Ta
 		// Change RTP and RTCP to use the TCP socket instead of UDP:
 		if (fRTPSink != NULL)
 		{
-			fRTPSink->addStreamSocket(dests->tcpSocketNum, dests->rtpChannelId);
+			fRTPSink->addStreamSocket(dests->tcpSocketNum, dests->rtpChannelId, dests->tlsState);
 			RTPInterface::setServerRequestAlternativeByteHandler(fRTPSink->envir(),
 				dests->tcpSocketNum, serverRequestAlternativeByteHandler, serverRequestAlternativeByteHandlerClientData);
 			// So that we continue to handle RTSP commands from the client
 		}
 		if (fRTCPInstance != NULL)
 		{
-			fRTCPInstance->addStreamSocket(dests->tcpSocketNum, dests->rtcpChannelId);
+			fRTCPInstance->addStreamSocket(dests->tcpSocketNum, dests->rtcpChannelId, dests->tlsState);
 
 			struct sockaddr_storage tcpSocketNumAsAddress; // hack
 			tcpSocketNumAsAddress.ss_family = AF_INET;

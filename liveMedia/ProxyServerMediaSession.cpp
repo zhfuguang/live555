@@ -35,8 +35,14 @@ public:
 	ProxyServerMediaSubsession(MediaSubsession &mediaSubsession, portNumBits initialPortNum, Boolean multiplexRTCPWithRTP);
 	virtual ~ProxyServerMediaSubsession();
 
-	char const *codecName() const { return fCodecName; }
-	char const *url() const { return ((ProxyServerMediaSession *)fParentSession)->url(); }
+	char const *codecName() const
+	{
+		return fCodecName;
+	}
+	char const *url() const
+	{
+		return ((ProxyServerMediaSession *)fParentSession)->url();
+	}
 
 private: // redefined virtual functions
 	virtual FramedSource *createNewStreamSource(unsigned clientSessionId, unsigned &estBitrate);
@@ -49,7 +55,10 @@ private:
 	static void subsessionByeHandler(void *clientData);
 	void subsessionByeHandler();
 
-	int verbosityLevel() const { return ((ProxyServerMediaSession *)fParentSession)->fVerbosityLevel; }
+	int verbosityLevel() const
+	{
+		return ((ProxyServerMediaSession *)fParentSession)->fVerbosityLevel;
+	}
 
 private:
 	friend class ProxyRTSPClient;
@@ -180,7 +189,8 @@ void ProxyServerMediaSession::resetDESCRIBEState()
 	deleteAllSubsessions();
 
 	// Finally, delete the client "MediaSession" object that we had set up after receiving the response to the previous "DESCRIBE":
-	Medium::close(fClientMediaSession); fClientMediaSession = NULL;
+	Medium::close(fClientMediaSession);
+	fClientMediaSession = NULL;
 }
 
 ///////// RTSP 'response handlers' //////////
@@ -238,7 +248,8 @@ static void continueAfterGET_PARAMETER(RTSPClient *rtspClient, int resultCode, c
 ////////// "ProxyRTSPClient" implementation /////////
 
 UsageEnvironment &operator<<(UsageEnvironment &env, const ProxyRTSPClient &proxyRTSPClient)
-{ // used for debugging
+{
+	// used for debugging
 	return env << "ProxyRTSPClient[" << proxyRTSPClient.url() << "]";
 }
 
@@ -378,7 +389,8 @@ void ProxyRTSPClient::continueAfterSETUP(int resultCode)
 	// Dequeue the first "ProxyServerMediaSubsession" from our 'SETUP queue'.  It will be the one for which this "SETUP" was done:
 	ProxyServerMediaSubsession *smss = fSetupQueueHead; // Assert: != NULL
 	fSetupQueueHead = fSetupQueueHead->fNext;
-	if (fSetupQueueHead == NULL) fSetupQueueTail = NULL;
+	if (fSetupQueueHead == NULL)
+		fSetupQueueTail = NULL;
 
 	if (fSetupQueueHead != NULL)
 	{
@@ -605,7 +617,8 @@ FramedSource *ProxyServerMediaSubsession::createNewStreamSource(unsigned clientS
 				if (transcoder != NULL)
 				{
 					fClientMediaSubsession.addFilter(transcoder);
-					delete[](char *)fCodecName; fCodecName = outputCodecName;
+					delete[](char *)fCodecName;
+					fCodecName = outputCodecName;
 				}
 			}
 
@@ -667,7 +680,8 @@ FramedSource *ProxyServerMediaSubsession::createNewStreamSource(unsigned clientS
 				ProxyServerMediaSubsession *psms;
 				for (psms = proxyRTSPClient->fSetupQueueHead; psms != NULL; psms = psms->fNext)
 				{
-					if (psms == this) break;
+					if (psms == this)
+						break;
 				}
 				if (psms == NULL)
 				{
@@ -692,7 +706,8 @@ FramedSource *ProxyServerMediaSubsession::createNewStreamSource(unsigned clientS
 			// have been called here), so we know that the substream was previously "PAUSE"d.  Send "PLAY" downstream once again,
 			// to resume the stream:
 			if (!proxyRTSPClient->fLastCommandWasPLAY)
-			{ // so that we send only one "PLAY"; not one for each subsession
+			{
+				// so that we send only one "PLAY"; not one for each subsession
 				proxyRTSPClient->sendPlayCommand(fClientMediaSubsession.parentSession(),
 					::continueAfterPLAY, -1.0f/*resume from previous point*/, -1.0f, 1.0f, proxyRTSPClient->auth());
 				proxyRTSPClient->fLastCommandWasPLAY = True;
@@ -701,7 +716,8 @@ FramedSource *ProxyServerMediaSubsession::createNewStreamSource(unsigned clientS
 	}
 
 	estBitrate = fClientMediaSubsession.bandwidth();
-	if (estBitrate == 0) estBitrate = 50; // kbps, estimate
+	if (estBitrate == 0)
+		estBitrate = 50; // kbps, estimate
 	return fClientMediaSubsession.readSource();
 }
 
@@ -720,7 +736,8 @@ void ProxyServerMediaSubsession::closeStreamSource(FramedSource * /*inputSource*
 		ProxyServerMediaSession *const sms = (ProxyServerMediaSession *)fParentSession;
 		ProxyRTSPClient *const proxyRTSPClient = sms->fProxyRTSPClient;
 		if (proxyRTSPClient->fLastCommandWasPLAY)
-		{ // so that we send only one "PAUSE"; not one for each subsession
+		{
+			// so that we send only one "PAUSE"; not one for each subsession
 			if (fParentSession->referenceCount() > 1)
 			{
 				// There are other client(s) still streaming other subsessions of this stream.
@@ -997,7 +1014,11 @@ void PresentationTimeSessionNormalizer::normalizePresentationTime(PresentationTi
 		// Compute a normalized presentation time: toPT = fromPT + fPTAdjustment
 		toPT.tv_sec = fromPT.tv_sec + fPTAdjustment.tv_sec - 1;
 		toPT.tv_usec = fromPT.tv_usec + fPTAdjustment.tv_usec + MILLION;
-		while (toPT.tv_usec > MILLION) { ++toPT.tv_sec; toPT.tv_usec -= MILLION; }
+		while (toPT.tv_usec > MILLION)
+		{
+			++toPT.tv_sec;
+			toPT.tv_usec -= MILLION;
+		}
 
 		// Because "ssNormalizer"s relayed presentation times are accurate from now on, enable RTCP "SR" reports for its "RTPSink":
 		RTPSink *const rtpSink = ssNormalizer->fRTPSink;
@@ -1019,7 +1040,8 @@ void PresentationTimeSessionNormalizer::removePresentationTimeSubsessionNormaliz
 	else
 	{
 		PresentationTimeSubsessionNormalizer **ssPtrPtr = &(fSubsessionNormalizers->fNext);
-		while (*ssPtrPtr != ssNormalizer) ssPtrPtr = &((*ssPtrPtr)->fNext);
+		while (*ssPtrPtr != ssNormalizer)
+			ssPtrPtr = &((*ssPtrPtr)->fNext);
 		*ssPtrPtr = (*ssPtrPtr)->fNext;
 	}
 }
@@ -1054,7 +1076,8 @@ void PresentationTimeSubsessionNormalizer::afterGettingFrame(unsigned frameSize,
 
 	// Hack for JPEG/RTP proxying.  Because we're proxying JPEG by just copying the raw JPEG/RTP payloads, without interpreting them,
 	// we need to also 'copy' the RTP 'M' (marker) bit from the "RTPSource" to the "RTPSink":
-	if (fRTPSource->curPacketMarkerBit() && strcmp(fCodecName, "JPEG") == 0) ((SimpleRTPSink *)fRTPSink)->setMBitOnNextPacket();
+	if (fRTPSource->curPacketMarkerBit() && strcmp(fCodecName, "JPEG") == 0)
+		((SimpleRTPSink *)fRTPSink)->setMBitOnNextPacket();
 
 	// Complete delivery:
 	FramedSource::afterGetting(this);

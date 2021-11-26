@@ -48,6 +48,7 @@ public:
 	Boolean noteMembership(u_int32_t ssrc, unsigned curTimeCount)
 	{
 		Boolean isNew = !isMember(ssrc);
+
 		if (isNew)
 		{
 			++fNumMembers;
@@ -55,6 +56,7 @@ public:
 
 		// Record the current time, so we can age stale members
 		fTable->Add((char *)(long)ssrc, (void *)(long)curTimeCount);
+
 		return isNew;
 	}
 
@@ -276,6 +278,7 @@ RTCPInstance *RTCPInstance::createNew(UsageEnvironment &env, Groupsock *RTCPgs, 
 Boolean RTCPInstance::lookupByName(UsageEnvironment &env, char const *instanceName, RTCPInstance *&resultInstance)
 {
 	resultInstance = NULL; // unless we succeed
+
 	Medium *medium;
 	if (!Medium::lookupByName(env, instanceName, medium))
 		return False;
@@ -408,26 +411,26 @@ void RTCPInstance::sendAppPacket(u_int8_t subtype, char const *name, u_int8_t *a
 	sendBuiltPacket();
 }
 
-void RTCPInstance::setStreamSocket(int sockNum, unsigned char streamChannelId)
+void RTCPInstance::setStreamSocket(int sockNum, unsigned char streamChannelId, TLSState *tlsState)
 {
 	// Turn off background read handling:
 	fRTCPInterface.stopNetworkReading();
 
 	// Switch to RTCP-over-TCP:
-	fRTCPInterface.setStreamSocket(sockNum, streamChannelId);
+	fRTCPInterface.setStreamSocket(sockNum, streamChannelId, tlsState);
 
 	// Turn background reading back on:
 	TaskScheduler::BackgroundHandlerProc *handler = (TaskScheduler::BackgroundHandlerProc *)&incomingReportHandler;
 	fRTCPInterface.startNetworkReading(handler);
 }
 
-void RTCPInstance::addStreamSocket(int sockNum, unsigned char streamChannelId)
+void RTCPInstance::addStreamSocket(int sockNum, unsigned char streamChannelId, TLSState *tlsState)
 {
 	// First, turn off background read handling for the default (UDP) socket:
 	envir().taskScheduler().turnOffBackgroundReadHandling(fRTCPInterface.gs()->socketNum());
 
 	// Add the RTCP-over-TCP interface:
-	fRTCPInterface.addStreamSocket(sockNum, streamChannelId);
+	fRTCPInterface.addStreamSocket(sockNum, streamChannelId, tlsState);
 
 	// Turn on background reading for this socket (in case it's not on already):
 	TaskScheduler::BackgroundHandlerProc *handler = (TaskScheduler::BackgroundHandlerProc *)&incomingReportHandler;
@@ -471,7 +474,7 @@ void RTCPInstance::incomingReportHandler1()
 		unsigned char tcpStreamChannelId;
 		Boolean packetReadWasIncomplete;
 		Boolean readResult = fRTCPInterface.handleRead(&fInBuf[fNumBytesAlreadyRead],
-				maxRTCPPacketSize - fNumBytesAlreadyRead, numBytesRead, fromAddress, tcpSocketNum, tcpStreamChannelId, packetReadWasIncomplete);
+			maxRTCPPacketSize - fNumBytesAlreadyRead, numBytesRead, fromAddress, tcpSocketNum, tcpStreamChannelId, packetReadWasIncomplete);
 
 		unsigned packetSize = 0;
 		if (packetReadWasIncomplete)
@@ -717,8 +720,7 @@ void RTCPInstance::processIncomingReport(unsigned packetSize, struct sockaddr_st
 						{
 							// The 'reason' length field is too large!
 #ifdef DEBUG
-							fprintf(stderr, "\nError: The 'reason' length %d is too large (it should be <= %d)\n",
-								reasonLength, length - 1);
+							fprintf(stderr, "\nError: The 'reason' length %d is too large (it should be <= %d)\n", reasonLength, length - 1);
 #endif
 							reasonLength = length - 1;
 						}
@@ -1197,9 +1199,7 @@ void RTCPInstance::addRR()
 	enqueueCommonReportSuffix();
 }
 
-void RTCPInstance::enqueueCommonReportPrefix(unsigned char packetType,
-	u_int32_t SSRC,
-	unsigned numExtraWords)
+void RTCPInstance::enqueueCommonReportPrefix(unsigned char packetType, u_int32_t SSRC, unsigned numExtraWords)
 {
 	unsigned numReportingSources;
 	if (fSource == NULL)
@@ -1281,7 +1281,6 @@ void RTCPInstance::enqueueReportBlock(RTPReceptionStats *stats)
 
 	fOutBuf->enqueueWord((lossFraction << 24) | totNumLost);
 	fOutBuf->enqueueWord(highestExtSeqNumReceived);
-
 	fOutBuf->enqueueWord(stats->jitter());
 
 	unsigned NTPmsw = stats->lastReceivedSR_NTPmsw();
@@ -1416,6 +1415,7 @@ void RTCPInstance::addBYE(char const *reason)
 void RTCPInstance::schedule(double nextTime)
 {
 	fNextReportTime = nextTime;
+
 	double secondsToDelay = nextTime - dTimeNow();
 	if (secondsToDelay < 0)
 		secondsToDelay = 0;

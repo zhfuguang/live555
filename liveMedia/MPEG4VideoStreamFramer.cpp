@@ -685,8 +685,8 @@ unsigned MPEG4VideoStreamParser::parseVideoObjectPlane()
 				fPrevPictureCountDelta = pictureCountDelta;
 				fTotalTicksSinceLastTimeCode = newTotalTicks;
 				fSecondsSinceLastTimeCode += modulo_time_base;
-	}
-}
+			}
+		}
 	}
 	fJustSawTimeCode = False; // for next time
 

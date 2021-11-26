@@ -57,9 +57,6 @@ unsigned RTSPClient::sendSetupCommand(MediaSubsession &subsession, responseHandl
 {
 	if (fTunnelOverHTTPPortNum != 0)
 		streamUsingTCP = True; // RTSP-over-HTTP tunneling uses TCP (by definition)
-	// However, if we're using a TLS connection, streaming over TCP doesn't work, so disable it:
-	if (fTLS.isNeeded)
-		streamUsingTCP = False;
 	if (fCurrentAuthenticator < authenticator)
 		fCurrentAuthenticator = *authenticator;
 
@@ -249,6 +246,7 @@ Boolean RTSPClient::changeResponseHandler(unsigned cseq, responseHandler *newRes
 Boolean RTSPClient::lookupByName(UsageEnvironment &env, char const *instanceName, RTSPClient *&resultClient)
 {
 	resultClient = NULL; // unless we succeed
+
 	Medium *medium;
 	if (!Medium::lookupByName(env, instanceName, medium))
 		return False;
@@ -294,23 +292,23 @@ Boolean RTSPClient::parseRTSPURL(char const *url, char *&username, char *&passwo
 	do
 	{
 		// Parse the URL as "rtsp://[<username>[:<password>]@]<server-address-or-name>[:<port>][/<stream-name>]" (or "rtsps://...")
-		char const *prefix1 = "rtsp://";
-		unsigned const prefix1Length = 7;
-		char const *prefix2 = "rtsps://";
-		unsigned const prefix2Length = 8;
+		char const *rtspPrefix = "rtsp://";
+		unsigned const rtspPrefixLength = 7;
+		char const *rtspsPrefix = "rtsps://";
+		unsigned const rtspsPrefixLength = 8;
 
 		portNumBits defaultPortNumber;
 		char const *from;
-		if (_strncasecmp(url, prefix1, prefix1Length) == 0)
+		if (_strncasecmp(url, rtspPrefix, rtspPrefixLength) == 0)
 		{
 			defaultPortNumber = 554;
-			from = &url[prefix1Length];
+			from = &url[rtspPrefixLength];
 		}
-		else if (_strncasecmp(url, prefix2, prefix2Length) == 0)
+		else if (_strncasecmp(url, rtspsPrefix, rtspsPrefixLength) == 0)
 		{
 			useTLS();
 			defaultPortNumber = 322;
-			from = &url[prefix2Length];
+			from = &url[rtspsPrefixLength];
 		}
 		else
 		{
@@ -440,14 +438,16 @@ void RTSPClient::setUserAgentString(char const *userAgentName)
 
 unsigned RTSPClient::responseBufferSize = 20000; // default value; you can reassign this in your application if you need to
 
-RTSPClient::RTSPClient(UsageEnvironment &env, char const *rtspURL,
-	int verbosityLevel, char const *applicationName, portNumBits tunnelOverHTTPPortNum, int socketNumToServer)
+RTSPClient::RTSPClient(UsageEnvironment &env, char const *rtspURL, int verbosityLevel, char const *applicationName, portNumBits tunnelOverHTTPPortNum, int socketNumToServer)
 	: Medium(env), desiredMaxIncomingPacketSize(0), fVerbosityLevel(verbosityLevel), fCSeq(1)
-	, fAllowBasicAuthentication(True), fTunnelOverHTTPPortNum(tunnelOverHTTPPortNum), fUserAgentHeaderStr(NULL), fUserAgentHeaderStrLen(0)
+	, fAllowBasicAuthentication(True), fTunnelOverHTTPPortNum(tunnelOverHTTPPortNum)
+	, fUserAgentHeaderStr(NULL), fUserAgentHeaderStrLen(0)
 	, fInputSocketNum(-1), fOutputSocketNum(-1), fBaseURL(NULL), fTCPStreamIdCount(0)
-	, fLastSessionId(NULL), fSessionTimeoutParameter(0), fSessionCookieCounter(0), fHTTPTunnelingConnectionIsPending(False), fTLS(*this)
+	, fLastSessionId(NULL), fSessionTimeoutParameter(0), fSessionCookieCounter(0), fHTTPTunnelingConnectionIsPending(False)
+	, fTLS(*this)
 {
 	setBaseURL(rtspURL);
+
 	fResponseBuffer = new char[responseBufferSize + 1];
 	resetResponseBuffer();
 
@@ -456,8 +456,7 @@ RTSPClient::RTSPClient(UsageEnvironment &env, char const *rtspURL,
 		// This socket number is (assumed to be) already connected to the server.
 		// Use it, and arrange to handle responses to requests sent on it:
 		fInputSocketNum = fOutputSocketNum = socketNumToServer;
-		env.taskScheduler().setBackgroundHandling(fInputSocketNum,
-			SOCKET_READABLE | SOCKET_EXCEPTION, (TaskScheduler::BackgroundHandlerProc *)&incomingDataHandler, this);
+		env.taskScheduler().setBackgroundHandling(fInputSocketNum, SOCKET_READABLE | SOCKET_EXCEPTION, (TaskScheduler::BackgroundHandlerProc *)&incomingDataHandler, this);
 	}
 
 	// Set the "User-Agent:" header to use in each request:
@@ -484,6 +483,7 @@ RTSPClient::RTSPClient(UsageEnvironment &env, char const *rtspURL,
 RTSPClient::~RTSPClient()
 {
 	reset();
+
 	delete[] fResponseBuffer;
 	delete[] fUserAgentHeaderStr;
 }
@@ -497,6 +497,7 @@ void RTSPClient::reset()
 	fRequestsAwaitingResponse.reset();
 
 	setBaseURL(NULL);
+
 	fCurrentAuthenticator.reset();
 
 	delete[] fLastSessionId;
@@ -556,10 +557,12 @@ unsigned RTSPClient::sendRequest(RequestRecord *request)
 		}
 
 		// Construct and send the command:
+
 		// First, construct command-specific headers that we need:
 
 		char *cmdURL = fBaseURL; // by default
 		Boolean cmdURLWasAllocated = False;
+
 		char const *protocolStr = "RTSP/1.0"; // by default
 
 		char *extraHeaders = (char *)""; // by default
@@ -587,6 +590,7 @@ unsigned RTSPClient::sendRequest(RequestRecord *request)
 		}
 
 		char *authenticatorStr = createAuthenticatorString(request->commandName(), fBaseURL);
+
 		char const *const cmdFmt =
 			"%s %s %s\r\n"
 			"CSeq: %d\r\n"
@@ -596,6 +600,7 @@ unsigned RTSPClient::sendRequest(RequestRecord *request)
 			"%s"
 			"\r\n"
 			"%s";
+
 		unsigned cmdSize = strlen(cmdFmt)
 			+ strlen(request->commandName()) + strlen(cmdURL) + strlen(protocolStr)
 			+ 20 /* max int len */
@@ -614,8 +619,8 @@ unsigned RTSPClient::sendRequest(RequestRecord *request)
 			extraHeaders,
 			contentLengthHeader,
 			contentStr);
-		delete[] authenticatorStr;
 
+		delete[] authenticatorStr;
 		if (cmdURLWasAllocated)
 			delete[] cmdURL;
 		if (extraHeadersWereAllocated)
@@ -651,6 +656,7 @@ unsigned RTSPClient::sendRequest(RequestRecord *request)
 		// The command send succeeded, so enqueue the request record, so that its response (when it comes) can be handled.
 		// However, note that we do not expect a response to a POST command with RTSP-over-HTTP, so don't enqueue that.
 		int cseq = request->cseq();
+
 		if (fTunnelOverHTTPPortNum == 0 || strcmp(request->commandName(), "POST") != 0)
 		{
 			fRequestsAwaitingResponse.enqueue(request);
@@ -699,6 +705,7 @@ static char *createSpeedString(float speed)
 	{
 		sprintf(buf, "Speed: %.3f\r\n", speed);
 	}
+
 	return strDup(buf);
 }
 
@@ -715,12 +722,14 @@ static char *createScaleString(float scale, float currentScale)
 		Locale l("C", Numeric);
 		sprintf(buf, "Scale: %f\r\n", scale);
 	}
+
 	return strDup(buf);
 }
 
 static char *createRangeString(double start, double end, char const *absStartTime, char const *absEndTime)
 {
 	char buf[100];
+
 	if (absStartTime != NULL)
 	{
 		// Create a "Range:" header that specifies 'absolute' time values:
@@ -739,6 +748,7 @@ static char *createRangeString(double start, double end, char const *absStartTim
 	else
 	{
 		// Create a "Range:" header that specifies relative (i.e., NPT) time values:
+
 		if (start < 0)
 		{
 			// We're resuming from a PAUSE; there's no "Range:" header at all
@@ -757,6 +767,7 @@ static char *createRangeString(double start, double end, char const *absStartTim
 			sprintf(buf, "Range: npt=%.3f-%.3f\r\n", start, end);
 		}
 	}
+
 	return strDup(buf);
 }
 
@@ -764,6 +775,7 @@ Boolean RTSPClient::setRequestFields(RequestRecord *request, char *&cmdURL,
 	Boolean &cmdURLWasAllocated, char const *&protocolStr, char *&extraHeaders, Boolean &extraHeadersWereAllocated)
 {
 	// Set various fields that will appear in our outgoing request, depending upon the particular command that we are sending.
+
 	if (strcmp(request->commandName(), "DESCRIBE") == 0)
 	{
 		extraHeaders = (char *)"Accept: application/sdp\r\n";
@@ -881,6 +893,7 @@ Boolean RTSPClient::setRequestFields(RequestRecord *request, char *&cmdURL,
 		AddressString serverAddressString(serverAddr);
 
 		protocolStr = "HTTP/1.0";
+
 		if (strcmp(request->commandName(), "GET") == 0)
 		{
 			// Create a 'session cookie' string, using MD5:
@@ -917,7 +930,6 @@ Boolean RTSPClient::setRequestFields(RequestRecord *request, char *&cmdURL,
 				"Cache-Control: no-cache\r\n"
 				"Content-Length: 32767\r\n"
 				"Expires: Sun, 9 Jan 1972 00:00:00 GMT\r\n";
-
 			unsigned extraHeadersSize = strlen(extraHeadersFmt) + strlen(serverAddressString.val()) + strlen(fSessionCookie);
 			extraHeaders = new char[extraHeadersSize];
 			extraHeadersWereAllocated = True;
@@ -939,6 +951,7 @@ Boolean RTSPClient::setRequestFields(RequestRecord *request, char *&cmdURL,
 		{
 			// Session-level operation
 			cmdURL = (char *)sessionURL(*request->session());
+
 			sessionId = fLastSessionId;
 			originalScale = request->session()->scale();
 		}
@@ -966,7 +979,6 @@ Boolean RTSPClient::setRequestFields(RequestRecord *request, char *&cmdURL,
 			char *rangeStr = createRangeString(request->start(), request->end(), request->absStartTime(), request->absEndTime());
 			extraHeaders = new char[strlen(sessionStr) + strlen(scaleStr) + strlen(speedStr) + strlen(rangeStr) + 1];
 			extraHeadersWereAllocated = True;
-
 			sprintf(extraHeaders, "%s%s%s%s", sessionStr, scaleStr, speedStr, rangeStr);
 			delete[] sessionStr;
 			delete[] scaleStr;
@@ -1016,6 +1028,7 @@ int RTSPClient::openConnection()
 	do
 	{
 		// Set up a connection to the server.  Begin by parsing the URL:
+
 		char *username;
 		char *password;
 		NetAddress destAddress;
@@ -1039,7 +1052,6 @@ int RTSPClient::openConnection()
 		fInputSocketNum = setupStreamSocket(envir(), 0, fServerAddress.ss_family);
 		if (fInputSocketNum < 0)
 			break;
-
 		ignoreSigPipeOnSocket(fInputSocketNum); // so that servers on the same host that get killed don't also kill us
 		if (fOutputSocketNum < 0)
 			fOutputSocketNum = fInputSocketNum;
@@ -1086,8 +1098,7 @@ int RTSPClient::connectToServer(int socketNum, portNumBits remotePortNum)
 		if (err == EINPROGRESS || err == EWOULDBLOCK)
 		{
 			// The connection is pending; we'll need to handle it later.  Wait for our socket to be 'writable', or have an exception.
-			envir().taskScheduler().setBackgroundHandling(socketNum,
-				SOCKET_WRITABLE | SOCKET_EXCEPTION, (TaskScheduler::BackgroundHandlerProc *)&connectionHandler, this);
+			envir().taskScheduler().setBackgroundHandling(socketNum, SOCKET_WRITABLE | SOCKET_EXCEPTION, (TaskScheduler::BackgroundHandlerProc *)&connectionHandler, this);
 			return 0;
 		}
 		envir().setResultErrMsg("connect() failed: ");
@@ -1097,8 +1108,7 @@ int RTSPClient::connectToServer(int socketNum, portNumBits remotePortNum)
 	}
 
 	// The connection succeeded.  Arrange to handle responses to requests sent on it:
-	envir().taskScheduler().setBackgroundHandling(fInputSocketNum,
-		SOCKET_READABLE | SOCKET_EXCEPTION, (TaskScheduler::BackgroundHandlerProc *)&incomingDataHandler, this);
+	envir().taskScheduler().setBackgroundHandling(fInputSocketNum, SOCKET_READABLE | SOCKET_EXCEPTION, (TaskScheduler::BackgroundHandlerProc *)&incomingDataHandler, this);
 
 	return 1;
 }
@@ -1115,7 +1125,6 @@ char *RTSPClient::createAuthenticatorString(char const *cmd, char const *url)
 			char const *const authFmt =
 				"Authorization: Digest username=\"%s\", realm=\"%s\", "
 				"nonce=\"%s\", uri=\"%s\", response=\"%s\"\r\n";
-
 			char const *response = auth.computeDigestResponse(cmd, url);
 			unsigned authBufSize = strlen(authFmt) + strlen(auth.username()) + strlen(auth.realm()) + strlen(auth.nonce()) + strlen(url) + strlen(response);
 			authenticatorStr = new char[authBufSize];
@@ -1125,6 +1134,7 @@ char *RTSPClient::createAuthenticatorString(char const *cmd, char const *url)
 		else     // Basic authentication
 		{
 			char const *const authFmt = "Authorization: Basic %s\r\n";
+
 			unsigned usernamePasswordLength = strlen(auth.username()) + 1 + strlen(auth.password());
 			char *usernamePassword = new char[usernamePasswordLength + 1];
 			sprintf(usernamePassword, "%s:%s", auth.username(), auth.password());
@@ -1216,8 +1226,7 @@ void RTSPClient::handleRequestError(RequestRecord *request)
 
 Boolean RTSPClient::parseResponseCode(char const *line, unsigned &responseCode, char const *&responseString)
 {
-	if (sscanf(line, "RTSP/%*s%u", &responseCode) != 1 &&
-		sscanf(line, "HTTP/%*s%u", &responseCode) != 1)
+	if (sscanf(line, "RTSP/%*s%u", &responseCode) != 1 && sscanf(line, "HTTP/%*s%u", &responseCode) != 1)
 		return False;
 	// Note: We check for HTTP responses as well as RTSP responses, both in order to setup RTSP-over-HTTP tunneling,
 	// and so that we get back a meaningful error if the client tried to mistakenly send a RTSP command to a HTTP-only server.
@@ -1241,8 +1250,9 @@ void RTSPClient::handleIncomingRequest()
 	char cseq[RTSP_PARAM_STRING_MAX];
 	char sessionId[RTSP_PARAM_STRING_MAX];
 	unsigned contentLength;
+	Boolean urlIsRTSPS;
 	if (!parseRTSPRequestString(fResponseBuffer, fResponseBytesAlreadySeen, cmdName, sizeof cmdName,
-		urlPreSuffix, sizeof urlPreSuffix, urlSuffix, sizeof urlSuffix, cseq, sizeof cseq, sessionId, sizeof sessionId, contentLength))
+		urlPreSuffix, sizeof urlPreSuffix, urlSuffix, sizeof urlSuffix, cseq, sizeof cseq, sessionId, sizeof sessionId, contentLength, urlIsRTSPS))
 	{
 		return;
 	}
@@ -1274,8 +1284,7 @@ Boolean RTSPClient::checkForHeader(char const *line, char const *headerName, uns
 	return True;
 }
 
-Boolean RTSPClient::parseTransportParams(char const *paramsStr, char *&serverAddressStr,
-	portNumBits &serverPortNum, unsigned char &rtpChannelId, unsigned char &rtcpChannelId)
+Boolean RTSPClient::parseTransportParams(char const *paramsStr, char *&serverAddressStr, portNumBits &serverPortNum, unsigned char &rtpChannelId, unsigned char &rtcpChannelId)
 {
 	// Initialize the return parameters to 'not found' values:
 	serverAddressStr = NULL;
@@ -1328,8 +1337,7 @@ Boolean RTSPClient::parseTransportParams(char const *paramsStr, char *&serverAdd
 			delete[] foundDestinationStr;
 			foundDestinationStr = strDup(field + 12);
 		}
-		else if (sscanf(field, "port=%hu-%hu", &multicastPortNumRTP, &multicastPortNumRTCP) == 2 ||
-			sscanf(field, "port=%hu", &multicastPortNumRTP) == 1)
+		else if (sscanf(field, "port=%hu-%hu", &multicastPortNumRTP, &multicastPortNumRTCP) == 2 || sscanf(field, "port=%hu", &multicastPortNumRTP) == 1)
 		{
 			foundMulticastPortNum = True;
 		}
@@ -1463,14 +1471,14 @@ Boolean RTSPClient::handleSETUPResponse(MediaSubsession &subsession, char const 
 			// Tell the subsession to receive RTP (and send/receive RTCP) over the RTSP stream:
 			if (subsession.rtpSource() != NULL)
 			{
-				subsession.rtpSource()->setStreamSocket(fInputSocketNum, subsession.rtpChannelId);
+				subsession.rtpSource()->setStreamSocket(fInputSocketNum, subsession.rtpChannelId, &fTLS);
 				// So that we continue to receive & handle RTSP commands and responses from the server
 				subsession.rtpSource()->enableRTCPReports() = False;
 				// To avoid confusing the server (which won't start handling RTP/RTCP-over-TCP until "PLAY"), don't send RTCP "RR"s yet
 				increaseReceiveBufferTo(envir(), fInputSocketNum, 50 * 1024);
 			}
 			if (subsession.rtcpInstance() != NULL)
-				subsession.rtcpInstance()->setStreamSocket(fInputSocketNum, subsession.rtcpChannelId);
+				subsession.rtcpInstance()->setStreamSocket(fInputSocketNum, subsession.rtcpChannelId, &fTLS);
 			RTPInterface::setServerRequestAlternativeByteHandler(envir(), fInputSocketNum, handleAlternativeRequestByte, this);
 		}
 		else
@@ -1546,9 +1554,7 @@ Boolean RTSPClient::handlePLAYResponse(MediaSession *session, MediaSubsession *s
 			speedOK = True;
 			Boolean startTimeIsNow;
 			if (rangeParamsStr != NULL &&
-				!parseRangeParam(rangeParamsStr,
-					subsession->_playStartTime(), subsession->_playEndTime(),
-					subsession->_absStartTime(), subsession->_absEndTime(), startTimeIsNow))
+				!parseRangeParam(rangeParamsStr, subsession->_playStartTime(), subsession->_playEndTime(), subsession->_absStartTime(), subsession->_absEndTime(), startTimeIsNow))
 				break;
 			rangeOK = True;
 
@@ -1727,8 +1733,7 @@ void RTSPClient::handleAlternativeRequestByte1(u_int8_t requestByte)
 	else if (requestByte == 0xFE)
 	{
 		// Another hack: The new handler of the input TCP socket no longer needs it, so take back control:
-		envir().taskScheduler().setBackgroundHandling(fInputSocketNum,
-			SOCKET_READABLE | SOCKET_EXCEPTION, (TaskScheduler::BackgroundHandlerProc *)&incomingDataHandler, this);
+		envir().taskScheduler().setBackgroundHandling(fInputSocketNum, SOCKET_READABLE | SOCKET_EXCEPTION, (TaskScheduler::BackgroundHandlerProc *)&incomingDataHandler, this);
 	}
 	else
 	{
@@ -1861,6 +1866,7 @@ void RTSPClient::responseHandlerForHTTP_GET1(int responseCode, char *responseStr
 Boolean RTSPClient::setupHTTPTunneling2()
 {
 	fHTTPTunnelingConnectionIsPending = False;
+
 	// Send a HTTP "POST", to set up the client->server link.  (Note that we won't see a reply to the "POST".)
 	return sendRequest(new RequestRecord(1, "POST", NULL)) != 0;
 }
@@ -1875,8 +1881,7 @@ void RTSPClient::connectionHandler1()
 {
 	// Restore normal handling on our sockets:
 	envir().taskScheduler().disableBackgroundHandling(fOutputSocketNum);
-	envir().taskScheduler().setBackgroundHandling(fInputSocketNum,
-		SOCKET_READABLE | SOCKET_EXCEPTION, (TaskScheduler::BackgroundHandlerProc *)&incomingDataHandler, this);
+	envir().taskScheduler().setBackgroundHandling(fInputSocketNum, SOCKET_READABLE | SOCKET_EXCEPTION, (TaskScheduler::BackgroundHandlerProc *)&incomingDataHandler, this);
 
 	// Move all requests awaiting connection into a new, temporary queue, to clear "fRequestsAwaitingConnection"
 	// (so that "sendRequest()" doesn't get confused by "fRequestsAwaitingConnection" being nonempty, and enqueue them all over again).
@@ -1972,6 +1977,7 @@ static char *getLine(char *startOfLine)
 			return ptr;
 		}
 	}
+
 	return NULL;
 }
 
@@ -2437,6 +2443,7 @@ RTSPClient::RequestRecord::~RequestRecord()
 {
 	// Delete the rest of the list first:
 	delete fNext;
+
 	delete[] fAbsStartTime;
 	delete[] fAbsEndTime;
 	delete[] fContentStr;
@@ -2574,6 +2581,7 @@ void HandlerServerForREGISTERCommand::implementCmd_REGISTER(char const *cmd/*"RE
 	{
 		// Create a new "RTSPClient" object, and call our 'creation function' with it:
 		RTSPClient *newRTSPClient = createNewRTSPClient(url, fVerbosityLevel, fApplicationName, socketToRemoteServer);
+
 		if (fCreationFunc != NULL)
 			(*fCreationFunc)(newRTSPClient, deliverViaTCP);
 	}

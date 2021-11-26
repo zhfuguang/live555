@@ -354,7 +354,7 @@ int setupStreamSocket(UsageEnvironment &env, Port port, int domain, Boolean make
 	// #define REUSE_FOR_TCP
 #ifdef REUSE_FOR_TCP
 #if defined(__WIN32__) || defined(_WIN32)
-  // Windoze doesn't properly handle SO_REUSEPORT
+	// Windoze doesn't properly handle SO_REUSEPORT
 #else
 #ifdef SO_REUSEPORT
 	if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEPORT, (const char *)&reuseFlag, sizeof reuseFlag) < 0)
@@ -421,7 +421,7 @@ int setupStreamSocket(UsageEnvironment &env, Port port, int domain, Boolean make
 		}
 	}
 
-	// Set the keep alive mechanism for the TCP socket, to avoid "ghost sockets" 
+	// Set the keep alive mechanism for the TCP socket, to avoid "ghost sockets"
 	//    that remain after an interrupted communication.
 	if (setKeepAlive)
 	{
@@ -446,12 +446,12 @@ int readSocket(UsageEnvironment &env, int socket, unsigned char *buffer, unsigne
 		int err = env.getErrno();
 		if (err == 111 /*ECONNREFUSED (Linux)*/
 #if defined(__WIN32__) || defined(_WIN32)
-	// What a piece of crap Windows is.  Sometimes
-	// recvfrom() returns -1, but with an 'errno' of 0.
-	// This appears not to be a real error; just treat
-	// it as if it were a read of zero bytes, and hope
-	// we don't have to do anything else to 'reset'
-	// this alleged error:
+			// What a piece of crap Windows is.  Sometimes
+			// recvfrom() returns -1, but with an 'errno' of 0.
+			// This appears not to be a real error; just treat
+			// it as if it were a read of zero bytes, and hope
+			// we don't have to do anything else to 'reset'
+			// this alleged error:
 			|| err == 0 || err == EWOULDBLOCK
 #else
 			|| err == EAGAIN
@@ -901,7 +901,7 @@ ipv4AddressBits ourIPv4Address(UsageEnvironment &env)
 {
 	if (ReceivingInterfaceAddr != INADDR_ANY)
 	{
-		// Hack: If we were told to receive on a specific interface address, then 
+		// Hack: If we were told to receive on a specific interface address, then
 		// define this to be our ip address:
 		_ourIPv4Address = ReceivingInterfaceAddr;
 	}
@@ -1029,41 +1029,45 @@ void getOurIPAddresses(UsageEnvironment &env)
 	}
 #endif
 
-	if (!getifaddrsWorks) do
+	if (!getifaddrsWorks)
 	{
-		// We couldn't find our address using "getifaddrs()",
-		// so try instead to look it up directly - by first getting our host name,
-		// and then resolving this host name
-		char hostname[100];
-		hostname[0] = '\0';
-		int result = gethostname(hostname, sizeof hostname);
-		if (result != 0 || hostname[0] == '\0')
+		do
 		{
-			env.setResultErrMsg("initial gethostname() failed");
-			break;
-		}
-
-		// Try to resolve "hostname" to one or more IP addresses:
-		NetAddressList addresses(hostname);
-		NetAddressList::Iterator iter(addresses);
-
-		// Look at each address, rejecting any that are bad.
-		// We take the first IPv4 and first IPv6 addresses, if any.
-		NetAddress const *address;
-		while ((address = iter.nextAddress()) != NULL)
-		{
-			if (isBadAddressForUs(*address)) continue;
-
-			if (address->length() == sizeof(ipv4AddressBits) && addressIsNull(foundIPv4Address))
+			// We couldn't find our address using "getifaddrs()",
+			// so try instead to look it up directly - by first getting our host name,
+			// and then resolving this host name
+			char hostname[100];
+			hostname[0] = '\0';
+			int result = gethostname(hostname, sizeof hostname);
+			if (result != 0 || hostname[0] == '\0')
 			{
-				copyAddress(foundIPv4Address, address);
+				env.setResultErrMsg("initial gethostname() failed");
+				break;
 			}
-			else if (address->length() == sizeof(ipv6AddressBits) && addressIsNull(foundIPv6Address))
+
+			// Try to resolve "hostname" to one or more IP addresses:
+			NetAddressList addresses(hostname);
+			NetAddressList::Iterator iter(addresses);
+
+			// Look at each address, rejecting any that are bad.
+			// We take the first IPv4 and first IPv6 addresses, if any.
+			NetAddress const *address;
+			while ((address = iter.nextAddress()) != NULL)
 			{
-				copyAddress(foundIPv6Address, address);
+				if (isBadAddressForUs(*address))
+					continue;
+
+				if (address->length() == sizeof(ipv4AddressBits) && addressIsNull(foundIPv4Address))
+				{
+					copyAddress(foundIPv4Address, address);
+				}
+				else if (address->length() == sizeof(ipv6AddressBits) && addressIsNull(foundIPv6Address))
+				{
+					copyAddress(foundIPv6Address, address);
+				}
 			}
-		}
-	} while (0);
+		} while (0);
+	}
 
 	// Note the IPv4 and IPv6 addresses that we found:
 	_ourIPv4Address = ((sockaddr_in &)foundIPv4Address).sin_addr.s_addr;
@@ -1071,7 +1075,8 @@ void getOurIPAddresses(UsageEnvironment &env)
 	for (unsigned i = 0; i < 16; ++i)
 	{
 		_ourIPv6Address[i] = ((sockaddr_in6 &)foundIPv6Address).sin6_addr.s6_addr[i];
-		if (_ourIPv6Address[i] != 0) _weHaveAnIPv6Address = True;
+		if (_ourIPv6Address[i] != 0)
+			_weHaveAnIPv6Address = True;
 	}
 
 	if (!_weHaveAnIPv4Address && !_weHaveAnIPv6Address)

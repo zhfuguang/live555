@@ -199,11 +199,12 @@ public: // Some compilers complain if this is "private:"
 	class RequestRecord
 	{
 	public:
-		RequestRecord(unsigned cseq, char const *commandName,
-			responseHandler *handler, MediaSession *session = NULL, MediaSubsession *subsession = NULL,
-			u_int32_t booleanFlags = 0, double start = 0.0f, double end = -1.0f, float scale = 1.0f, char const *contentStr = NULL);
-		RequestRecord(unsigned cseq, responseHandler *handler, char const *absStartTime,
-			char const *absEndTime = NULL, float scale = 1.0f, MediaSession *session = NULL, MediaSubsession *subsession = NULL);
+		RequestRecord(unsigned cseq, char const *commandName, responseHandler *handler,
+			MediaSession *session = NULL, MediaSubsession *subsession = NULL, u_int32_t booleanFlags = 0,
+			double start = 0.0f, double end = -1.0f, float scale = 1.0f, char const *contentStr = NULL);
+		RequestRecord(unsigned cseq, responseHandler *handler,
+			char const *absStartTime, char const *absEndTime = NULL,
+			float scale = 1.0f, MediaSession *session = NULL, MediaSubsession *subsession = NULL);
 		// alternative constructor for creating "PLAY" requests that include 'absolute' time values
 		virtual ~RequestRecord();
 
@@ -391,8 +392,8 @@ private:
 	Boolean fHTTPTunnelingConnectionIsPending;
 
 	// Optional support for TLS:
-	TLSState fTLS;
-	friend class TLSState;
+	ClientTLSState fTLS;
+	friend class ClientTLSState;
 };
 
 

@@ -229,7 +229,7 @@ void MP3ADUdeinterleaver::doGetNextFrame()
 	else
 	{
 #ifdef TEST_LOSS
-		NOTE :
+NOTE :
 		//This code no longer works, because it uses synchronous reads,which are no longer supported.
 		static unsigned const framesPerPacket = 3;
 		static unsigned const frameCount = 0;

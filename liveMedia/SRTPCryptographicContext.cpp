@@ -22,7 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "SRTPCryptographicContext.hh"
 #ifndef NO_OPENSSL
 #include "HMAC_SHA1.hh"
-#include <openssl/aes.h>
+#include <openssl/evp.h>
 #endif
 
 #ifdef DEBUG
@@ -166,8 +166,7 @@ Boolean SRTPCryptographicContext::processIncomingSRTPPacket(u_int8_t * buffer, u
 			if (offsetToEncryptedBytes > numEncryptedBytes)
 			{
 #ifdef DEBUG
-				fprintf(stderr, "SRTPCryptographicContext::processIncomingSRTPPacket(): Error: RTP header size %d (expected <= %d) is too large!\n",
-					rtpHeaderSize, numEncryptedBytes);
+				fprintf(stderr, "SRTPCryptographicContext::processIncomingSRTPPacket(): Error: RTP header size %d (expected <= %d) is too large!\n", rtpHeaderSize, numEncryptedBytes);
 #endif
 				break;
 			}
@@ -311,14 +310,12 @@ Boolean SRTPCryptographicContext::processOutgoingSRTCPPacket(u_int8_t * buffer, 
 }
 
 #ifndef NO_OPENSSL
-unsigned SRTPCryptographicContext::generateSRTCPAuthenticationTag(
-	u_int8_t const *dataToAuthenticate, unsigned numBytesToAuthenticate, u_int8_t * resultAuthenticationTag)
+unsigned SRTPCryptographicContext::generateSRTCPAuthenticationTag(u_int8_t const *dataToAuthenticate, unsigned numBytesToAuthenticate, u_int8_t * resultAuthenticationTag)
 {
 	return generateAuthenticationTag(fDerivedKeys.srtcp, dataToAuthenticate, numBytesToAuthenticate, resultAuthenticationTag);
 }
 
-Boolean SRTPCryptographicContext::verifySRTPAuthenticationTag(
-	u_int8_t * dataToAuthenticate, unsigned numBytesToAuthenticate, u_int32_t roc, u_int8_t const *authenticationTag)
+Boolean SRTPCryptographicContext::verifySRTPAuthenticationTag(u_int8_t * dataToAuthenticate, unsigned numBytesToAuthenticate, u_int32_t roc, u_int8_t const *authenticationTag)
 {
 	// Append the (4-byte) 'ROC' (roll-over counter) to "dataToAuthenticate" before computing
 	// the authentication tag.  We can do this because we have enough space after
@@ -426,28 +423,40 @@ void SRTPCryptographicContext::cryptData(derivedKeys & keys, u_int64_t index, u_
 	// Now generate as many blocks of the keystream as we need, by repeatedly encrypting
 	// the IV using our cipher key.  (After each step, we increment the IV by 1.)
 	// We then XOR the keystream into the provided data, to do the en/decryption.
-	AES_KEY key;
-	AES_set_encrypt_key(keys.cipherKey, 8 * SRTP_CIPHER_KEY_LENGTH, &key);
-
-	while (numDataBytes > 0)
+	do
 	{
-		u_int8_t keyStream[SRTP_CIPHER_KEY_LENGTH];
-		AES_encrypt(iv, keyStream, &key);
+		EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+		if (ctx == NULL)
+			break;
 
-		unsigned numBytesToUse = numDataBytes < SRTP_CIPHER_KEY_LENGTH ? numDataBytes : SRTP_CIPHER_KEY_LENGTH;
-		for (unsigned i = 0; i < numBytesToUse; ++i)
-			data[i] ^= keyStream[i];
-		data += numBytesToUse;
-		numDataBytes -= numBytesToUse;
+		if (EVP_EncryptInit(ctx, EVP_aes_128_ecb(), keys.cipherKey, NULL/*no IV*/) != 1)
+			break;
+		// Note: We use ECB mode here, because we're using our "iv" as plaintext
 
-		// Increment the IV by 1:
-		u_int8_t *ptr = &iv[sizeof iv];
-		do
+		while (numDataBytes > 0)
 		{
-			--ptr;
-			++ *ptr;
-		} while (*ptr == 0x00);
-	}
+			u_int8_t keyStream[SRTP_CIPHER_KEY_LENGTH];
+			int numBytesEncrypted;
+			if (EVP_EncryptUpdate(ctx, keyStream, &numBytesEncrypted, iv, SRTP_CIPHER_KEY_LENGTH) != 1)
+				break;
+
+			unsigned numBytesToUse = numDataBytes < numBytesEncrypted ? numDataBytes : numBytesEncrypted;
+			for (unsigned i = 0; i < numBytesToUse; ++i)
+				data[i] ^= keyStream[i];
+			data += numBytesToUse;
+			numDataBytes -= numBytesToUse;
+
+			// Increment the IV by 1:
+			u_int8_t *ptr = &iv[sizeof iv];
+			do
+			{
+				--ptr;
+				++ *ptr;
+			} while (*ptr == 0x00);
+		}
+
+		EVP_CIPHER_CTX_free(ctx);
+	} while (0);
 }
 
 void SRTPCryptographicContext::performKeyDerivation()
@@ -473,16 +482,10 @@ void SRTPCryptographicContext::deriveKeysFromMaster(u_int8_t const *masterKey, u
 
 #define KDF_PRF_CIPHER_BLOCK_LENGTH 16
 
-void SRTPCryptographicContext::deriveSingleKey(u_int8_t const *masterKey,
-	u_int8_t const *salt, SRTPKeyDerivationLabel label, unsigned resultKeyLength, u_int8_t * resultKey)
+void SRTPCryptographicContext::deriveSingleKey(u_int8_t const *masterKey, u_int8_t const *salt, SRTPKeyDerivationLabel label, unsigned resultKeyLength, u_int8_t * resultKey)
 {
-	// This looks a little different from the mechanism described in RFC 3711, section 4.3, but
-	// it's what the 'libsrtp' code does, so I hope it's functionally equivalent:
-	AES_KEY key;
-	AES_set_encrypt_key(masterKey, 8 * SRTP_CIPHER_KEY_LENGTH, &key);
-
 	u_int8_t counter[KDF_PRF_CIPHER_BLOCK_LENGTH];
-	// Set the first bytes of "counter" to be the 'salt'; set the remainder to zero:
+	// Fill in the first bytes of "counter" with our 'salt'; set the remaining bytes to zero:
 	memmove(counter, salt, SRTP_CIPHER_SALT_LENGTH);
 	for (unsigned i = SRTP_CIPHER_SALT_LENGTH; i < sizeof counter; ++i)
 	{
@@ -495,17 +498,33 @@ void SRTPCryptographicContext::deriveSingleKey(u_int8_t const *masterKey,
 	// And use the resulting "counter" as the plaintext:
 	u_int8_t const *plaintext = counter;
 
-	unsigned numBytesRemaining = resultKeyLength;
-	while (numBytesRemaining > 0)
+	// Generate the key by repeatedly encrypting the plaintext:
+	do
 	{
-		u_int8_t ciphertext[KDF_PRF_CIPHER_BLOCK_LENGTH];
-		AES_encrypt(plaintext, ciphertext, &key);
+		EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+		if (ctx == NULL)
+			break;
 
-		unsigned numBytesToCopy = numBytesRemaining < KDF_PRF_CIPHER_BLOCK_LENGTH ? numBytesRemaining : KDF_PRF_CIPHER_BLOCK_LENGTH;
-		memmove(resultKey, ciphertext, numBytesToCopy);
-		resultKey += numBytesToCopy;
-		numBytesRemaining -= numBytesToCopy;
-		++counter[15]; // for next time
-	}
+		if (EVP_EncryptInit(ctx, EVP_aes_128_ecb(), masterKey, NULL/*no IV*/) != 1)
+			break;
+		// Note: We use ECB mode here, because there's no IV
+
+		unsigned numBytesRemaining = resultKeyLength;
+		while (numBytesRemaining > 0)
+		{
+			u_int8_t ciphertext[KDF_PRF_CIPHER_BLOCK_LENGTH];
+			int numBytesEncrypted;
+			if (EVP_EncryptUpdate(ctx, ciphertext, &numBytesEncrypted, plaintext, KDF_PRF_CIPHER_BLOCK_LENGTH) != 1)
+				break;
+
+			unsigned numBytesToCopy = numBytesRemaining < numBytesEncrypted ? numBytesRemaining : numBytesEncrypted;
+			memmove(resultKey, ciphertext, numBytesToCopy);
+			resultKey += numBytesToCopy;
+			numBytesRemaining -= numBytesToCopy;
+			++counter[15]; // for next time
+		}
+
+		EVP_CIPHER_CTX_free(ctx);
+	} while (0);
 }
 #endif

@@ -101,6 +101,7 @@ char const *PassiveServerMediaSubsession::sdpLines(int /*addressFamily*/)
 			"%s"
 			"%s"
 			"a=control:%s\r\n";
+
 		unsigned sdpFmtSize = strlen(sdpFmt)
 			+ strlen(mediaType) + 5 /* max short len */ + 3 /* max char len */
 			+ 3/*IP4 or IP6*/ + strlen(groupAddressStr.val()) + 3 /* max char len */
@@ -125,7 +126,6 @@ char const *PassiveServerMediaSubsession::sdpLines(int /*addressFamily*/)
 			rangeLine, // a=range:... (if present)
 			auxSDPLine, // optional extra SDP line
 			trackId()); // a=control:<track-id>
-
 		delete[](char *)rangeLine;
 		delete[] rtpmapLine;
 
@@ -136,8 +136,9 @@ char const *PassiveServerMediaSubsession::sdpLines(int /*addressFamily*/)
 	return fSDPLines;
 }
 
-void PassiveServerMediaSubsession::getStreamParameters(unsigned clientSessionId, struct sockaddr_storage const &clientAddress,
-	Port const & /*clientRTPPort*/, Port const &clientRTCPPort, int /*tcpSocketNum*/, unsigned char /*rtpChannelId*/, unsigned char /*rtcpChannelId*/,
+void PassiveServerMediaSubsession::getStreamParameters(unsigned clientSessionId,
+	struct sockaddr_storage const &clientAddress, Port const & /*clientRTPPort*/, Port const &clientRTCPPort,
+	int /*tcpSocketNum*/, unsigned char /*rtpChannelId*/, unsigned char /*rtcpChannelId*/, TLSState * /*tlsState*/,
 	struct sockaddr_storage &destinationAddress, u_int8_t &destinationTTL, Boolean &isMulticast, Port &serverRTPPort, Port &serverRTCPPort, void *&streamToken)
 {
 	isMulticast = True;

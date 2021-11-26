@@ -317,4 +317,4 @@ Boolean MPEG2TransportStreamFramer::updateTSPacketDurationEstimate(unsigned char
 	pidStatus->lastPacketNum = fTSPacketCount;
 
 	return True;
-	}
+}

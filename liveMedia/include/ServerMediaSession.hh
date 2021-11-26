@@ -146,6 +146,7 @@ public:
 		int tcpSocketNum, // in (-1 means use UDP, not TCP)
 		unsigned char rtpChannelId, // in (used if TCP)
 		unsigned char rtcpChannelId, // in (used if TCP)
+		TLSState *tlsState, // in (used if TCP)
 		struct sockaddr_storage &destinationAddress, // in out
 		u_int8_t &destinationTTL, // in out
 		Boolean &isMulticast, // out
@@ -154,8 +155,8 @@ public:
 		void *&streamToken // out
 	) = 0;
 
-	virtual void startStream(unsigned clientSessionId, void *streamToken, TaskFunc *rtcpRRHandler,
-		void *rtcpRRHandlerClientData, unsigned short &rtpSeqNum, unsigned &rtpTimestamp,
+	virtual void startStream(unsigned clientSessionId, void *streamToken,
+		TaskFunc *rtcpRRHandler, void *rtcpRRHandlerClientData, unsigned short &rtpSeqNum, unsigned &rtpTimestamp,
 		ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler, void *serverRequestAlternativeByteHandlerClientData) = 0;
 
 	virtual void pauseStream(unsigned clientSessionId, void *streamToken);
@@ -163,11 +164,13 @@ public:
 	// This routine is used to seek by relative (i.e., NPT) time.
 	// "streamDuration", if >0.0, specifies how much data to stream, past "seekNPT".  (If <=0.0, all remaining data is streamed.)
 	// "numBytes" returns the size (in bytes) of the data to be streamed, or 0 if unknown or unlimited.
+
 	virtual void seekStream(unsigned clientSessionId, void *streamToken, char *&absStart, char *&absEnd);
 	// This routine is used to seek by 'absolute' time.
 	// "absStart" should be a string of the form "YYYYMMDDTHHMMSSZ" or "YYYYMMDDTHHMMSS.<frac>Z".
 	// "absEnd" should be either NULL (for no end time), or a string of the same form as "absStart".
 	// These strings may be modified in-place, or can be reassigned to a newly-allocated value (after delete[]ing the original).
+
 	virtual void nullSeekStream(unsigned clientSessionId, void *streamToken, double streamEndTime, u_int64_t &numBytes);
 	// Called whenever we're handling a "PLAY" command without a specified start time.
 	virtual void setStreamScale(unsigned clientSessionId, void *streamToken, float scale);

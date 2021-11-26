@@ -109,8 +109,8 @@ public:
 		return fRTCPInterface.gs();
 	}
 
-	void setStreamSocket(int sockNum, unsigned char streamChannelId);
-	void addStreamSocket(int sockNum, unsigned char streamChannelId);
+	void setStreamSocket(int sockNum, unsigned char streamChannelId, TLSState *tlsState);
+	void addStreamSocket(int sockNum, unsigned char streamChannelId, TLSState *tlsState);
 	void removeStreamSocket(int sockNum, unsigned char streamChannelId)
 	{
 		fRTCPInterface.removeStreamSocket(sockNum, streamChannelId);

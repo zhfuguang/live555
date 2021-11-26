@@ -113,13 +113,13 @@ public:
 	void resetPresentationTimes();
 
 	// Hacks to allow sending RTP over TCP (RFC 2236, section 10.12):
-	void setStreamSocket(int sockNum, unsigned char streamChannelId)
+	void setStreamSocket(int sockNum, unsigned char streamChannelId, TLSState *tlsState)
 	{
-		fRTPInterface.setStreamSocket(sockNum, streamChannelId);
+		fRTPInterface.setStreamSocket(sockNum, streamChannelId, tlsState);
 	}
-	void addStreamSocket(int sockNum, unsigned char streamChannelId)
+	void addStreamSocket(int sockNum, unsigned char streamChannelId, TLSState *tlsState)
 	{
-		fRTPInterface.addStreamSocket(sockNum, streamChannelId);
+		fRTPInterface.addStreamSocket(sockNum, streamChannelId, tlsState);
 	}
 	void removeStreamSocket(int sockNum, unsigned char streamChannelId)
 	{
@@ -127,8 +127,9 @@ public:
 	}
 	unsigned &estimatedBitrate()
 	{
-		return fEstimatedBitrate;    // kbps; usually 0 (i.e., unset)
+		return fEstimatedBitrate;
 	}
+	// kbps; usually 0 (i.e., unset)
 
 	u_int32_t SSRC() const
 	{
@@ -137,8 +138,7 @@ public:
 	// later need a means of changing the SSRC if there's a collision #####
 
 protected:
-	RTPSink(UsageEnvironment &env, Groupsock *rtpGS,
-		unsigned char rtpPayloadType, u_int32_t rtpTimestampFrequency, char const *rtpPayloadFormatName, unsigned numChannels);
+	RTPSink(UsageEnvironment &env, Groupsock *rtpGS, unsigned char rtpPayloadType, u_int32_t rtpTimestampFrequency, char const *rtpPayloadFormatName, unsigned numChannels);
 	// abstract base class
 
 	virtual ~RTPSink();

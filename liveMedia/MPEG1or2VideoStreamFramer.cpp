@@ -462,7 +462,7 @@ unsigned MPEG1or2VideoStreamParser::parseSlice()
 	{
 		// Skip all bytes that we see, up until we reach a code of some sort:
 		skipToNextCode(next4Bytes);
-}
+	}
 	else
 	{
 		// Copy all bytes that we see, up until we reach a code of some sort:

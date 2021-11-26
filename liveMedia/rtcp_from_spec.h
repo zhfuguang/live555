@@ -26,9 +26,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include <stdlib.h>
 
- /* Definitions of _ANSI_ARGS and EXTERN that will work in either
-	C or C++ code:
-  */
+/* Definitions of _ANSI_ARGS and EXTERN that will work in either
+C or C++ code:
+ */
 #undef _ANSI_ARGS_
 #if ((defined(__STDC__) || defined(SABER)) && !defined(NO_PROTOTYPE)) || defined(__cplusplus) || defined(USE_PROTOTYPE)
 #   define _ANSI_ARGS_(x)	x
@@ -41,7 +41,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #   define EXTERN extern
 #endif
 
-  /* The code from the spec assumes a type "event"; make this a void*: */
+/* The code from the spec assumes a type "event"; make this a void*: */
 typedef void *event;
 
 #define EVENT_UNKNOWN 0

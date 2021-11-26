@@ -115,13 +115,13 @@ void our_srandom(unsigned int x)
  * 7*(2**7 - 1) predicted by this formula.
  */
 
- /*
-  * For each of the currently supported random number generators, we have a
-  * break value on the amount of state information (you need at least this
-  * many bytes of state info to support this random number generator), a degree
-  * for the polynomial (actually a trinomial) that the R.N.G. is based on, and
-  * the separation between the two lower order coefficients of the trinomial.
-  */
+/*
+ * For each of the currently supported random number generators, we have a
+ * break value on the amount of state information (you need at least this
+ * many bytes of state info to support this random number generator), a degree
+ * for the polynomial (actually a trinomial) that the R.N.G. is based on, and
+ * the separation between the two lower order coefficients of the trinomial.
+ */
 #define	TYPE_0		0		/* linear congruential */
 #define	BREAK_0		8
 #define	DEG_0		0
@@ -147,10 +147,10 @@ void our_srandom(unsigned int x)
 #define	DEG_4		63
 #define	SEP_4		1
 
-  /*
-   * Array versions of the above information to make code run faster --
-   * relies on fact that TYPE_i == i.
-   */
+/*
+ * Array versions of the above information to make code run faster --
+ * relies on fact that TYPE_i == i.
+ */
 #define	MAX_TYPES	5		/* max number of types above */
 
 static int const degrees[MAX_TYPES] = { DEG_0, DEG_1, DEG_2, DEG_3, DEG_4 };

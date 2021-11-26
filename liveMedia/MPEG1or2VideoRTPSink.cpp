@@ -109,7 +109,7 @@ void MPEG1or2VideoRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
 				case 3:
 					FBV = (byte8 & 0x40) >> 6;
 					BFC = (byte8 & 0x38) >> 3;
-					// fall through to:
+				// fall through to:
 				case 2:
 					FFV = (next4Bytes & 0x00000004) >> 2;
 					FFC = ((next4Bytes & 0x00000003) << 1) | ((byte8 & 0x80) >> 7);

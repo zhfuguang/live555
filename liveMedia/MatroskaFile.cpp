@@ -794,8 +794,8 @@ RTPSink *MatroskaFile::createRTPSinkForTrackNumber(unsigned trackNumber, Groupso
 		}
 		else if (strcmp(track->mimeType, "audio/OPUS") == 0)
 		{
-			result = SimpleRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-				48000, "audio", "OPUS", 2, False/*only 1 Opus 'packet' in each RTP packet*/);
+			result = SimpleRTPSink::createNew(envir(), rtpGroupsock,
+					rtpPayloadTypeIfDynamic, 48000, "audio", "OPUS", 2, False/*only 1 Opus 'packet' in each RTP packet*/);
 		}
 		else if (strcmp(track->mimeType, "audio/VORBIS") == 0 || strcmp(track->mimeType, "video/THEORA") == 0)
 		{

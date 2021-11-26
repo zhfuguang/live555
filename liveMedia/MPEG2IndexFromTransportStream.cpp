@@ -148,7 +148,7 @@ MPEG2IFrameIndexFromTransportStream *MPEG2IFrameIndexFromTransportStream::create
 MPEG2IFrameIndexFromTransportStream::MPEG2IFrameIndexFromTransportStream(UsageEnvironment &env, FramedSource *inputSource)
 	: FramedFilter(env, inputSource)
 	, fIsH264(False), fIsH265(False)
-	, fInputTransportPacketCounter((unsigned)-1), fClosureNumber(0), fLastContinuityCounter(~0)
+	, fInputTransportPacketCounter((unsigned) - 1), fClosureNumber(0), fLastContinuityCounter(~0)
 	, fFirstPCR(0.0), fLastPCR(0.0), fHaveSeenFirstPCR(False)
 	, fPMT_PID(0x10), fVideo_PID(0xE0) // default values
 	, fParseBufferSize(PARSE_BUFFER_SIZE)

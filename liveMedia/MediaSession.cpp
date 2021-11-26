@@ -989,9 +989,9 @@ char *MediaSubsession::absEndTime() const
 
 static Boolean const honorSDPPortChoice
 #ifdef IGNORE_UNICAST_SDP_PORTS
-= False;
+	= False;
 #else
-= True;
+	= True;
 #endif
 
 Boolean MediaSubsession::initiate(int useSpecialRTPoffset)
@@ -1745,7 +1745,7 @@ Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset)
 			else if (strcmp(fCodecName, "MPEG4-GENERIC") == 0)
 			{
 				fReadSource = fRTPSource = MPEG4GenericRTPSource::createNew(env(), fRTPSocket, fRTPPayloadFormat, fRTPTimestampFrequency,
-					fMediumName, attrVal_strToLower("mode"), attrVal_unsigned("sizelength"), attrVal_unsigned("indexlength"), attrVal_unsigned("indexdeltalength"));
+							fMediumName, attrVal_strToLower("mode"), attrVal_unsigned("sizelength"), attrVal_unsigned("indexlength"), attrVal_unsigned("indexdeltalength"));
 			}
 			else if (strcmp(fCodecName, "MPV") == 0)     // MPEG-1 or 2 video
 			{
@@ -1785,7 +1785,7 @@ Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset)
 				{
 					// Special case (used when proxying JPEG/RTP streams): Receive each JPEG/RTP packet, including the special RTP headers:
 					fReadSource = fRTPSource = SimpleRTPSource::createNew(env(), fRTPSocket, fRTPPayloadFormat,
-						fRTPTimestampFrequency, "video/JPEG", 0/*special offset*/, False/*doNormalMBitRule => ignore the 'M' bit*/);
+								fRTPTimestampFrequency, "video/JPEG", 0/*special offset*/, False/*doNormalMBitRule => ignore the 'M' bit*/);
 				}
 				else
 				{
@@ -1827,7 +1827,7 @@ Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset)
 				|| strcmp(fCodecName, "T140") == 0 // T.140 text (RFC 4103)
 				|| strcmp(fCodecName, "DAT12") == 0 // 12-bit nonlinear audio (RFC 3190)
 				|| strcmp(fCodecName, "VND.ONVIF.METADATA") == 0 // 'ONVIF' 'metadata' (a XML document)
-				)
+			)
 			{
 				createSimpleRTPSource = True;
 				useSpecialRTPoffset = 0;

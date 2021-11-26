@@ -48,7 +48,7 @@ protected:
 protected: // redefined virtual functions
 	virtual char const *sdpLines(int addressFamily);
 	virtual void getStreamParameters(unsigned clientSessionId, struct sockaddr_storage const &clientAddress,
-		Port const &clientRTPPort, Port const &clientRTCPPort, int tcpSocketNum, unsigned char rtpChannelId, unsigned char rtcpChannelId,
+		Port const &clientRTPPort, Port const &clientRTCPPort, int tcpSocketNum, unsigned char rtpChannelId, unsigned char rtcpChannelId, TLSState *tlsSTate,
 		struct sockaddr_storage &destinationAddress, u_int8_t &destinationTTL, Boolean &isMulticast, Port &serverRTPPort, Port &serverRTCPPort, void *&streamToken);
 	virtual void startStream(unsigned clientSessionId, void *streamToken, TaskFunc *rtcpRRHandler, void *rtcpRRHandlerClientData, unsigned short &rtpSeqNum,
 		unsigned &rtpTimestamp, ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler, void *serverRequestAlternativeByteHandlerClientData);

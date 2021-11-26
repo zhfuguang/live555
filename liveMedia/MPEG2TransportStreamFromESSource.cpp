@@ -273,4 +273,4 @@ void InputESSourceRecord::afterGettingFrame1(unsigned frameSize, unsigned numTru
 		fParent.fAwaitingBackgroundDelivery = False;
 		fParent.awaitNewBuffer(NULL);
 	}
-	}
+}

@@ -103,10 +103,10 @@ public:
 		return fEnableRTCPReports;
 	}
 
-	void setStreamSocket(int sockNum, unsigned char streamChannelId)
+	void setStreamSocket(int sockNum, unsigned char streamChannelId, TLSState *tlsState)
 	{
 		// hack to allow sending RTP over TCP (RFC 2236, section 10.12)
-		fRTPInterface.setStreamSocket(sockNum, streamChannelId);
+		fRTPInterface.setStreamSocket(sockNum, streamChannelId, tlsState);
 	}
 
 	void setAuxilliaryReadHandler(AuxHandlerFunc *handlerFunc, void *handlerClientData)

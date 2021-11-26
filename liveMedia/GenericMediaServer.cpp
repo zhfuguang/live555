@@ -137,7 +137,7 @@ GenericMediaServer::GenericMediaServer(UsageEnvironment &env, int ourSocketIPv4,
 	, fServerMediaSessions(HashTable::create(STRING_HASH_KEYS))
 	, fClientConnections(HashTable::create(ONE_WORD_HASH_KEYS))
 	, fClientSessions(HashTable::create(STRING_HASH_KEYS))
-	, fPreviousClientSessionId(0)
+	, fPreviousClientSessionId(0), fTLSCertificateFileName(NULL), fTLSPrivateKeyFileName(NULL)
 {
 	ignoreSigPipeOnSocket(fServerSocketIPv4); // so that clients on the same host that are killed don't also kill us
 	ignoreSigPipeOnSocket(fServerSocketIPv6); // ditto
@@ -154,6 +154,9 @@ GenericMediaServer::~GenericMediaServer()
 	::closeSocket(fServerSocketIPv4);
 	envir().taskScheduler().turnOffBackgroundReadHandling(fServerSocketIPv6);
 	::closeSocket(fServerSocketIPv6);
+
+	delete[] fTLSCertificateFileName;
+	delete[] fTLSPrivateKeyFileName;
 }
 
 void GenericMediaServer::cleanup()
@@ -280,14 +283,31 @@ void GenericMediaServer::incomingConnectionHandlerOnSocket(int serverSocket)
 	(void)createNewClientConnection(clientSocket, clientAddr);
 }
 
+void GenericMediaServer::setTLSFileNames(char const *certFileName, char const *privKeyFileName)
+{
+	delete[] fTLSCertificateFileName;
+	fTLSCertificateFileName = strDup(certFileName);
+	delete[] fTLSPrivateKeyFileName;
+	fTLSPrivateKeyFileName = strDup(privKeyFileName);
+}
+
 
 ////////// GenericMediaServer::ClientConnection implementation //////////
 
-GenericMediaServer::ClientConnection::ClientConnection(GenericMediaServer &ourServer, int clientSocket, struct sockaddr_storage const &clientAddr)
-	: fOurServer(ourServer), fOurSocket(clientSocket), fClientAddr(clientAddr)
+GenericMediaServer::ClientConnection::ClientConnection(GenericMediaServer &ourServer, int clientSocket, struct sockaddr_storage const &clientAddr, Boolean useTLS)
+	: fOurServer(ourServer), fOurSocket(clientSocket), fClientAddr(clientAddr), fTLS(envir())
 {
 	// Add ourself to our 'client connections' table:
 	fOurServer.fClientConnections->Add((char const *)this, this);
+
+	if (useTLS)
+	{
+		// Perform extra processing to handle a TLS connection:
+		fTLS.setCertificateAndPrivateKeyFileNames(ourServer.fTLSCertificateFileName, ourServer.fTLSPrivateKeyFileName);
+		fTLS.isNeeded = True;
+
+		fTLS.tlsAcceptIsNeeded = True; // call fTLS.accept() the next time the socket is readable
+	}
 
 	// Arrange to handle incoming requests:
 	resetRequestBuffer();
@@ -319,8 +339,25 @@ void GenericMediaServer::ClientConnection::incomingRequestHandler(void *instance
 
 void GenericMediaServer::ClientConnection::incomingRequestHandler()
 {
-	struct sockaddr_storage dummy; // 'from' address, meaningless in this case
-	int bytesRead = readSocket(envir(), fOurSocket, &fRequestBuffer[fRequestBytesAlreadySeen], fRequestBufferBytesLeft, dummy);
+	if (fTLS.tlsAcceptIsNeeded)   // we need to successfully call fTLS.accept() first:
+	{
+		if (fTLS.accept(fOurSocket) <= 0)
+			return; // either an error, or we need to try again later
+
+		fTLS.tlsAcceptIsNeeded = False;
+		// We can now read data, as usual:
+	}
+
+	int bytesRead;
+	if (fTLS.isNeeded)
+	{
+		bytesRead = fTLS.read(&fRequestBuffer[fRequestBytesAlreadySeen], fRequestBufferBytesLeft);
+	}
+	else
+	{
+		struct sockaddr_storage dummy; // 'from' address, meaningless in this case
+		bytesRead = readSocket(envir(), fOurSocket, &fRequestBuffer[fRequestBytesAlreadySeen], fRequestBufferBytesLeft, dummy);
+	}
 	handleRequestBytes(bytesRead);
 }
 

@@ -110,8 +110,7 @@ int main(int argc, char **argv)
 #endif
 
 	// Create a 'GSM RTP' sink from the RTP 'groupsock':
-	sessionState.sink
-		= GSMAudioRTPSink::createNew(*env, sessionState.rtpGroupsock);
+	sessionState.sink = GSMAudioRTPSink::createNew(*env, sessionState.rtpGroupsock);
 
 	// Create (and start) a 'RTCP instance' for this RTP sink:
 	const unsigned estimatedSessionBandwidth = 160; // in kbps; for RTCP b/w share

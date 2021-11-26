@@ -44,10 +44,12 @@ protected: // we're a virtual base class
 protected: // redefined virtual functions
 	virtual char const *sdpLines(int addressFamily);
 	virtual void getStreamParameters(unsigned clientSessionId, struct sockaddr_storage const &clientAddress,
-		Port const &clientRTPPort, Port const &clientRTCPPort, int tcpSocketNum, unsigned char rtpChannelId, unsigned char rtcpChannelId,
+		Port const &clientRTPPort, Port const &clientRTCPPort, int tcpSocketNum, unsigned char rtpChannelId, unsigned char rtcpChannelId, TLSState *tlsState,
 		struct sockaddr_storage &destinationAddress, u_int8_t &destinationTTL, Boolean &isMulticast, Port &serverRTPPort, Port &serverRTCPPort, void *&streamToken);
+
 	virtual void startStream(unsigned clientSessionId, void *streamToken, TaskFunc *rtcpRRHandler, void *rtcpRRHandlerClientData, unsigned short &rtpSeqNum,
 		unsigned &rtpTimestamp, ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler, void *serverRequestAlternativeByteHandlerClientData);
+
 	virtual void pauseStream(unsigned clientSessionId, void *streamToken);
 	virtual void seekStream(unsigned clientSessionId, void *streamToken, double &seekNPT, double streamDuration, u_int64_t &numBytes);
 	virtual void seekStream(unsigned clientSessionId, void *streamToken, char *&absStart, char *&absEnd);
@@ -131,15 +133,13 @@ private:
 class Destinations
 {
 public:
-	Destinations(struct sockaddr_storage const &destAddr,
-		Port const &rtpDestPort,
-		Port const &rtcpDestPort)
+	Destinations(struct sockaddr_storage const &destAddr, Port const &rtpDestPort, Port const &rtcpDestPort)
 		: isTCP(False), addr(destAddr), rtpPort(rtpDestPort), rtcpPort(rtcpDestPort)
 	{
 	}
-	Destinations(int tcpSockNum, unsigned char rtpChanId, unsigned char rtcpChanId)
-		: isTCP(True), rtpPort(0) /*dummy*/, rtcpPort(0) /*dummy*/,
-		tcpSocketNum(tcpSockNum), rtpChannelId(rtpChanId), rtcpChannelId(rtcpChanId)
+	Destinations(int tcpSockNum, unsigned char rtpChanId, unsigned char rtcpChanId, TLSState *tlsSt)
+		: isTCP(True), rtpPort(0) /*dummy*/, rtcpPort(0) /*dummy*/
+		, tcpSocketNum(tcpSockNum), rtpChannelId(rtpChanId), rtcpChannelId(rtcpChanId), tlsState(tlsSt)
 	{
 	}
 
@@ -150,25 +150,20 @@ public:
 	Port rtcpPort;
 	int tcpSocketNum;
 	unsigned char rtpChannelId, rtcpChannelId;
+	TLSState *tlsState;
 };
 
 class StreamState
 {
 public:
-	StreamState(OnDemandServerMediaSubsession &master,
-		Port const &serverRTPPort, Port const &serverRTCPPort,
-		RTPSink *rtpSink, BasicUDPSink *udpSink,
-		unsigned totalBW, FramedSource *mediaSource,
-		Groupsock *rtpGS, Groupsock *rtcpGS);
+	StreamState(OnDemandServerMediaSubsession &master, Port const &serverRTPPort, Port const &serverRTCPPort,
+		RTPSink *rtpSink, BasicUDPSink *udpSink, unsigned totalBW, FramedSource *mediaSource, Groupsock *rtpGS, Groupsock *rtcpGS);
 	virtual ~StreamState();
 
-	void startPlaying(Destinations *destinations, unsigned clientSessionId,
-		TaskFunc *rtcpRRHandler, void *rtcpRRHandlerClientData,
-		ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler,
-		void *serverRequestAlternativeByteHandlerClientData);
+	void startPlaying(Destinations *destinations, unsigned clientSessionId, TaskFunc *rtcpRRHandler, void *rtcpRRHandlerClientData,
+		ServerRequestAlternativeByteHandler *serverRequestAlternativeByteHandler, void *serverRequestAlternativeByteHandlerClientData);
 	void pause();
-	void sendRTCPAppPacket(u_int8_t subtype, char const *name,
-		u_int8_t *appDependentData, unsigned appDependentDataSize);
+	void sendRTCPAppPacket(u_int8_t subtype, char const *name, u_int8_t *appDependentData, unsigned appDependentDataSize);
 	void endPlaying(Destinations *destinations, unsigned clientSessionId);
 	void reclaim();
 

@@ -167,8 +167,8 @@ void AMRAudioFileSource::doGetNextFrame()
 #endif
 				break;
 			}
-			}
 		}
+	}
 
 	// Next, read the frame-block into the buffer provided:
 	fFrameSize *= fNumChannels; // because multiple channels make up a frame-block
@@ -197,4 +197,4 @@ void AMRAudioFileSource::doGetNextFrame()
 
 	// Switch to another task, and inform the reader that he has data:
 	nextTask() = envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc *)FramedSource::afterGetting, this);
-	}
+}
